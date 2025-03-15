@@ -1,0 +1,43 @@
+{
+  "cli": {
+    "appVersionSource": "remote",
+    "version": ">= 3.4.1"
+  },
+  "build": {
+    "development": {
+      "node": "18.19.0",
+      "developmentClient": false,
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "channel": "development"
+    },
+    "preview": {
+      "node": "18.19.0",
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "channel": "preview"
+    },
+    "production": {
+      "node": "18.19.0",
+      "autoIncrement": true,
+      "ios": {
+        "image": "macos-ventura-13.6-xcode-15.2",
+        "resourceClass": "m-medium"
+      },
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

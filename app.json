@@ -1,0 +1,73 @@
+{
+  "expo": {
+    "name": "Chrono",
+    "slug": "Chrono",
+    "privacy": "public",
+    "jsEngine": "jsc",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icons/icon.png",
+    "splash": {
+      "image": "./assets/splash/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/95968c5b-512b-4212-a8de-4764cea7fad7"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.chrono.app",
+      "buildNumber": "1"
+    },
+    "android": {
+      "package": "com.chrono.app",
+      "versionCode": 1,
+      "permissions": [
+        "com.google.android.gms.permission.AD_ID"
+      ]
+    },
+    "description": "Chrono | Remember your important events",
+    "extra": {
+      "eas": {
+        "projectId": "02394343-8562-4007-b338-01b7694db9b6"
+      }
+    },
+    "plugins": [
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "Allow this app to collect app-related data that can be used for tracking you or your device and deliver personalized ads to you."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0",
+            "usesCleartextTraffic": true
+          },
+          "ios": {
+            "deploymentTarget": "15.1",
+            "useFrameworks": "static",
+            "infoPlist": {
+              "NSAppTransportSecurity": {
+                "NSAllowsArbitraryLoads": true
+              }
+            }
+          }
+        }
+      ]
+    ]
+  }
+}
