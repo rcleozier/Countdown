@@ -132,7 +132,7 @@ const HomeScreen = () => {
       icon: newIcon,
     };
 
-    setCountdowns((prev) => [...prev, newCountdown]);
+    setCountdowns(prev => [...prev, newCountdown]);
 
     // Reset form fields
     setNewName("");
@@ -145,7 +145,7 @@ const HomeScreen = () => {
 
   // Delete function to remove a countdown
   const deleteCountdown = (id) => {
-    setCountdowns((prev) => prev.filter((item) => item.id !== id));
+    setCountdowns(prev => prev.filter(item => item.id !== id));
   };
 
   return (
@@ -156,10 +156,7 @@ const HomeScreen = () => {
           <Text style={styles.emptySubText}>
             Create your first upcoming event to get started.
           </Text>
-          <TouchableOpacity
-            onPress={() => setModalVisible(true)}
-            style={styles.bigAddButton}
-          >
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.bigAddButton}>
             <Text style={styles.bigAddButtonText}>+ Create Countdown</Text>
           </TouchableOpacity>
         </View>
@@ -173,10 +170,7 @@ const HomeScreen = () => {
             )}
             contentContainerStyle={styles.listContainer}
           />
-          <TouchableOpacity
-            onPress={() => setModalVisible(true)}
-            style={styles.addButton}
-          >
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
             <Text style={styles.addButtonText}>+ Add New Countdown</Text>
           </TouchableOpacity>
         </>
@@ -200,9 +194,9 @@ const HomeScreen = () => {
               style={styles.input}
             />
 
-            {/* Simplified Date Picker */}
+            {/* Single-line Date Picker with labels */}
             <View style={styles.datePickerContainer}>
-              <View style={styles.pickerContainer}>
+              <View style={styles.datePickerItem}>
                 <Text style={styles.pickerLabel}>Month</Text>
                 <Picker
                   selectedValue={selectedMonth}
@@ -217,16 +211,11 @@ const HomeScreen = () => {
                   }}
                 >
                   {months.map((month) => (
-                    <Picker.Item
-                      key={month.value}
-                      label={month.label}
-                      value={month.value}
-                    />
+                    <Picker.Item key={month.value} label={month.label} value={month.value} />
                   ))}
                 </Picker>
               </View>
-
-              <View style={styles.pickerContainer}>
+              <View style={styles.datePickerItem}>
                 <Text style={styles.pickerLabel}>Day</Text>
                 <Picker
                   selectedValue={selectedDay}
@@ -239,8 +228,7 @@ const HomeScreen = () => {
                   ))}
                 </Picker>
               </View>
-
-              <View style={styles.pickerContainer}>
+              <View style={styles.datePickerItem}>
                 <Text style={styles.pickerLabel}>Year</Text>
                 <Picker
                   selectedValue={selectedYear}
@@ -261,10 +249,7 @@ const HomeScreen = () => {
               </View>
             </View>
 
-            <TouchableOpacity
-              onPress={() => setIconPickerVisible(true)}
-              style={styles.iconButton}
-            >
+            <TouchableOpacity onPress={() => setIconPickerVisible(true)} style={styles.iconButton}>
               <Text style={styles.iconButtonText}>
                 {newIcon ? `Icon: ${newIcon}` : "Select Icon"}
               </Text>
@@ -411,11 +396,14 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   datePickerContainer: {
-    flexDirection: "column",
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 20,
   },
   pickerContainer: {
-    marginBottom: 10,
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: "center",
   },
   pickerLabel: {
     fontSize: 20,

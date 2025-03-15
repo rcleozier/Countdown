@@ -13,9 +13,14 @@ import AnalyticsScreen from "./screens/AnalyticsScreen";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-import { useFonts } from "expo-font";
-
 const APP_BACKGROUND_COLOR = "#FFF";
+
+Sentry.init({
+  dsn: "https://531c4f371af6391fafb7536af1588b12@o4505802780966912.ingest.us.sentry.io/4508982047866880",
+  // Adds more context data to events (IP address, cookies, user, etc.)
+  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+  sendDefaultPii: true,
+});
 
 function HomeScreenStack() {
   return (
