@@ -7,7 +7,7 @@ import {
   Modal,
 } from "react-native";
 import moment from "moment";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 
 const CountdownItem = ({ event, index, onDelete }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
@@ -100,40 +100,40 @@ const CountdownItem = ({ event, index, onDelete }) => {
 
 const styles = StyleSheet.create({
   gradientBorder: {
-    marginBottom: wp("4%"),
-    borderRadius: wp("2%"),
+    marginBottom: wp("2%"),
+    borderRadius: wp("1%"),
   },
   container: {
     flexDirection: "row",
-    paddingVertical: wp("6%"),
-    paddingHorizontal: wp("5%"),
+    paddingVertical: wp("3%"),
+    paddingHorizontal: wp("2.5%"),
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomWidth: wp("0.5%"),
+    borderBottomWidth: wp("0.25%"),
     borderBottomColor: "#415A77",
     backgroundColor: "transparent",
-    borderRadius: wp("2%"),
+    borderRadius: wp("1%"),
   },
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
   },
   icon: {
-    fontSize: wp("12%"), // roughly 50% of original 48
+    fontSize: wp("6%"), // was wp("12%")
     color: "#FFF",
-    marginRight: wp("3%"),
+    marginRight: wp("1.5%"),
   },
   textContainer: {
     justifyContent: "center",
   },
   title: {
-    fontSize: wp("7%"), // roughly 50% of original 28
+    fontSize: wp("3.5%"), // was wp("7%")
     fontWeight: "600",
     color: "#FFF",
     fontFamily: "monospace",
   },
   date: {
-    fontSize: wp("5%"), // roughly 50% of original 20
+    fontSize: wp("2.5%"), // was wp("5%")
     color: "#AAA",
     fontFamily: "monospace",
   },
@@ -141,21 +141,21 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   countdownText: {
-    fontSize: wp("7%"), // roughly 50% of original 28
+    fontSize: wp("3.5%"), // was wp("7%")
     color: "#FFF",
     fontWeight: "bold",
-    marginBottom: wp("2%"),
+    marginBottom: wp("1%"),
     fontFamily: "monospace",
   },
   deleteButton: {
     backgroundColor: "rgba(102,252,241,0.2)",
-    paddingVertical: wp("1.5%"), // roughly 50% of original 6
-    paddingHorizontal: wp("4%"), // roughly 50% of original 16
-    borderRadius: wp("1.5%"),
+    paddingVertical: wp("0.75%"), // was wp("1.5%")
+    paddingHorizontal: wp("2%"), // was wp("4%")
+    borderRadius: wp("0.75%"),
   },
   deleteButtonText: {
     color: "#66FCF1",
-    fontSize: wp("4%"), // roughly 50% of original 20
+    fontSize: wp("2%"), // was wp("4%")
     fontWeight: "600",
     fontFamily: "monospace",
   },
@@ -168,22 +168,22 @@ const styles = StyleSheet.create({
   modalContent: {
     width: "80%",
     backgroundColor: "#0D1B2A",
-    borderRadius: wp("3%"), // roughly 50% of original 12
-    padding: wp("7.5%"), // roughly 50% of original 30
+    borderRadius: wp("1.5%"), // was wp("3%")
+    padding: wp("3.75%"), // was wp("7.5%")
     alignItems: "center",
     elevation: 5,
   },
   modalTitle: {
-    fontSize: wp("9%"), // roughly 50% of original 36
+    fontSize: wp("4.5%"), // was wp("9%")
     fontWeight: "bold",
-    marginBottom: wp("5%"),
+    marginBottom: wp("2.5%"),
     color: "#66FCF1",
     fontFamily: "monospace",
     textAlign: "center",
   },
   modalMessage: {
-    fontSize: wp("7.5%"), // roughly 50% of original 24
-    marginBottom: wp("7.5%"),
+    fontSize: wp("3.75%"), // was wp("7.5%")
+    marginBottom: wp("3.75%"),
     color: "#CCC",
     textAlign: "center",
     fontFamily: "monospace",
@@ -195,14 +195,14 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    marginHorizontal: wp("2.5%"),
-    padding: wp("5%"),
-    borderRadius: wp("3%"),
+    marginHorizontal: wp("1.25%"),
+    padding: wp("2.5%"),
+    borderRadius: wp("1.5%"),
     alignItems: "center",
   },
   modalButtonText: {
     color: "#FFF",
-    fontSize: wp("7.5%"), // roughly 50% of original 24
+    fontSize: wp("3.75%"), // was wp("7.5%")
     fontWeight: "bold",
     fontFamily: "monospace",
   },

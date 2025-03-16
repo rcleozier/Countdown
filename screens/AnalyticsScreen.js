@@ -35,12 +35,22 @@ const AnalyticsScreen = () => {
             : "0%";
         setUpcomingPercentage(percent);
 
-        // Calculate distribution over next 12 months
-        let distribution = new Array(12).fill(0);
+        // Create rotated month labels starting from current month.
+        const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const currentMonth = now.month(); // 0 to 11
+        const rotatedLabels = [];
+        for (let i = 0; i < 12; i++) {
+          rotatedLabels.push(monthLabels[(currentMonth + i) % 12]);
+        }
+
+        // Calculate distribution over next 12 months relative to now.
+        const distribution = new Array(12).fill(0);
+        // Only count events that occur within the next 12 months.
         upcoming.forEach(evt => {
-          const diffMonths = moment(evt.date).diff(now, "months", true);
-          if (diffMonths >= 0 && diffMonths < 12) {
-            distribution[Math.floor(diffMonths)] += 1;
+          const eventMoment = moment(evt.date);
+          if (eventMoment.isBefore(now.clone().add(12, "months"))) {
+            const index = (eventMoment.month() - currentMonth + 12) % 12;
+            distribution[index] += 1;
           }
         });
         setUpcomingDistribution(distribution);
@@ -49,8 +59,7 @@ const AnalyticsScreen = () => {
           setMonthWithMost("N/A");
         } else {
           const maxIndex = distribution.indexOf(maxVal);
-          const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          setMonthWithMost(monthLabels[maxIndex]);
+          setMonthWithMost(rotatedLabels[maxIndex]);
         }
 
         // Next Event Date (if any)
@@ -66,11 +75,9 @@ const AnalyticsScreen = () => {
         setEventsNext7Days(countNext7Days);
 
         // Count events in current month (based on today's month/year)
-        const currentMonth = now.month();
-        const currentYear = now.year();
         const countThisMonth = upcoming.filter(e => {
           const m = moment(e.date);
-          return m.month() === currentMonth && m.year() === currentYear;
+          return m.month() === now.month() && m.year() === now.year();
         }).length;
         setEventsThisMonth(countThisMonth);
       } else {
@@ -148,7 +155,7 @@ const styles = StyleSheet.create({
     padding: wp("4%"),
   },
   header: {
-    fontSize: wp("4.5%"), // ~50% smaller than 32 (about 18 if screen width ~400)
+    fontSize: wp("4.5%"),
     fontWeight: "bold",
     color: "#66FCF1",
     fontFamily: "monospace",
@@ -171,13 +178,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statTitle: {
-    fontSize: wp("2%"), // ~50% smaller than 20
+    fontSize: wp("2%"),
     color: "#FFF",
     fontFamily: "monospace",
     marginBottom: wp("1%"),
   },
   statValue: {
-    fontSize: wp("2%"), // ~50% smaller than 24
+    fontSize: wp("2%"),
     fontWeight: "bold",
     color: "#FFF",
     fontFamily: "monospace",

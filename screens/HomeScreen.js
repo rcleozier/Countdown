@@ -7,16 +7,15 @@ import {
   Modal,
   TextInput,
   StyleSheet,
+  SafeAreaView,
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Picker } from "@react-native-picker/picker";
 import { useFocusEffect } from "@react-navigation/native";
 import CountdownItem from "../components/CountdownItem";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import { Calendar } from "react-native-calendars";
+import moment from "moment";
+import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 
 // GUID generator (simple implementation)
 const generateGUID = () =>
@@ -28,23 +27,28 @@ const generateGUID = () =>
 
 const HomeScreen = () => {
   const [countdowns, setCountdowns] = useState([]);
-
-  // Modal visibility
   const [modalVisible, setModalVisible] = useState(false);
 
-  // Form fields
-  const [newName, setNewName] = useState("");
+  // For the icon picker
+  const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [newIcon, setNewIcon] = useState("💻");
 
-  // Icon picker visibility
-  const [iconPickerVisible, setIconPickerVisible] = useState(false);
+  // For the date selection using react-native-calendars
+  const [calendarModalVisible, setCalendarModalVisible] = useState(false);
+  const [tempSelectedDate, setTempSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Custom date picker state (month, day, year)
-  const [selectedMonth, setSelectedMonth] = useState(0);
-  const [selectedDay, setSelectedDay] = useState(1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  // For the countdown name
+  const [newName, setNewName] = useState("");
 
-  // Load countdowns from AsyncStorage on focus
+  // Some futuristic icons
+  const futuristicIcons = [
+    "💻", "⌨️", "🖥", "📡", "🔌", "🔒", "🛰", "🤖", "💾", "⚙️",
+    "📀", "🧬", "🧠", "🚀", "🌌", "👾", "🔮", "💡", "🕹", "🔭",
+    // ... more icons ...
+  ];
+
+  // ----- Load / Save Data -----
   const loadCountdowns = async () => {
     try {
       const storedCountdowns = await AsyncStorage.getItem("countdowns");
@@ -64,7 +68,6 @@ const HomeScreen = () => {
     }, [])
   );
 
-  // Save countdowns to AsyncStorage whenever they change
   useEffect(() => {
     const saveCountdowns = async () => {
       try {
@@ -76,7 +79,7 @@ const HomeScreen = () => {
     saveCountdowns();
   }, [countdowns]);
 
-  // Sort countdowns by date (closest first) and filter to only upcoming events
+  // Sort & filter upcoming
   const sortedCountdowns = [...countdowns].sort(
     (a, b) => new Date(a.date) - new Date(b.date)
   );
@@ -84,46 +87,36 @@ const HomeScreen = () => {
     (event) => new Date(event.date) > new Date()
   );
 
-  // Generate years, days, and months for pickers
-  const years = [];
-  for (let y = 2023; y <= 2035; y++) {
-    years.push(y);
-  }
-  const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-  const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const months = [
-    { label: "January", value: 0 },
-    { label: "February", value: 1 },
-    { label: "March", value: 2 },
-    { label: "April", value: 3 },
-    { label: "May", value: 4 },
-    { label: "June", value: 5 },
-    { label: "July", value: 6 },
-    { label: "August", value: 7 },
-    { label: "September", value: 8 },
-    { label: "October", value: 9 },
-    { label: "November", value: 10 },
-    { label: "December", value: 11 },
-  ];
+  // ----- Date selection with Calendar -----
+  const handleOpenCalendar = () => {
+    // Open the calendar, reset tempSelectedDate to null or selectedDate
+    setTempSelectedDate(null);
+    setCalendarModalVisible(true);
+  };
 
-  // ~70 futuristic icons for the icon picker
-  const futuristicIcons = [
-    "💻", "⌨️", "🖥", "📡", "🔌", "🔒", "🛰", "🤖", "💾", "⚙️",
-    "📀", "🧬", "🧠", "🚀", "🌌", "👾", "🔮", "💡", "🕹", "🔭",
-    "📡", "🛸", "💿", "🧮", "🛠", "🔧", "⚡️", "💥", "🔥", "🌐",
-    "🚦", "🔋", "📲", "📱", "🎛", "🎚", "🖱", "⌚️", "📟", "🔊",
-    "🖲️", "🧰", "👨‍💻", "👩‍💻", "🔰", "📶", "🧭", "🧿", "🔬", "🌠",
-    "☄️", "🌟", "✨", "💫", "🌀", "👽"
-  ];
+  const handleDayPress = (day) => {
+    // day.dateString is in "YYYY-MM-DD" format
+    setTempSelectedDate(day.dateString);
+  };
 
+  const handleConfirmDate = () => {
+    if (!tempSelectedDate) {
+      Alert.alert("Please pick a date on the calendar.");
+      return;
+    }
+    // Convert "YYYY-MM-DD" string to a Date
+    const [year, month, day] = tempSelectedDate.split("-");
+    const finalDate = new Date(year, parseInt(month, 10) - 1, parseInt(day, 10));
+    setSelectedDate(finalDate);
+    setCalendarModalVisible(false);
+  };
+
+  // ----- Add Countdown -----
   const handleAddCountdown = () => {
     if (!newName) return;
 
-    // Build a Date from the selected year, month, day
-    const finalDate = new Date(selectedYear, selectedMonth, selectedDay, 0, 0, 0);
-
-    // Check if the selected date is in the past
-    if (finalDate <= new Date()) {
+    // Check if the selected date is in the future
+    if (selectedDate <= new Date()) {
       Alert.alert("Invalid Date", "Please select a date in the future.");
       return;
     }
@@ -131,28 +124,27 @@ const HomeScreen = () => {
     const newCountdown = {
       id: generateGUID(),
       name: newName,
-      date: finalDate.toISOString(),
+      date: selectedDate.toISOString(),
       icon: newIcon,
     };
 
     setCountdowns((prev) => [...prev, newCountdown]);
 
-    // Reset form fields
+    // Reset
     setNewName("");
     setNewIcon("💻");
-    setSelectedMonth(0);
-    setSelectedDay(1);
-    setSelectedYear(new Date().getFullYear());
+    setSelectedDate(new Date());
     setModalVisible(false);
   };
 
-  // Delete function to remove a countdown
+  // Delete function
   const deleteCountdown = (id) => {
     setCountdowns((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+    <View>
       {upcomingEvents.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No countdowns yet!</Text>
@@ -203,65 +195,62 @@ const HomeScreen = () => {
               style={styles.input}
             />
 
-            {/* Single-line Date Picker with labels */}
-            <View style={styles.datePickerContainer}>
-              <View style={styles.datePickerItem}>
-                <Text style={styles.pickerLabel}>Month</Text>
-                <Picker
-                  selectedValue={selectedMonth}
-                  style={styles.picker}
-                  itemStyle={styles.pickerItem}
-                  onValueChange={(value) => {
-                    setSelectedMonth(value);
-                    const maxDay = new Date(selectedYear, value + 1, 0).getDate();
-                    if (selectedDay > maxDay) {
-                      setSelectedDay(maxDay);
-                    }
-                  }}
-                >
-                  {months.map((month) => (
-                    <Picker.Item
-                      key={month.value}
-                      label={month.label}
-                      value={month.value}
-                    />
-                  ))}
-                </Picker>
-              </View>
-              <View style={styles.datePickerItem}>
-                <Text style={styles.pickerLabel}>Day</Text>
-                <Picker
-                  selectedValue={selectedDay}
-                  style={styles.picker}
-                  itemStyle={styles.pickerItem}
-                  onValueChange={(value) => setSelectedDay(value)}
-                >
-                  {daysArray.map((day) => (
-                    <Picker.Item key={day} label={day.toString()} value={day} />
-                  ))}
-                </Picker>
-              </View>
-              <View style={styles.datePickerItem}>
-                <Text style={styles.pickerLabel}>Year</Text>
-                <Picker
-                  selectedValue={selectedYear}
-                  style={styles.picker}
-                  itemStyle={styles.pickerItem}
-                  onValueChange={(value) => {
-                    setSelectedYear(value);
-                    const maxDay = new Date(value, selectedMonth + 1, 0).getDate();
-                    if (selectedDay > maxDay) {
-                      setSelectedDay(maxDay);
-                    }
-                  }}
-                >
-                  {years.map((year) => (
-                    <Picker.Item key={year} label={year.toString()} value={year} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
+            {/* Date Label + Button */}
+            <Text style={styles.iconLabel}>Date</Text>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={handleOpenCalendar}
+            >
+              <Text style={styles.iconButtonText}>
+                {moment(selectedDate).format("ddd, D MMM YYYY")}
+              </Text>
+            </TouchableOpacity>
 
+            {/* Calendar Modal */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={calendarModalVisible}
+              onRequestClose={() => setCalendarModalVisible(false)}
+            >
+              <View style={styles.calendarModalOverlay}>
+                <View style={styles.calendarModalContent}>
+                  <Text style={styles.modalTitle}>Select a Date</Text>
+                  {/* The Calendar from react-native-calendars */}
+                  <Calendar
+                    style={styles.calendar}
+                    onDayPress={handleDayPress}
+                    minDate={moment().format("YYYY-MM-DD")} // no past dates
+                    theme={{
+                      backgroundColor: "#0D1B2A",
+                      calendarBackground: "#0D1B2A",
+                      textSectionTitleColor: "#66FCF1",
+                      dayTextColor: "#FFF",
+                      todayTextColor: "#66FCF1",
+                      monthTextColor: "#66FCF1",
+                      arrowColor: "#66FCF1",
+                    }}
+                  />
+                  <View style={styles.calendarButtonContainer}>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: "#444" }]}
+                      onPress={() => setCalendarModalVisible(false)}
+                    >
+                      <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: "#66FCF1" }]}
+                      onPress={handleConfirmDate}
+                    >
+                      <Text style={styles.buttonText}>Confirm</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
+            {/* Icon Label + Button */}
+            <Text style={styles.iconLabel}>Icon</Text>
             <TouchableOpacity
               onPress={() => setIconPickerVisible(true)}
               style={styles.iconButton}
@@ -305,6 +294,7 @@ const HomeScreen = () => {
               </View>
             </Modal>
 
+            {/* Action Buttons */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
@@ -323,9 +313,11 @@ const HomeScreen = () => {
         </View>
       </Modal>
     </View>
+    </SafeAreaView>
   );
 };
 
+/** ----- Styles ----- **/
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
@@ -356,7 +348,7 @@ const styles = StyleSheet.create({
   },
   bigAddButton: {
     backgroundColor: "transparent",
-    borderWidth: 2,
+    borderWidth: wp("0.5%"),
     borderColor: "#66FCF1",
     paddingVertical: wp("2.5%"),
     paddingHorizontal: wp("4%"),
@@ -370,7 +362,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: "transparent",
-    borderWidth: 2,
+    borderWidth: wp("0.5%"),
     borderColor: "#66FCF1",
     padding: wp("3%"),
     borderRadius: wp("2%"),
@@ -404,7 +396,7 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
   },
   input: {
-    borderWidth: 2,
+    borderWidth: wp("0.5%"),
     borderColor: "#444",
     padding: wp("2%"),
     marginBottom: wp("2.5%"),
@@ -413,37 +405,19 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
     fontSize: wp("3%"),
   },
-  datePickerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: wp("2.5%"),
-  },
-  datePickerItem: {
-    flex: 1,
-    marginHorizontal: wp("1%"),
-    alignItems: "center",
-  },
-  pickerLabel: {
+  iconLabel: {
     fontSize: wp("2.5%"),
     color: "#FFF",
     fontFamily: "monospace",
     marginBottom: wp("1%"),
   },
-  picker: {
-    height: wp("8%"), // increased height for visibility
-    color: "#FFF",
-    backgroundColor: "rgba(255,255,255,0.1)", // slight background for contrast
-  },
-  pickerItem: {
-    color: "#FFF",
-    fontFamily: "monospace",
-    fontSize: wp("3%"),
-  },
   iconButton: {
-    borderWidth: 2,
-    borderColor: "#444",
-    padding: wp("2%"),
+    borderWidth: wp("0.5%"),
+    borderColor: "#66FCF1",
+    paddingVertical: wp("2%"),
+    paddingHorizontal: wp("3%"),
     borderRadius: wp("1%"),
+    backgroundColor: "rgba(255,255,255,0.15)",
     marginBottom: wp("2.5%"),
     alignItems: "center",
   },
@@ -474,8 +448,10 @@ const styles = StyleSheet.create({
     margin: wp("1%"),
     padding: wp("2%"),
     borderRadius: wp("1%"),
-    borderWidth: 2,
+    borderWidth: wp("0.5%"),
     borderColor: "#444",
+    alignItems: "center",
+    justifyContent: "center",
   },
   iconText: {
     fontSize: wp("3%"),
@@ -496,6 +472,28 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: wp("3%"),
     fontFamily: "monospace",
+  },
+
+  // Calendar Modal
+  calendarModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(13,27,42,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  calendarModalContent: {
+    width: wp("90%"),
+    backgroundColor: "#0D1B2A",
+    borderRadius: wp("2%"),
+    padding: wp("4%"),
+  },
+  calendar: {
+    borderRadius: wp("2%"),
+    marginBottom: wp("4%"),
+  },
+  calendarButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });
 
