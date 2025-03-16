@@ -41,11 +41,63 @@ const HomeScreen = () => {
   // For the countdown name
   const [newName, setNewName] = useState("");
 
-  // Some futuristic icons
   const futuristicIcons = [
-    "💻", "⌨️", "🖥", "📡", "🔌", "🔒", "🛰", "🤖", "💾", "⚙️",
-    "📀", "🧬", "🧠", "🚀", "🌌", "👾", "🔮", "💡", "🕹", "🔭",
-    // ... more icons ...
+    "🎂",
+    "🎉",
+    "🎈",
+    "💍",
+    "🎁",
+    "🏆",
+    "⚽️",
+    "🏀",
+    "🏈",
+    "🎄",
+    "🎃",
+    "🕯",
+    "🍾",
+    "🥂",
+    "🍰",
+    "💌",
+    "🎤",
+    "🎭",
+    "🎟",
+    "🎬",
+    "📅",
+    "✈️",
+    "🏖",
+    "🌟",
+    "🛍",
+    "🏅",
+    "🎓",
+    "📚",
+    "💼",
+    "🎨",
+    "🎶",
+    "🎷",
+    "🎸",
+    "📣",
+    "💐",
+    "🕊",
+    "🏠",
+    "🚗",
+    "📷",
+    "🖼",
+    "🍽",
+    "🍻",
+    "🥘",
+    "🛎",
+    "💡",
+    "🎊",
+    "💃",
+    "🕺",
+    "🏟",
+    "🎪",
+    "🏝",
+    "🎮",
+    "📺",
+    "🚴‍♀️",
+    "🏰",
+    "🛹",
   ];
 
   // ----- Load / Save Data -----
@@ -106,7 +158,11 @@ const HomeScreen = () => {
     }
     // Convert "YYYY-MM-DD" string to a Date
     const [year, month, day] = tempSelectedDate.split("-");
-    const finalDate = new Date(year, parseInt(month, 10) - 1, parseInt(day, 10));
+    const finalDate = new Date(
+      year,
+      parseInt(month, 10) - 1,
+      parseInt(day, 10)
+    );
     setSelectedDate(finalDate);
     setCalendarModalVisible(false);
   };
@@ -144,192 +200,196 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-    <View>
-      {upcomingEvents.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No countdowns yet!</Text>
-          <Text style={styles.emptySubText}>
-            Create your first upcoming event to get started.
-          </Text>
-          <TouchableOpacity
-            onPress={() => setModalVisible(true)}
-            style={styles.bigAddButton}
-          >
-            <Text style={styles.bigAddButtonText}>+ Create Countdown</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <>
-          <FlatList
-            data={upcomingEvents}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item, index }) => (
-              <CountdownItem event={item} index={index} onDelete={deleteCountdown} />
-            )}
-            contentContainerStyle={styles.listContainer}
-          />
-          <TouchableOpacity
-            onPress={() => setModalVisible(true)}
-            style={styles.addButton}
-          >
-            <Text style={styles.addButtonText}>+ Add New Countdown</Text>
-          </TouchableOpacity>
-        </>
-      )}
-
-      {/* Modal for creating a new countdown */}
-      <Modal
-        animationType="slide"
-        transparent
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Create New Countdown</Text>
-            <TextInput
-              placeholder="Countdown Name"
-              placeholderTextColor="#888"
-              value={newName}
-              onChangeText={setNewName}
-              style={styles.input}
-            />
-
-            {/* Date Label + Button */}
-            <Text style={styles.iconLabel}>Date</Text>
+      <View>
+        {upcomingEvents.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No countdowns yet!</Text>
+            <Text style={styles.emptySubText}>
+              Create your first upcoming event to get started.
+            </Text>
             <TouchableOpacity
-              style={styles.iconButton}
-              onPress={handleOpenCalendar}
+              onPress={() => setModalVisible(true)}
+              style={styles.bigAddButton}
             >
-              <Text style={styles.iconButtonText}>
-                {moment(selectedDate).format("ddd, D MMM YYYY")}
-              </Text>
+              <Text style={styles.bigAddButtonText}>+ Create Countdown</Text>
             </TouchableOpacity>
-
-            {/* Calendar Modal */}
-            <Modal
-              animationType="fade"
-              transparent
-              visible={calendarModalVisible}
-              onRequestClose={() => setCalendarModalVisible(false)}
+          </View>
+        ) : (
+          <>
+            <FlatList
+              data={upcomingEvents}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item, index }) => (
+                <CountdownItem
+                  event={item}
+                  index={index}
+                  onDelete={deleteCountdown}
+                />
+              )}
+              contentContainerStyle={styles.listContainer}
+            />
+            <TouchableOpacity
+              onPress={() => setModalVisible(true)}
+              style={styles.addButton}
             >
-              <View style={styles.calendarModalOverlay}>
-                <View style={styles.calendarModalContent}>
-                  <Text style={styles.modalTitle}>Select a Date</Text>
-                  {/* The Calendar from react-native-calendars */}
-                  <Calendar
-                    style={styles.calendar}
-                    onDayPress={handleDayPress}
-                    minDate={moment().format("YYYY-MM-DD")} // no past dates
-                    theme={{
-                      backgroundColor: "#0D1B2A",
-                      calendarBackground: "#0D1B2A",
-                      textSectionTitleColor: "#66FCF1",
-                      dayTextColor: "#FFF",
-                      todayTextColor: "#66FCF1",
-                      monthTextColor: "#66FCF1",
-                      arrowColor: "#66FCF1",
-                    }}
-                  />
-                  <View style={styles.calendarButtonContainer}>
+              <Text style={styles.addButtonText}>+ Add New Countdown</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {/* Modal for creating a new countdown */}
+        <Modal
+          animationType="slide"
+          transparent
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Create New Countdown</Text>
+              <TextInput
+                placeholder="Countdown Name"
+                placeholderTextColor="#888"
+                value={newName}
+                onChangeText={setNewName}
+                style={styles.input}
+              />
+
+              {/* Date Label + Button */}
+              <Text style={styles.iconLabel}>Date</Text>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={handleOpenCalendar}
+              >
+                <Text style={styles.iconButtonText}>
+                  {moment(selectedDate).format("ddd, D MMM YYYY")}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Calendar Modal */}
+              <Modal
+                animationType="fade"
+                transparent
+                visible={calendarModalVisible}
+                onRequestClose={() => setCalendarModalVisible(false)}
+              >
+                <View style={styles.calendarModalOverlay}>
+                  <View style={styles.calendarModalContent}>
+                    <Text style={styles.modalTitle}>Select a Date</Text>
+                    {/* The Calendar from react-native-calendars */}
+                    <Calendar
+                      style={styles.calendar}
+                      onDayPress={handleDayPress}
+                      minDate={moment().format("YYYY-MM-DD")} // no past dates
+                      theme={{
+                        backgroundColor: "#0D1B2A",
+                        calendarBackground: "#0D1B2A",
+                        textSectionTitleColor: "#66FCF1",
+                        dayTextColor: "#FFF",
+                        todayTextColor: "#66FCF1",
+                        monthTextColor: "#66FCF1",
+                        arrowColor: "#66FCF1",
+                      }}
+                    />
+                    <View style={styles.calendarButtonContainer}>
+                      <TouchableOpacity
+                        style={[styles.button, { backgroundColor: "#444" }]}
+                        onPress={() => setCalendarModalVisible(false)}
+                      >
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.button, { backgroundColor: "#66FCF1" }]}
+                        onPress={handleConfirmDate}
+                      >
+                        <Text style={styles.buttonText}>Confirm</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
+
+              {/* Icon Label + Button */}
+              <Text style={styles.iconLabel}>Icon</Text>
+              <TouchableOpacity
+                onPress={() => setIconPickerVisible(true)}
+                style={styles.iconButton}
+              >
+                <Text style={styles.iconButtonText}>
+                  {newIcon ? `Icon: ${newIcon}` : "Select Icon"}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Icon Picker Modal */}
+              <Modal
+                animationType="fade"
+                transparent
+                visible={iconPickerVisible}
+                onRequestClose={() => setIconPickerVisible(false)}
+              >
+                <View style={styles.iconModalContainer}>
+                  <View style={styles.iconModalContent}>
+                    <Text style={styles.modalTitle}>Select Icon</Text>
+                    <View style={styles.iconList}>
+                      {futuristicIcons.map((icon, index) => (
+                        <TouchableOpacity
+                          key={`${icon}-${index}`}
+                          onPress={() => {
+                            setNewIcon(icon);
+                            setIconPickerVisible(false);
+                          }}
+                          style={styles.iconItem}
+                        >
+                          <Text style={styles.iconText}>{icon}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
                     <TouchableOpacity
+                      onPress={() => setIconPickerVisible(false)}
                       style={[styles.button, { backgroundColor: "#444" }]}
-                      onPress={() => setCalendarModalVisible(false)}
                     >
                       <Text style={styles.buttonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.button, { backgroundColor: "#66FCF1" }]}
-                      onPress={handleConfirmDate}
-                    >
-                      <Text style={styles.buttonText}>Confirm</Text>
-                    </TouchableOpacity>
                   </View>
                 </View>
+              </Modal>
+
+              {/* Action Buttons */}
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={[styles.button, { backgroundColor: "#444" }]}
+                >
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleAddCountdown}
+                  style={[styles.button, { backgroundColor: "#66FCF1" }]}
+                >
+                  <Text style={styles.buttonText}>Save Countdown</Text>
+                </TouchableOpacity>
               </View>
-            </Modal>
-
-            {/* Icon Label + Button */}
-            <Text style={styles.iconLabel}>Icon</Text>
-            <TouchableOpacity
-              onPress={() => setIconPickerVisible(true)}
-              style={styles.iconButton}
-            >
-              <Text style={styles.iconButtonText}>
-                {newIcon ? `Icon: ${newIcon}` : "Select Icon"}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Icon Picker Modal */}
-            <Modal
-              animationType="fade"
-              transparent
-              visible={iconPickerVisible}
-              onRequestClose={() => setIconPickerVisible(false)}
-            >
-              <View style={styles.iconModalContainer}>
-                <View style={styles.iconModalContent}>
-                  <Text style={styles.modalTitle}>Select Icon</Text>
-                  <View style={styles.iconList}>
-                    {futuristicIcons.map((icon, index) => (
-                      <TouchableOpacity
-                        key={`${icon}-${index}`}
-                        onPress={() => {
-                          setNewIcon(icon);
-                          setIconPickerVisible(false);
-                        }}
-                        style={styles.iconItem}
-                      >
-                        <Text style={styles.iconText}>{icon}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => setIconPickerVisible(false)}
-                    style={[styles.button, { backgroundColor: "#444" }]}
-                  >
-                    <Text style={styles.buttonText}>Cancel</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Modal>
-
-            {/* Action Buttons */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                style={[styles.button, { backgroundColor: "#444" }]}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleAddCountdown}
-                style={[styles.button, { backgroundColor: "#66FCF1" }]}
-              >
-                <Text style={styles.buttonText}>Save Countdown</Text>
-              </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
     </SafeAreaView>
   );
 };
 
 /** ----- Styles ----- **/
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#0D1B2A", 
+  container: {
+    flex: 1,
+    backgroundColor: "#0D1B2A",
     padding: wp("4%"),
   },
   listContainer: {
     paddingBottom: wp("4%"),
   },
-  emptyContainer: { 
-    flex: 1, 
-    alignItems: "center", 
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
     justifyContent: "center",
   },
   emptyText: {
