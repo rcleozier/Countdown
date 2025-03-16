@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,10 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const SettingsScreen = () => {
   const [eventCount, setEventCount] = useState(0);
@@ -100,53 +104,52 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#0D1B2A", // Dark blue background for futuristic vibe
+    backgroundColor: "#0D1B2A",
   },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 30,
+    padding: wp("4%"), // ~50% smaller than previous 30
   },
   card: {
     width: "85%",
-    backgroundColor: "#1B263B", // Slightly lighter dark blue for card contrast
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: "#1B263B",
+    borderRadius: wp("4%"), // ~50% smaller than previous 16
+    padding: wp("4%"),      // ~50% smaller than previous 24
     alignItems: "center",
-    // Subtle neon border and drop shadow
     borderWidth: 2,
     borderColor: "#66FCF1",
     shadowColor: "#000",
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: wp("2%"),
     elevation: 8,
   },
   title: {
-    fontSize: 32,
+    fontSize: wp("4%"), // ~50% smaller than previous 32
     fontWeight: "bold",
-    color: "#66FCF1", // Neon accent
-    marginBottom: 10,
+    color: "#66FCF1",
+    marginBottom: wp("2.5%"),
     textAlign: "center",
     fontFamily: "monospace",
   },
   countLabel: {
-    fontSize: 24,
+    fontSize: wp("3%"), // ~50% smaller than previous 24
     fontWeight: "600",
     color: "#EEE",
-    marginBottom: 20,
+    marginBottom: wp("4%"),
     textAlign: "center",
     fontFamily: "monospace",
   },
   clearButton: {
     backgroundColor: "#66FCF1",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingVertical: wp("3.5%"), // ~50% smaller
+    paddingHorizontal: wp("5%"),
+    borderRadius: wp("2%"),
   },
   clearButtonText: {
     color: "#0D1B2A",
-    fontSize: 18,
+    fontSize: wp("3%"), // ~50% smaller than 18
     fontWeight: "bold",
     fontFamily: "monospace",
   },
@@ -160,24 +163,24 @@ const styles = StyleSheet.create({
   modalContent: {
     width: "80%",
     backgroundColor: "#1B263B",
-    borderRadius: 12,
-    padding: 24,
+    borderRadius: wp("3%"), // ~50% smaller than previous 12
+    padding: wp("4%"),
     alignItems: "center",
     elevation: 5,
     borderWidth: 2,
     borderColor: "#66FCF1",
   },
   modalTitle: {
-    fontSize: 28,
+    fontSize: wp("3.5%"), // ~50% smaller than previous 28
     fontWeight: "bold",
-    marginBottom: 12,
+    marginBottom: wp("3%"),
     textAlign: "center",
     color: "#66FCF1",
     fontFamily: "monospace",
   },
   modalMessage: {
-    fontSize: 18,
-    marginBottom: 20,
+    fontSize: wp("2.5%"), // ~50% smaller than previous 18
+    marginBottom: wp("4%"),
     textAlign: "center",
     color: "#CCC",
     fontFamily: "monospace",
@@ -189,14 +192,14 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    marginHorizontal: 5,
-    padding: 14,
-    borderRadius: 8,
+    marginHorizontal: wp("1%"),
+    padding: wp("3.5%"),
+    borderRadius: wp("2%"),
     alignItems: "center",
   },
   modalButtonText: {
     color: "#FFF",
-    fontSize: 16,
+    fontSize: wp("2%"), // ~50% smaller than previous 16
     fontWeight: "bold",
     fontFamily: "monospace",
   },

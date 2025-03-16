@@ -8,12 +8,15 @@ import {
   TextInput,
   StyleSheet,
   Alert,
-  SafeAreaView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
 import { useFocusEffect } from "@react-navigation/native";
 import CountdownItem from "../components/CountdownItem";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 // GUID generator (simple implementation)
 const generateGUID = () =>
@@ -132,7 +135,7 @@ const HomeScreen = () => {
       icon: newIcon,
     };
 
-    setCountdowns(prev => [...prev, newCountdown]);
+    setCountdowns((prev) => [...prev, newCountdown]);
 
     // Reset form fields
     setNewName("");
@@ -145,7 +148,7 @@ const HomeScreen = () => {
 
   // Delete function to remove a countdown
   const deleteCountdown = (id) => {
-    setCountdowns(prev => prev.filter(item => item.id !== id));
+    setCountdowns((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
@@ -156,7 +159,10 @@ const HomeScreen = () => {
           <Text style={styles.emptySubText}>
             Create your first upcoming event to get started.
           </Text>
-          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.bigAddButton}>
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            style={styles.bigAddButton}
+          >
             <Text style={styles.bigAddButtonText}>+ Create Countdown</Text>
           </TouchableOpacity>
         </View>
@@ -170,7 +176,10 @@ const HomeScreen = () => {
             )}
             contentContainerStyle={styles.listContainer}
           />
-          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            style={styles.addButton}
+          >
             <Text style={styles.addButtonText}>+ Add New Countdown</Text>
           </TouchableOpacity>
         </>
@@ -211,7 +220,11 @@ const HomeScreen = () => {
                   }}
                 >
                   {months.map((month) => (
-                    <Picker.Item key={month.value} label={month.label} value={month.value} />
+                    <Picker.Item
+                      key={month.value}
+                      label={month.label}
+                      value={month.value}
+                    />
                   ))}
                 </Picker>
               </View>
@@ -249,7 +262,10 @@ const HomeScreen = () => {
               </View>
             </View>
 
-            <TouchableOpacity onPress={() => setIconPickerVisible(true)} style={styles.iconButton}>
+            <TouchableOpacity
+              onPress={() => setIconPickerVisible(true)}
+              style={styles.iconButton}
+            >
               <Text style={styles.iconButtonText}>
                 {newIcon ? `Icon: ${newIcon}` : "Select Icon"}
               </Text>
@@ -314,54 +330,56 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     backgroundColor: "#0D1B2A", 
-    padding: 30,
+    padding: wp("4%"),
   },
-  listContainer: { paddingBottom: 30 },
+  listContainer: {
+    paddingBottom: wp("4%"),
+  },
   emptyContainer: { 
     flex: 1, 
     alignItems: "center", 
-    justifyContent: "center" 
+    justifyContent: "center",
   },
   emptyText: {
-    fontSize: 48,
+    fontSize: wp("4.5%"),
     fontWeight: "bold",
     color: "#FFF",
-    marginBottom: 20,
+    marginBottom: wp("2.5%"),
     fontFamily: "monospace",
   },
   emptySubText: {
-    fontSize: 24,
+    fontSize: wp("2.5%"),
     color: "#AAA",
     textAlign: "center",
-    marginBottom: 30,
+    marginBottom: wp("2.5%"),
     fontFamily: "monospace",
   },
   bigAddButton: {
     backgroundColor: "transparent",
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: "#66FCF1",
-    paddingVertical: 20,
-    paddingHorizontal: 35,
-    borderRadius: 12,
+    paddingVertical: wp("2.5%"),
+    paddingHorizontal: wp("4%"),
+    borderRadius: wp("2%"),
   },
   bigAddButtonText: {
     color: "#66FCF1",
-    fontSize: 28,
+    fontSize: wp("3%"),
     fontWeight: "bold",
     fontFamily: "monospace",
   },
   addButton: {
     backgroundColor: "transparent",
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: "#66FCF1",
-    padding: 20,
-    borderRadius: 12,
+    padding: wp("3%"),
+    borderRadius: wp("2%"),
     alignItems: "center",
-    marginTop: 30,
+    marginTop: wp("4%"),
   },
   addButtonText: {
     color: "#66FCF1",
-    fontSize: 24,
+    fontSize: wp("3%"),
     fontWeight: "bold",
     fontFamily: "monospace",
   },
@@ -371,16 +389,16 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(13,27,42,0.9)",
   },
   modalContent: {
-    margin: 30,
+    margin: wp("4%"),
     backgroundColor: "#0D1B2A",
-    borderRadius: 16,
-    padding: 30,
+    borderRadius: wp("2%"),
+    padding: wp("4%"),
     elevation: 5,
   },
   modalTitle: {
-    fontSize: 36,
+    fontSize: wp("4%"),
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: wp("2.5%"),
     textAlign: "center",
     color: "#66FCF1",
     fontFamily: "monospace",
@@ -388,49 +406,49 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 2,
     borderColor: "#444",
-    padding: 15,
-    marginBottom: 20,
-    borderRadius: 8,
+    padding: wp("2%"),
+    marginBottom: wp("2.5%"),
+    borderRadius: wp("1%"),
     color: "#FFF",
     fontFamily: "monospace",
-    fontSize: 24,
+    fontSize: wp("3%"),
   },
   datePickerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: wp("2.5%"),
   },
-  pickerContainer: {
+  datePickerItem: {
     flex: 1,
-    marginHorizontal: 5,
+    marginHorizontal: wp("1%"),
     alignItems: "center",
   },
   pickerLabel: {
-    fontSize: 20,
+    fontSize: wp("2.5%"),
     color: "#FFF",
     fontFamily: "monospace",
-    marginBottom: 5,
+    marginBottom: wp("1%"),
   },
   picker: {
-    height: 60,
+    height: wp("8%"), // increased height for visibility
     color: "#FFF",
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(255,255,255,0.1)", // slight background for contrast
   },
   pickerItem: {
     color: "#FFF",
     fontFamily: "monospace",
-    fontSize: 24,
+    fontSize: wp("3%"),
   },
   iconButton: {
     borderWidth: 2,
     borderColor: "#444",
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 20,
+    padding: wp("2%"),
+    borderRadius: wp("1%"),
+    marginBottom: wp("2.5%"),
     alignItems: "center",
   },
   iconButtonText: {
-    fontSize: 24,
+    fontSize: wp("3%"),
     color: "#FFF",
     fontFamily: "monospace",
   },
@@ -440,43 +458,43 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(13,27,42,0.9)",
   },
   iconModalContent: {
-    margin: 30,
+    margin: wp("4%"),
     backgroundColor: "#0D1B2A",
-    borderRadius: 16,
-    padding: 30,
+    borderRadius: wp("2%"),
+    padding: wp("4%"),
     elevation: 5,
   },
   iconList: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: wp("2.5%"),
   },
   iconItem: {
-    margin: 8,
-    padding: 15,
-    borderRadius: 8,
+    margin: wp("1%"),
+    padding: wp("2%"),
+    borderRadius: wp("1%"),
     borderWidth: 2,
     borderColor: "#444",
   },
   iconText: {
-    fontSize: 36,
+    fontSize: wp("3%"),
   },
-  buttonContainer: { 
-    flexDirection: "row", 
-    justifyContent: "space-between" 
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   button: {
     flex: 1,
-    padding: 20,
-    borderRadius: 12,
+    padding: wp("2%"),
+    borderRadius: wp("1%"),
     alignItems: "center",
-    marginHorizontal: 10,
+    marginHorizontal: wp("1%"),
   },
   buttonText: {
     color: "#FFF",
     fontWeight: "bold",
-    fontSize: 24,
+    fontSize: wp("3%"),
     fontFamily: "monospace",
   },
 });

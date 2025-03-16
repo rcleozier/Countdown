@@ -7,6 +7,7 @@ import {
   Modal,
 } from "react-native";
 import moment from "moment";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const CountdownItem = ({ event, index, onDelete }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
@@ -99,40 +100,40 @@ const CountdownItem = ({ event, index, onDelete }) => {
 
 const styles = StyleSheet.create({
   gradientBorder: {
-    marginBottom: 16,
-    borderRadius: 8,
+    marginBottom: wp("4%"),
+    borderRadius: wp("2%"),
   },
   container: {
     flexDirection: "row",
-    paddingVertical: 24,
-    paddingHorizontal: 20,
+    paddingVertical: wp("6%"),
+    paddingHorizontal: wp("5%"),
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomWidth: 2,
+    borderBottomWidth: wp("0.5%"),
     borderBottomColor: "#415A77",
     backgroundColor: "transparent",
-    borderRadius: 8,
+    borderRadius: wp("2%"),
   },
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
   },
   icon: {
-    fontSize: 48,
+    fontSize: wp("12%"), // roughly 50% of original 48
     color: "#FFF",
-    marginRight: 12,
+    marginRight: wp("3%"),
   },
   textContainer: {
     justifyContent: "center",
   },
   title: {
-    fontSize: 28,
+    fontSize: wp("7%"), // roughly 50% of original 28
     fontWeight: "600",
     color: "#FFF",
     fontFamily: "monospace",
   },
   date: {
-    fontSize: 20,
+    fontSize: wp("5%"), // roughly 50% of original 20
     color: "#AAA",
     fontFamily: "monospace",
   },
@@ -140,21 +141,21 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   countdownText: {
-    fontSize: 28,
+    fontSize: wp("7%"), // roughly 50% of original 28
     color: "#FFF",
     fontWeight: "bold",
-    marginBottom: 8,
+    marginBottom: wp("2%"),
     fontFamily: "monospace",
   },
   deleteButton: {
     backgroundColor: "rgba(102,252,241,0.2)",
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+    paddingVertical: wp("1.5%"), // roughly 50% of original 6
+    paddingHorizontal: wp("4%"), // roughly 50% of original 16
+    borderRadius: wp("1.5%"),
   },
   deleteButtonText: {
     color: "#66FCF1",
-    fontSize: 20,
+    fontSize: wp("4%"), // roughly 50% of original 20
     fontWeight: "600",
     fontFamily: "monospace",
   },
@@ -167,21 +168,22 @@ const styles = StyleSheet.create({
   modalContent: {
     width: "80%",
     backgroundColor: "#0D1B2A",
-    borderRadius: 12,
-    padding: 30,
+    borderRadius: wp("3%"), // roughly 50% of original 12
+    padding: wp("7.5%"), // roughly 50% of original 30
     alignItems: "center",
     elevation: 5,
   },
   modalTitle: {
-    fontSize: 36,
+    fontSize: wp("9%"), // roughly 50% of original 36
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: wp("5%"),
     color: "#66FCF1",
     fontFamily: "monospace",
+    textAlign: "center",
   },
   modalMessage: {
-    fontSize: 24,
-    marginBottom: 30,
+    fontSize: wp("7.5%"), // roughly 50% of original 24
+    marginBottom: wp("7.5%"),
     color: "#CCC",
     textAlign: "center",
     fontFamily: "monospace",
@@ -193,14 +195,14 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    marginHorizontal: 10,
-    padding: 20,
-    borderRadius: 12,
+    marginHorizontal: wp("2.5%"),
+    padding: wp("5%"),
+    borderRadius: wp("3%"),
     alignItems: "center",
   },
   modalButtonText: {
     color: "#FFF",
-    fontSize: 24,
+    fontSize: wp("7.5%"), // roughly 50% of original 24
     fontWeight: "bold",
     fontFamily: "monospace",
   },

@@ -1,13 +1,10 @@
 import React, { useState, useCallback } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  SafeAreaView 
-} from "react-native";
+import { View, Text, FlatList, StyleSheet, SafeAreaView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from "@react-navigation/native";
+import CountdownItem from "../components/CountdownItem";
 import moment from "moment";
+import { useFocusEffect } from "@react-navigation/native";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const AnalyticsScreen = () => {
   const [totalEvents, setTotalEvents] = useState(0);
@@ -18,9 +15,7 @@ const AnalyticsScreen = () => {
   const [nextEventDate, setNextEventDate] = useState("");
   const [eventsNext7Days, setEventsNext7Days] = useState(0);
   const [eventsThisMonth, setEventsThisMonth] = useState(0);
-  const [upcomingDistribution, setUpcomingDistribution] = useState(
-    new Array(12).fill(0)
-  );
+  const [upcomingDistribution, setUpcomingDistribution] = useState(new Array(12).fill(0));
 
   const loadEvents = async () => {
     try {
@@ -60,9 +55,7 @@ const AnalyticsScreen = () => {
 
         // Next Event Date (if any)
         if (upcoming.length > 0) {
-          const sortedUpcoming = [...upcoming].sort(
-            (a, b) => new Date(a.date) - new Date(b.date)
-          );
+          const sortedUpcoming = [...upcoming].sort((a, b) => new Date(a.date) - new Date(b.date));
           setNextEventDate(moment(sortedUpcoming[0].date).format("ddd, D MMM YYYY"));
         } else {
           setNextEventDate("");
@@ -152,15 +145,15 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 30,
+    padding: wp("4%"),
   },
   header: {
-    fontSize: 36,
+    fontSize: wp("4.5%"), // ~50% smaller than 32 (about 18 if screen width ~400)
     fontWeight: "bold",
     color: "#66FCF1",
     fontFamily: "monospace",
     textAlign: "center",
-    marginBottom: 40,
+    marginBottom: wp("4%"),
   },
   grid: {
     flexDirection: "row",
@@ -172,19 +165,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#1B263B",
     borderWidth: 2,
     borderColor: "#66FCF1",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    borderRadius: wp("2%"),
+    padding: wp("3%"),
+    marginBottom: wp("4%"),
     alignItems: "center",
   },
   statTitle: {
-    fontSize: 20,
+    fontSize: wp("2%"), // ~50% smaller than 20
     color: "#FFF",
     fontFamily: "monospace",
-    marginBottom: 8,
+    marginBottom: wp("1%"),
   },
   statValue: {
-    fontSize: 24,
+    fontSize: wp("2%"), // ~50% smaller than 24
     fontWeight: "bold",
     color: "#FFF",
     fontFamily: "monospace",

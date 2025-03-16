@@ -4,6 +4,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import CountdownItem from "../components/CountdownItem";
 import moment from "moment";
 import { useFocusEffect } from "@react-navigation/native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const PastScreen = () => {
   const [pastEvents, setPastEvents] = useState([]);
@@ -14,10 +18,13 @@ const PastScreen = () => {
       if (stored) {
         const allEvents = JSON.parse(stored);
         const now = moment();
+        // Filter for past events
         const past = allEvents.filter((e) => moment(e.date).isBefore(now));
+        // Sort descending (most recent first)
         past.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
+        // Take the first 50
         const lastFifty = past.slice(0, 50);
         setPastEvents(lastFifty);
       } else {
@@ -63,20 +70,12 @@ const PastScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0D1B2A", // Dark blue background for a futuristic look
+    backgroundColor: "#0D1B2A",
   },
   safeArea: {
     flex: 1,
-    paddingHorizontal: 30,
-    paddingBottom: 30,
-  },
-  header: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#66FCF1", // Neon accent color
-    textAlign: "center",
-    marginVertical: 20,
-    fontFamily: "monospace",
+    paddingHorizontal: wp("4%"),
+    paddingBottom: wp("4%"),
   },
   emptyContainer: {
     flex: 1,
@@ -84,21 +83,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   emptyText: {
-    fontSize: 28,
+    fontSize: wp("4.5%"), // ~50% smaller than before
     fontWeight: "bold",
     color: "#FFF",
-    marginBottom: 10,
+    marginBottom: wp("2%"),
     fontFamily: "monospace",
   },
   emptySubText: {
-    fontSize: 18,
+    fontSize: wp("2.5%"), // ~50% smaller than before
     color: "#AAA",
     textAlign: "center",
-    marginHorizontal: 20,
+    marginHorizontal: wp("4%"),
     fontFamily: "monospace",
   },
   listContainer: {
-    paddingBottom: 30,
+    paddingBottom: wp("4%"),
   },
 });
 
