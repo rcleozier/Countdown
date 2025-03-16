@@ -2,6 +2,7 @@
   "expo": {
     "name": "Chrono",
     "slug": "Chrono",
+    "newArchEnabled": true,
     "privacy": "public",
     "jsEngine": "jsc",
     "platforms": [
@@ -25,11 +26,11 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.chrono.app",
+      "bundleIdentifier": "com.chronox.app",
       "buildNumber": "1"
     },
     "android": {
-      "package": "com.chrono.app",
+      "package": "com.chronox.app",
       "versionCode": 1,
       "permissions": [
         "com.google.android.gms.permission.AD_ID"
