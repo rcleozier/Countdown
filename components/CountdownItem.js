@@ -13,11 +13,16 @@ const CountdownItem = ({ event, index, onDelete }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-  // Calculate time left down to seconds
+  // Calculate time left down to seconds, or return null if expired
   function getTimeLeft(date) {
     const now = moment();
     const target = moment(date);
     const duration = moment.duration(target.diff(now));
+
+    // If the event date is already past, return null to indicate "Expired"
+    if (duration.asSeconds() <= 0) {
+      return null;
+    }
     return {
       days: Math.floor(duration.asDays()),
       hours: duration.hours(),
@@ -48,9 +53,13 @@ const CountdownItem = ({ event, index, onDelete }) => {
             </View>
           </View>
           <View style={styles.rightSection}>
-            <Text style={styles.countdownText}>
-              {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
-            </Text>
+            {timeLeft === null ? (
+              <Text style={styles.expiredText}>Expired</Text>
+            ) : (
+              <Text style={styles.countdownText}>
+                {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+              </Text>
+            )}
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => setDeleteModalVisible(true)}
@@ -119,7 +128,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    fontSize: wp("6%"), // was wp("12%")
+    fontSize: wp("6%"),
     color: "#FFF",
     marginRight: wp("1.5%"),
   },
@@ -127,13 +136,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    fontSize: wp("3.5%"), // was wp("7%")
+    fontSize: wp("3.5%"),
     fontWeight: "600",
     color: "#FFF",
     fontFamily: "monospace",
   },
   date: {
-    fontSize: wp("2.5%"), // was wp("5%")
+    fontSize: wp("2.5%"),
     color: "#AAA",
     fontFamily: "monospace",
   },
@@ -141,21 +150,28 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   countdownText: {
-    fontSize: wp("3.5%"), // was wp("7%")
+    fontSize: wp("3.5%"),
     color: "#FFF",
+    fontWeight: "bold",
+    marginBottom: wp("1%"),
+    fontFamily: "monospace",
+  },
+  expiredText: {
+    fontSize: wp("3.5%"),
+    color: "red",
     fontWeight: "bold",
     marginBottom: wp("1%"),
     fontFamily: "monospace",
   },
   deleteButton: {
     backgroundColor: "rgba(102,252,241,0.2)",
-    paddingVertical: wp("0.75%"), // was wp("1.5%")
-    paddingHorizontal: wp("2%"), // was wp("4%")
+    paddingVertical: wp("0.75%"),
+    paddingHorizontal: wp("2%"),
     borderRadius: wp("0.75%"),
   },
   deleteButtonText: {
     color: "#66FCF1",
-    fontSize: wp("2%"), // was wp("4%")
+    fontSize: wp("2%"),
     fontWeight: "600",
     fontFamily: "monospace",
   },
@@ -168,13 +184,13 @@ const styles = StyleSheet.create({
   modalContent: {
     width: "80%",
     backgroundColor: "#0D1B2A",
-    borderRadius: wp("1.5%"), // was wp("3%")
-    padding: wp("3.75%"), // was wp("7.5%")
+    borderRadius: wp("1.5%"),
+    padding: wp("3.75%"),
     alignItems: "center",
     elevation: 5,
   },
   modalTitle: {
-    fontSize: wp("4.5%"), // was wp("9%")
+    fontSize: wp("4.5%"),
     fontWeight: "bold",
     marginBottom: wp("2.5%"),
     color: "#66FCF1",
@@ -182,7 +198,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   modalMessage: {
-    fontSize: wp("3.75%"), // was wp("7.5%")
+    fontSize: wp("3.75%"),
     marginBottom: wp("3.75%"),
     color: "#CCC",
     textAlign: "center",
@@ -202,7 +218,7 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     color: "#FFF",
-    fontSize: wp("3.75%"), // was wp("7.5%")
+    fontSize: wp("3.75%"),
     fontWeight: "bold",
     fontFamily: "monospace",
   },
