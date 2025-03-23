@@ -4,26 +4,22 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import CountdownItem from "../components/CountdownItem";
 import moment from "moment";
 import { useFocusEffect } from "@react-navigation/native";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const PastScreen = () => {
   const [pastEvents, setPastEvents] = useState([]);
 
+  // Load past events from AsyncStorage
   const loadPastEvents = async () => {
     try {
       const stored = await AsyncStorage.getItem("countdowns");
       if (stored) {
         const allEvents = JSON.parse(stored);
         const now = moment();
-        // Filter for past events
+        // Filter for events that have already ended
         const past = allEvents.filter((e) => moment(e.date).isBefore(now));
-        // Sort descending (most recent first)
-        past.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
+        // Sort descending by date (most recent first)
+        past.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         // Take the first 50
         const lastFifty = past.slice(0, 50);
         setPastEvents(lastFifty);
@@ -35,12 +31,31 @@ const PastScreen = () => {
     }
   };
 
-  // Reload past events every time the screen comes into focus
+  // UseFocusEffect to reload past events whenever screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadPastEvents();
     }, [])
   );
+
+  // Delete function (duplicates HomeScreen’s logic)
+  const deleteCountdown = async (id) => {
+    try {
+      // Load the full "countdowns" array from AsyncStorage
+      const stored = await AsyncStorage.getItem("countdowns");
+      if (stored) {
+        let allEvents = JSON.parse(stored);
+        // Remove the item by id
+        allEvents = allEvents.filter((item) => item.id !== id);
+        // Save the updated array back to AsyncStorage
+        await AsyncStorage.setItem("countdowns", JSON.stringify(allEvents));
+        // Reload pastEvents so UI stays in sync
+        loadPastEvents();
+      }
+    } catch (error) {
+      console.error("Error deleting countdown from past events", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -57,7 +72,8 @@ const PastScreen = () => {
             data={pastEvents}
             keyExtractor={(item) => item.id}
             renderItem={({ item, index }) => (
-              <CountdownItem event={item} index={index} />
+              // Pass the delete function to CountdownItem
+              <CountdownItem event={item} index={index} onDelete={deleteCountdown} />
             )}
             contentContainerStyle={styles.listContainer}
           />
@@ -83,14 +99,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   emptyText: {
-    fontSize: wp("4.5%"), // ~50% smaller than before
+    fontSize: wp("4.5%"),
     fontWeight: "bold",
     color: "#FFF",
     marginBottom: wp("2%"),
     fontFamily: "monospace",
   },
   emptySubText: {
-    fontSize: wp("2.5%"), // ~50% smaller than before
+    fontSize: wp("2.5%"),
     color: "#AAA",
     textAlign: "center",
     marginHorizontal: wp("4%"),
@@ -98,6 +114,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: wp("4%"),
+    paddingHorizontal: wp("4%"),
   },
 });
 
