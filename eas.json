@@ -31,7 +31,7 @@
       "node": "18.19.0",
       "autoIncrement": true,
       "ios": {
-        "image": "macos-ventura-13.6-xcode-15.2",
+        "image": "macos-sonoma-14.6-xcode-16.0",
         "resourceClass": "m-medium"
       },
       "channel": "production"
