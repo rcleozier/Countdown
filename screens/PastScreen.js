@@ -38,7 +38,7 @@ const PastScreen = () => {
     }, [])
   );
 
-  // Delete function (duplicates HomeScreen’s logic)
+  // Delete function (duplicates HomeScreen's logic)
   const deleteCountdown = async (id) => {
     try {
       // Load the full "countdowns" array from AsyncStorage
@@ -86,7 +86,7 @@ const PastScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0D1B2A",
+    backgroundColor: "#F8F9FA",
   },
   safeArea: {
     flex: 1,
@@ -101,13 +101,13 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: wp("4.5%"),
     fontWeight: "bold",
-    color: "#FFF",
+    color: "#2C3E50",
     marginBottom: wp("2%"),
     fontFamily: "monospace",
   },
   emptySubText: {
     fontSize: wp("2.5%"),
-    color: "#AAA",
+    color: "#7F8C8D",
     textAlign: "center",
     marginHorizontal: wp("4%"),
     fontFamily: "monospace",

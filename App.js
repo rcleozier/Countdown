@@ -13,7 +13,7 @@ import AnalyticsScreen from "./screens/AnalyticsScreen";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const APP_BACKGROUND_COLOR = "#FFF";
+const APP_BACKGROUND_COLOR = "#F8F9FA";
 
 Sentry.init({
   dsn: "https://531c4f371af6391fafb7536af1588b12@o4505802780966912.ingest.us.sentry.io/4508982047866880",

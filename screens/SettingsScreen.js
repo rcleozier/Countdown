@@ -104,85 +104,85 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#0D1B2A",
+    backgroundColor: "#F8F9FA",
   },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: wp("4%"), // ~50% smaller than previous 30
+    padding: wp("4%"),
   },
   card: {
     width: "85%",
-    backgroundColor: "#1B263B",
-    borderRadius: wp("4%"), // ~50% smaller than previous 16
-    padding: wp("4%"),      // ~50% smaller than previous 24
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("4%"),
+    padding: wp("4%"),
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#66FCF1",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
     shadowColor: "#000",
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: wp("2%"),
     elevation: 8,
   },
   title: {
-    fontSize: wp("4%"), // ~50% smaller than previous 32
+    fontSize: wp("4%"),
     fontWeight: "bold",
-    color: "#66FCF1",
+    color: "#2C3E50",
     marginBottom: wp("2.5%"),
     textAlign: "center",
     fontFamily: "monospace",
   },
   countLabel: {
-    fontSize: wp("3%"), // ~50% smaller than previous 24
+    fontSize: wp("3%"),
     fontWeight: "600",
-    color: "#EEE",
+    color: "#7F8C8D",
     marginBottom: wp("4%"),
     textAlign: "center",
     fontFamily: "monospace",
   },
   clearButton: {
-    backgroundColor: "#66FCF1",
-    paddingVertical: wp("3.5%"), // ~50% smaller
+    backgroundColor: "#3498DB",
+    paddingVertical: wp("3.5%"),
     paddingHorizontal: wp("5%"),
     borderRadius: wp("2%"),
   },
   clearButtonText: {
-    color: "#0D1B2A",
-    fontSize: wp("3%"), // ~50% smaller than 18
+    color: "#FFFFFF",
+    fontSize: wp("3%"),
     fontWeight: "bold",
     fontFamily: "monospace",
   },
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(13,27,42,0.8)",
+    backgroundColor: "rgba(255,255,255,0.9)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
     width: "80%",
-    backgroundColor: "#1B263B",
-    borderRadius: wp("3%"), // ~50% smaller than previous 12
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("3%"),
     padding: wp("4%"),
     alignItems: "center",
     elevation: 5,
-    borderWidth: 2,
-    borderColor: "#66FCF1",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
   },
   modalTitle: {
-    fontSize: wp("3.5%"), // ~50% smaller than previous 28
+    fontSize: wp("3.5%"),
     fontWeight: "bold",
     marginBottom: wp("3%"),
     textAlign: "center",
-    color: "#66FCF1",
+    color: "#2C3E50",
     fontFamily: "monospace",
   },
   modalMessage: {
-    fontSize: wp("2.5%"), // ~50% smaller than previous 18
+    fontSize: wp("2.5%"),
     marginBottom: wp("4%"),
     textAlign: "center",
-    color: "#CCC",
+    color: "#7F8C8D",
     fontFamily: "monospace",
   },
   modalButtonContainer: {
@@ -198,8 +198,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalButtonText: {
-    color: "#FFF",
-    fontSize: wp("2%"), // ~50% smaller than previous 16
+    color: "#FFFFFF",
+    fontSize: wp("2%"),
     fontWeight: "bold",
     fontFamily: "monospace",
   },

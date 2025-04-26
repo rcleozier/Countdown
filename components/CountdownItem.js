@@ -56,7 +56,11 @@ const CountdownItem = ({ event, index, onDelete }) => {
             {timeLeft === null ? (
               <Text style={styles.expiredText}>Expired</Text>
             ) : (
-              <Text style={styles.countdownText}>
+              <Text
+                style={styles.countdownText}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
               </Text>
             )}
@@ -109,98 +113,122 @@ const CountdownItem = ({ event, index, onDelete }) => {
 
 const styles = StyleSheet.create({
   gradientBorder: {
-    marginBottom: wp("2%"),
-    borderRadius: wp("1%"),
+    marginBottom: wp("3%"),
+    borderRadius: wp("3%"),
+    shadowColor: "#000",
+    shadowOpacity: 0.07,
+    shadowRadius: wp("2%"),
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+    backgroundColor: "#F4F8FB",
+    marginHorizontal: wp("2%"), // Prevent card from touching screen edges
   },
   container: {
     flexDirection: "row",
-    paddingVertical: wp("3%"),
-    paddingHorizontal: wp("2.5%"),
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomWidth: wp("0.25%"),
-    borderBottomColor: "#415A77",
-    backgroundColor: "transparent",
-    borderRadius: wp("1%"),
+    paddingVertical: wp("4%"),
+    paddingHorizontal: wp("4%"),
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("3%"),
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
   },
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1.5,
   },
   icon: {
-    fontSize: wp("6%"),
-    color: "#FFF",
-    marginRight: wp("1.5%"),
+    fontSize: wp("8%"),
+    marginRight: wp("3%"),
+    backgroundColor: "#EAF6FF",
+    borderRadius: wp("2%"),
+    padding: wp("2%"),
+    overflow: "hidden",
   },
   textContainer: {
     justifyContent: "center",
   },
   title: {
-    fontSize: wp("3.5%"),
-    fontWeight: "600",
-    color: "#FFF",
+    fontSize: wp("4%"),
+    fontWeight: "700",
+    color: "#2471A3",
     fontFamily: "monospace",
+    marginBottom: wp("0.5%"),
   },
   date: {
-    fontSize: wp("2.5%"),
-    color: "#AAA",
+    fontSize: wp("2.7%"),
+    color: "#7F8C8D",
     fontFamily: "monospace",
+  },
+  divider: {
+    width: 1,
+    height: "80%",
+    backgroundColor: "#E0E0E0",
+    marginHorizontal: wp("3%"),
+    alignSelf: "center",
   },
   rightSection: {
     alignItems: "flex-end",
+    flex: 1,
   },
   countdownText: {
     fontSize: wp("3.5%"),
-    color: "#FFF",
+    color: "#273746",
     fontWeight: "bold",
-    marginBottom: wp("1%"),
+    marginBottom: wp("2%"),
     fontFamily: "monospace",
+    letterSpacing: 1,
   },
   expiredText: {
-    fontSize: wp("3.5%"),
-    color: "red",
+    fontSize: wp("4%"),
+    color: "#E74C3C",
     fontWeight: "bold",
-    marginBottom: wp("1%"),
+    marginBottom: wp("2%"),
     fontFamily: "monospace",
   },
   deleteButton: {
-    backgroundColor: "rgba(102,252,241,0.2)",
-    paddingVertical: wp("0.75%"),
-    paddingHorizontal: wp("2%"),
-    borderRadius: wp("0.75%"),
+    backgroundColor: "#FDEDEC",
+    paddingVertical: wp("1.5%"),
+    paddingHorizontal: wp("4%"),
+    borderRadius: wp("2%"),
+    marginTop: wp("0.5%"),
   },
   deleteButtonText: {
-    color: "#66FCF1",
-    fontSize: wp("2%"),
+    color: "#E74C3C",
+    fontSize: wp("2.7%"),
     fontWeight: "600",
     fontFamily: "monospace",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(13,27,42,0.8)",
+    backgroundColor: "rgba(255,255,255,0.9)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
     width: "80%",
-    backgroundColor: "#0D1B2A",
-    borderRadius: wp("1.5%"),
-    padding: wp("3.75%"),
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("2.5%"),
+    padding: wp("4%"),
     alignItems: "center",
     elevation: 5,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
   },
   modalTitle: {
     fontSize: wp("4.5%"),
     fontWeight: "bold",
     marginBottom: wp("2.5%"),
-    color: "#66FCF1",
+    color: "#2C3E50",
     fontFamily: "monospace",
     textAlign: "center",
   },
   modalMessage: {
     fontSize: wp("3.75%"),
     marginBottom: wp("3.75%"),
-    color: "#CCC",
+    color: "#7F8C8D",
     textAlign: "center",
     fontFamily: "monospace",
   },
@@ -217,7 +245,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalButtonText: {
-    color: "#FFF",
+    color: "#FFFFFF",
     fontSize: wp("3.75%"),
     fontWeight: "bold",
     fontFamily: "monospace",

@@ -1,23 +1,22 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, FlatList, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, Dimensions, ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import CountdownItem from "../components/CountdownItem";
 import moment from "moment";
 import { useFocusEffect } from "@react-navigation/native";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { LineChart, PieChart } from "react-native-chart-kit";
+
+const chartColors = [
+  "#66FCF1", "#45A29E", "#1F2833", "#C5C6C7", "#F5F5F5", "#FFB347", "#FF6961", "#6A5ACD", "#20B2AA", "#FFD700"
+];
 
 const AnalyticsScreen = () => {
-  const [totalEvents, setTotalEvents] = useState(0);
-  const [upcomingCount, setUpcomingCount] = useState(0);
-  const [pastCount, setPastCount] = useState(0);
-  const [upcomingPercentage, setUpcomingPercentage] = useState("0%");
-  const [monthWithMost, setMonthWithMost] = useState("");
+  const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0 });
+  const [lineData, setLineData] = useState({ labels: [], data: [] });
+  const [pieData, setPieData] = useState([]);
+  const [busyDay, setBusyDay] = useState("");
   const [nextEventDate, setNextEventDate] = useState("");
-  const [eventsNext7Days, setEventsNext7Days] = useState(0);
-  const [eventsThisMonth, setEventsThisMonth] = useState(0);
-  const [upcomingDistribution, setUpcomingDistribution] = useState(new Array(12).fill(0));
 
-  const loadEvents = async () => {
+  const loadAnalytics = async () => {
     try {
       const stored = await AsyncStorage.getItem("countdowns");
       if (stored) {
@@ -25,122 +24,155 @@ const AnalyticsScreen = () => {
         const now = moment();
         const upcoming = allEvents.filter(e => moment(e.date).isAfter(now));
         const past = allEvents.filter(e => moment(e.date).isBefore(now));
+        setStats({ total: allEvents.length, upcoming: upcoming.length, past: past.length });
 
-        setTotalEvents(allEvents.length);
-        setUpcomingCount(upcoming.length);
-        setPastCount(past.length);
-        const percent =
-          allEvents.length > 0
-            ? ((upcoming.length / allEvents.length) * 100).toFixed(0) + "%"
-            : "0%";
-        setUpcomingPercentage(percent);
-
-        // Create rotated month labels starting from current month.
-        const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const currentMonth = now.month(); // 0 to 11
-        const rotatedLabels = [];
-        for (let i = 0; i < 12; i++) {
-          rotatedLabels.push(monthLabels[(currentMonth + i) % 12]);
+        // Line chart: last 10 days (by event count)
+        const days = [];
+        const dayLabels = [];
+        for (let i = 9; i >= 0; i--) {
+          const day = moment().subtract(i, "days").startOf("day");
+          days.push(day);
+          dayLabels.push(day.format("MM/DD"));
         }
-
-        // Calculate distribution over next 12 months relative to now.
-        const distribution = new Array(12).fill(0);
-        // Only count events that occur within the next 12 months.
-        upcoming.forEach(evt => {
-          const eventMoment = moment(evt.date);
-          if (eventMoment.isBefore(now.clone().add(12, "months"))) {
-            const index = (eventMoment.month() - currentMonth + 12) % 12;
-            distribution[index] += 1;
-          }
+        const dailyCounts = days.map(day => {
+          const events = allEvents.filter(e => moment(e.date).isSame(day, "day"));
+          return events.length;
         });
-        setUpcomingDistribution(distribution);
-        const maxVal = Math.max(...distribution);
-        if (maxVal === 0) {
-          setMonthWithMost("N/A");
-        } else {
-          const maxIndex = distribution.indexOf(maxVal);
-          setMonthWithMost(rotatedLabels[maxIndex]);
-        }
+        setLineData({ labels: dayLabels, data: dailyCounts });
 
-        // Next Event Date (if any)
+        // Pie chart: event type distribution (last 10 days)
+        const tenDaysAgo = moment().subtract(9, 'days').startOf('day');
+        const recentEvents = allEvents.filter(e => moment(e.date).isSameOrAfter(tenDaysAgo, 'day'));
+        const typeCounts = {};
+        recentEvents.forEach(e => {
+          const key = e.icon || "Other";
+          typeCounts[key] = (typeCounts[key] || 0) + 1;
+        });
+        const pie = Object.keys(typeCounts).map((label, idx) => ({
+          name: label,
+          count: typeCounts[label],
+          color: chartColors[idx % chartColors.length],
+          legendFontColor: "#2C3E50",
+          legendFontSize: 16,
+        }));
+        setPieData(pie);
+
+        // Find busiest day (most events in a day, last 10 days)
+        const maxCount = Math.max(...dailyCounts);
+        const maxIdx = dailyCounts.indexOf(maxCount);
+        setBusyDay(maxCount > 0 ? dayLabels[maxIdx] : "N/A");
+
+        // Next event date
         if (upcoming.length > 0) {
           const sortedUpcoming = [...upcoming].sort((a, b) => new Date(a.date) - new Date(b.date));
           setNextEventDate(moment(sortedUpcoming[0].date).format("ddd, D MMM YYYY"));
         } else {
-          setNextEventDate("");
+          setNextEventDate("N/A");
         }
-
-        // Count upcoming events in next 7 days
-        const countNext7Days = upcoming.filter(e => moment(e.date).diff(now, "days", true) <= 7).length;
-        setEventsNext7Days(countNext7Days);
-
-        // Count events in current month (based on today's month/year)
-        const countThisMonth = upcoming.filter(e => {
-          const m = moment(e.date);
-          return m.month() === now.month() && m.year() === now.year();
-        }).length;
-        setEventsThisMonth(countThisMonth);
       } else {
-        setTotalEvents(0);
-        setUpcomingCount(0);
-        setPastCount(0);
-        setUpcomingPercentage("0%");
-        setMonthWithMost("");
-        setNextEventDate("");
-        setEventsNext7Days(0);
-        setEventsThisMonth(0);
-        setUpcomingDistribution(new Array(12).fill(0));
+        setStats({ total: 0, upcoming: 0, past: 0 });
+        setLineData({ labels: [], data: [] });
+        setPieData([]);
+        setBusyDay("N/A");
+        setNextEventDate("N/A");
       }
     } catch (error) {
-      console.error("Error loading events for analytics", error);
+      console.error("Error loading analytics", error);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      loadEvents();
+      loadAnalytics();
     }, [])
   );
 
+  const chartWidth = Dimensions.get("window").width - 32;
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.header}>Analytics</Text>
-        <View style={styles.grid}>
-          <View style={styles.gridItem}>
-            <Text style={styles.statTitle}>Total Events</Text>
-            <Text style={styles.statValue}>{totalEvents}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.container}>
+          <Text style={styles.header}>Analytics</Text>
+          <View style={styles.chartSection}>
+            <Text style={styles.chartTitle}>Events per Day (Last 10 Days)</Text>
+            {lineData.labels.length > 0 && (
+              <LineChart
+                data={{
+                  labels: lineData.labels,
+                  datasets: [{ data: lineData.data }],
+                }}
+                width={chartWidth}
+                height={220}
+                yAxisSuffix=""
+                chartConfig={{
+                  backgroundColor: "#F8F9FA",
+                  backgroundGradientFrom: "#F8F9FA",
+                  backgroundGradientTo: "#F8F9FA",
+                  decimalPlaces: 0,
+                  color: (opacity = 1) => `rgba(52, 152, 219, ${opacity})`,
+                  labelColor: (opacity = 1) => `rgba(44, 62, 80, ${opacity})`,
+                  style: { borderRadius: 16 },
+                  propsForDots: {
+                    r: "5",
+                    strokeWidth: "2",
+                    stroke: "#3498DB",
+                  },
+                  propsForBackgroundLines: {
+                    stroke: "#E0E0E0",
+                  },
+                }}
+                bezier
+                style={{ marginVertical: 12, borderRadius: 16 }}
+              />
+            )}
           </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.statTitle}>Upcoming</Text>
-            <Text style={styles.statValue}>{upcomingCount}</Text>
+          <View style={styles.chartSection}>
+            <Text style={styles.chartTitle}>Event Type Distribution (Last 10 Days)</Text>
+            {pieData.length > 0 && (
+              <PieChart
+                data={pieData.map(d => ({
+                  name: d.name,
+                  population: d.count,
+                  color: d.color,
+                  legendFontColor: d.legendFontColor,
+                  legendFontSize: d.legendFontSize,
+                }))}
+                width={chartWidth}
+                height={200}
+                chartConfig={{
+                  color: (opacity = 1) => `rgba(52, 152, 219, ${opacity})`,
+                }}
+                accessor="population"
+                backgroundColor="transparent"
+                paddingLeft="15"
+                absolute
+              />
+            )}
           </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.statTitle}>Past</Text>
-            <Text style={styles.statValue}>{pastCount}</Text>
+          <Text style={styles.sectionLabel}>Summary</Text>
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Total Events</Text>
+            <Text style={styles.statValue}>{stats.total}</Text>
           </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.statTitle}>Upcoming %</Text>
-            <Text style={styles.statValue}>{upcomingPercentage}</Text>
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Upcoming</Text>
+            <Text style={styles.statValue}>{stats.upcoming}</Text>
           </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.statTitle}>Busy Month</Text>
-            <Text style={styles.statValue}>{monthWithMost || "N/A"}</Text>
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Past</Text>
+            <Text style={styles.statValue}>{stats.past}</Text>
           </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.statTitle}>Events This Month</Text>
-            <Text style={styles.statValue}>{eventsThisMonth}</Text>
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Busiest Day (Last 10)</Text>
+            <Text style={styles.statValue}>{busyDay}</Text>
           </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.statTitle}>Next Event Date</Text>
-            <Text style={styles.statValue}>{nextEventDate || "N/A"}</Text>
-          </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.statTitle}>Events Next 7 Days</Text>
-            <Text style={styles.statValue}>{eventsNext7Days}</Text>
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Next Event</Text>
+            <Text style={styles.statValue}>{nextEventDate}</Text>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -148,46 +180,69 @@ const AnalyticsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#0D1B2A",
+    backgroundColor: '#F8F9FA',
+  },
+  scrollContent: {
+    paddingBottom: 36,
   },
   container: {
     flex: 1,
-    padding: wp("4%"),
+    padding: 20,
   },
   header: {
-    fontSize: wp("4.5%"),
-    fontWeight: "bold",
-    color: "#66FCF1",
-    fontFamily: "monospace",
-    textAlign: "center",
-    marginBottom: wp("4%"),
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#3498DB',
+    textAlign: 'center',
+    marginBottom: 24,
+    letterSpacing: 1,
   },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+  statRow: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
+    elevation: 2,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  gridItem: {
-    width: "48%",
-    backgroundColor: "#1B263B",
-    borderWidth: 2,
-    borderColor: "#66FCF1",
-    borderRadius: wp("2%"),
-    padding: wp("3%"),
-    marginBottom: wp("4%"),
-    alignItems: "center",
-  },
-  statTitle: {
-    fontSize: wp("2%"),
-    color: "#FFF",
-    fontFamily: "monospace",
-    marginBottom: wp("1%"),
+  statLabel: {
+    fontSize: 18,
+    color: '#2C3E50',
+    fontWeight: 'bold',
   },
   statValue: {
-    fontSize: wp("2%"),
-    fontWeight: "bold",
-    color: "#FFF",
-    fontFamily: "monospace",
+    fontSize: 18,
+    color: '#3498DB',
+    fontWeight: '700',
+  },
+  chartSection: {
+    marginTop: 18,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  chartTitle: {
+    fontSize: 18,
+    color: '#2C3E50',
+    fontWeight: 'bold',
+    marginBottom: 10,
+    letterSpacing: 0.5,
+  },
+  sectionLabel: {
+    fontSize: 20,
+    color: '#3498DB',
+    fontWeight: 'bold',
+    marginTop: 18,
+    marginBottom: 10,
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
 });
 
