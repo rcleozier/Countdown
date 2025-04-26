@@ -13,10 +13,12 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import appConfig from '../app.json';
 
 const SettingsScreen = () => {
   const [eventCount, setEventCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
+  const appInfo = appConfig.expo;
 
   // Function to load events from AsyncStorage
   const loadEvents = async () => {
@@ -54,10 +56,21 @@ const SettingsScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Main Card */}
-        <View style={styles.card}>
-          <Text style={styles.title}>Settings</Text>
-          <Text style={styles.countLabel}>Total Events: {eventCount}</Text>
+        {/* App Info Card */}
+        <View style={styles.infoCard}>
+          <Text style={styles.appName}>{appInfo.name}</Text>
+          <Text style={styles.appVersion}>Version {appInfo.version}</Text>
+          <Text style={styles.appDescription}>{appInfo.description}</Text>
+        </View>
+        {/* Event Stats Card */}
+        <View style={styles.statsCard}>
+          <Text style={styles.sectionHeader}>Event Stats</Text>
+          <Text style={styles.statLabel}>Total Events</Text>
+          <Text style={styles.statValue}>{eventCount}</Text>
+        </View>
+        {/* Actions Card */}
+        <View style={styles.actionsCard}>
+          <Text style={styles.sectionHeader}>Actions</Text>
           <TouchableOpacity
             onPress={() => setModalVisible(true)}
             style={styles.clearButton}
@@ -65,7 +78,6 @@ const SettingsScreen = () => {
             <Text style={styles.clearButtonText}>Clear All Events</Text>
           </TouchableOpacity>
         </View>
-
         {/* Confirmation Modal */}
         <Modal
           animationType="fade"
@@ -108,50 +120,89 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    padding: wp("4%"),
+    padding: wp("4%")
   },
-  card: {
-    width: "85%",
+  infoCard: {
+    width: "100%",
     backgroundColor: "#FFFFFF",
-    borderRadius: wp("4%"),
-    padding: wp("4%"),
+    borderRadius: wp("3%"),
+    padding: wp("5%"),
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#E0E0E0",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: wp("2%"),
-    elevation: 8,
+    marginBottom: wp("4%")
   },
-  title: {
+  appName: {
+    fontSize: wp("5%"),
+    fontWeight: "bold",
+    color: "#3498DB",
+    fontFamily: "monospace",
+    marginBottom: wp("1.5%")
+  },
+  appVersion: {
+    fontSize: wp("3.5%"),
+    color: "#2C3E50",
+    fontFamily: "monospace",
+    marginBottom: wp("1%")
+  },
+  appDescription: {
+    fontSize: wp("3%"),
+    color: "#7F8C8D",
+    fontFamily: "monospace",
+    textAlign: "center"
+  },
+  statsCard: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("3%"),
+    padding: wp("5%"),
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    marginBottom: wp("4%")
+  },
+  sectionHeader: {
     fontSize: wp("4%"),
     fontWeight: "bold",
     color: "#2C3E50",
-    marginBottom: wp("2.5%"),
-    textAlign: "center",
     fontFamily: "monospace",
+    marginBottom: wp("2%")
   },
-  countLabel: {
+  statLabel: {
     fontSize: wp("3%"),
-    fontWeight: "600",
     color: "#7F8C8D",
-    marginBottom: wp("4%"),
-    textAlign: "center",
     fontFamily: "monospace",
+    marginBottom: wp("1%")
+  },
+  statValue: {
+    fontSize: wp("4.5%"),
+    color: "#3498DB",
+    fontWeight: "bold",
+    fontFamily: "monospace",
+    marginBottom: wp("1%")
+  },
+  actionsCard: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("3%"),
+    padding: wp("5%"),
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    marginBottom: wp("4%")
   },
   clearButton: {
     backgroundColor: "#3498DB",
     paddingVertical: wp("3.5%"),
     paddingHorizontal: wp("5%"),
-    borderRadius: wp("2%"),
+    borderRadius: wp("2%")
   },
   clearButtonText: {
     color: "#FFFFFF",
     fontSize: wp("3%"),
     fontWeight: "bold",
-    fontFamily: "monospace",
+    fontFamily: "monospace"
   },
   // Modal styles
   modalOverlay: {

@@ -34,10 +34,10 @@ const HomeScreen = () => {
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("💻");
 
-  const futuristicIcons = [
-    "🎂","🎉","🎈","💍","🎁","🏆","⚽️","🏀","🏈","🎄","🎃","🕯","🍾","🥂","🍰","💌","🎤","🎭","🎟","🎬",
-    "📅","✈️","🏖","🌟","🛍","🏅","🎓","📚","💼","🎨","🎶","🎷","🎸","📣","💐","🕊","🏠","🚗","📷","🖼",
-    "🍽","🍻","🥘","🛎","💡","🎊","💃","🕺","🏟","🎪","🏝","🎮","📺","🚴‍♀️","🏰","🛹",
+  const eventIcons = [
+    "📅", "⏰", "⭐️", "✅", "🎉", "❤️", "📚", "💼", "📝", "🎂", "🏠", "🏆", "🎓", "🛒", "🚗", "✈️", "🎶", "🏥", "🍽", "👨‍👩‍👧‍👦",
+    "🏖", "🏢", "🏫", "🏀", "⚽️", "🏈", "🏐", "🏸", "🏊‍♂️", "🚴‍♂️", "🏃‍♂️", "🧘‍♂️", "🧑‍💻", "🧑‍🎓", "🧑‍🍳", "🧑‍🎤", "🧑‍🔬",
+    "🧑‍🎨", "🧑‍🚀", "🧑‍✈️", "🧑‍🌾", "🧑‍🔧", "🧑‍🏫", "🧑‍⚕️", "🧑‍🚒", "💡", "🔔", "📆", "📈", "📊", "🎯", "🎙️", "🎤", "🎬"
   ];
 
   // ----- Load / Save Data -----
@@ -120,6 +120,10 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Upcoming Events</Text>
+        <Text style={styles.headerSubtitle}>Track your important moments</Text>
+      </View>
       {upcomingEvents.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No countdowns yet!</Text>
@@ -172,13 +176,25 @@ const HomeScreen = () => {
                     onDayPress={handleDayPress}
                     minDate={moment().format("YYYY-MM-DD")}
                     theme={{
-                      backgroundColor: "#0D1B2A",
-                      calendarBackground: "#0D1B2A",
-                      textSectionTitleColor: "#66FCF1",
-                      dayTextColor: "#FFF",
-                      todayTextColor: "#66FCF1",
-                      monthTextColor: "#66FCF1",
-                      arrowColor: "#66FCF1",
+                      backgroundColor: "#FFFFFF",
+                      calendarBackground: "#F8F9FA",
+                      textSectionTitleColor: "#3498DB",
+                      dayTextColor: "#2C3E50",
+                      todayTextColor: "#3498DB",
+                      monthTextColor: "#3498DB",
+                      arrowColor: "#3498DB",
+                      selectedDayBackgroundColor: "#3498DB",
+                      selectedDayTextColor: "#FFFFFF",
+                      textDisabledColor: "#BDC3C7",
+                      dotColor: "#3498DB",
+                      selectedDotColor: "#FFFFFF",
+                      'stylesheet.calendar.header': {
+                        week: {
+                          marginTop: 6,
+                          flexDirection: 'row',
+                          justifyContent: 'space-between'
+                        }
+                      },
                     }}
                   />
                   <View style={styles.calendarButtonContainer}>
@@ -211,7 +227,7 @@ const HomeScreen = () => {
                 <View style={styles.iconModalContent}>
                   <Text style={styles.modalTitle}>Select Icon</Text>
                   <View style={styles.iconList}>
-                    {futuristicIcons.map((icon, index) => (
+                    {eventIcons.map((icon, index) => (
                       <TouchableOpacity
                         key={`${icon}-${index}`}
                         onPress={() => {
@@ -260,6 +276,27 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1,
     backgroundColor: "#F8F9FA",
+  },
+  headerContainer: {
+    paddingHorizontal: wp("4%"),
+    paddingTop: wp("8%"),
+    paddingBottom: wp("4%"),
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+    marginBottom: wp("2%")
+  },
+  headerTitle: {
+    fontSize: wp("5%"),
+    fontWeight: "bold",
+    color: "#2C3E50",
+    fontFamily: "monospace",
+  },
+  headerSubtitle: {
+    fontSize: wp("3%"),
+    color: "#7F8C8D",
+    fontFamily: "monospace",
+    marginTop: wp("1%"),
   },
   listContainer: {
     paddingHorizontal: wp("4%"),

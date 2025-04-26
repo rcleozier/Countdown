@@ -26,11 +26,11 @@ const AnalyticsScreen = () => {
         const past = allEvents.filter(e => moment(e.date).isBefore(now));
         setStats({ total: allEvents.length, upcoming: upcoming.length, past: past.length });
 
-        // Line chart: last 10 days (by event count)
+        // Line chart: next 15 days (by event count)
         const days = [];
         const dayLabels = [];
-        for (let i = 9; i >= 0; i--) {
-          const day = moment().subtract(i, "days").startOf("day");
+        for (let i = 0; i < 15; i++) {
+          const day = moment().add(i, "days").startOf("day");
           days.push(day);
           dayLabels.push(day.format("MM/DD"));
         }
@@ -57,7 +57,7 @@ const AnalyticsScreen = () => {
         }));
         setPieData(pie);
 
-        // Find busiest day (most events in a day, last 10 days)
+        // Find busiest day (most events in a day, next 15 days)
         const maxCount = Math.max(...dailyCounts);
         const maxIdx = dailyCounts.indexOf(maxCount);
         setBusyDay(maxCount > 0 ? dayLabels[maxIdx] : "N/A");
@@ -95,7 +95,7 @@ const AnalyticsScreen = () => {
         <View style={styles.container}>
           <Text style={styles.header}>Analytics</Text>
           <View style={styles.chartSection}>
-            <Text style={styles.chartTitle}>Events per Day (Last 10 Days)</Text>
+            <Text style={styles.chartTitle}>Upcoming Events (Next 15 Days)</Text>
             {lineData.labels.length > 0 && (
               <LineChart
                 data={{
@@ -164,7 +164,7 @@ const AnalyticsScreen = () => {
             <Text style={styles.statValue}>{stats.past}</Text>
           </View>
           <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Busiest Day (Last 10)</Text>
+            <Text style={styles.statLabel}>Busiest Day (Next 15)</Text>
             <Text style={styles.statValue}>{busyDay}</Text>
           </View>
           <View style={styles.statRow}>
