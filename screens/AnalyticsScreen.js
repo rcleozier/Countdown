@@ -1,12 +1,28 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, StyleSheet, SafeAreaView, Dimensions, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  Dimensions,
+  ScrollView,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { useFocusEffect } from "@react-navigation/native";
 import { LineChart, PieChart } from "react-native-chart-kit";
 
 const chartColors = [
-  "#66FCF1", "#45A29E", "#1F2833", "#C5C6C7", "#F5F5F5", "#FFB347", "#FF6961", "#6A5ACD", "#20B2AA", "#FFD700"
+  "#66FCF1",
+  "#45A29E",
+  "#1F2833",
+  "#C5C6C7",
+  "#F5F5F5",
+  "#FFB347",
+  "#FF6961",
+  "#6A5ACD",
+  "#20B2AA",
+  "#FFD700",
 ];
 
 const AnalyticsScreen = () => {
@@ -22,29 +38,39 @@ const AnalyticsScreen = () => {
       if (stored) {
         const allEvents = JSON.parse(stored);
         const now = moment();
-        const upcoming = allEvents.filter(e => moment(e.date).isAfter(now));
-        const past = allEvents.filter(e => moment(e.date).isBefore(now));
-        setStats({ total: allEvents.length, upcoming: upcoming.length, past: past.length });
+        const upcoming = allEvents.filter((e) => moment(e.date).isAfter(now));
+        const past = allEvents.filter((e) => moment(e.date).isBefore(now));
+        setStats({
+          total: allEvents.length,
+          upcoming: upcoming.length,
+          past: past.length,
+        });
 
-        // Line chart: next 15 days (by event count)
+        // Line chart: next 7 days (by event count)
         const days = [];
         const dayLabels = [];
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 7; i++) {
           const day = moment().add(i, "days").startOf("day");
           days.push(day);
           dayLabels.push(day.format("MM/DD"));
         }
-        const dailyCounts = days.map(day => {
-          const events = allEvents.filter(e => moment(e.date).isSame(day, "day"));
+        const dailyCounts = days.map((day) => {
+          const events = allEvents.filter((e) =>
+            moment(e.date).isSame(day, "day")
+          );
           return events.length;
         });
         setLineData({ labels: dayLabels, data: dailyCounts });
 
-        // Pie chart: event type distribution (last 10 days)
-        const tenDaysAgo = moment().subtract(9, 'days').startOf('day');
-        const recentEvents = allEvents.filter(e => moment(e.date).isSameOrAfter(tenDaysAgo, 'day'));
+        // Pie chart: event type distribution (next 7 days)
+        const sevenDaysFromNow = moment().add(6, "days").endOf("day");
+        const nextSevenEvents = allEvents.filter(
+          (e) =>
+            moment(e.date).isSameOrAfter(now, "day") &&
+            moment(e.date).isSameOrBefore(sevenDaysFromNow, "day")
+        );
         const typeCounts = {};
-        recentEvents.forEach(e => {
+        nextSevenEvents.forEach((e) => {
           const key = e.icon || "Other";
           typeCounts[key] = (typeCounts[key] || 0) + 1;
         });
@@ -57,15 +83,19 @@ const AnalyticsScreen = () => {
         }));
         setPieData(pie);
 
-        // Find busiest day (most events in a day, next 15 days)
+        // Find busiest day (most events in a day, next 7 days)
         const maxCount = Math.max(...dailyCounts);
         const maxIdx = dailyCounts.indexOf(maxCount);
         setBusyDay(maxCount > 0 ? dayLabels[maxIdx] : "N/A");
 
         // Next event date
         if (upcoming.length > 0) {
-          const sortedUpcoming = [...upcoming].sort((a, b) => new Date(a.date) - new Date(b.date));
-          setNextEventDate(moment(sortedUpcoming[0].date).format("ddd, D MMM YYYY"));
+          const sortedUpcoming = [...upcoming].sort(
+            (a, b) => new Date(a.date) - new Date(b.date)
+          );
+          setNextEventDate(
+            moment(sortedUpcoming[0].date).format("ddd, D MMM YYYY")
+          );
         } else {
           setNextEventDate("N/A");
         }
@@ -95,7 +125,7 @@ const AnalyticsScreen = () => {
         <View style={styles.container}>
           <Text style={styles.header}>Analytics</Text>
           <View style={styles.chartSection}>
-            <Text style={styles.chartTitle}>Upcoming Events (Next 15 Days)</Text>
+            <Text style={styles.chartTitle}>Upcoming Events (Next 7 Days)</Text>
             {lineData.labels.length > 0 && (
               <LineChart
                 data={{
@@ -128,10 +158,12 @@ const AnalyticsScreen = () => {
             )}
           </View>
           <View style={styles.chartSection}>
-            <Text style={styles.chartTitle}>Event Type Distribution (Last 10 Days)</Text>
+            <Text style={styles.chartTitle}>
+              Event Type Distribution (Next 7 Days)
+            </Text>
             {pieData.length > 0 && (
               <PieChart
-                data={pieData.map(d => ({
+                data={pieData.map((d) => ({
                   name: d.name,
                   population: d.count,
                   color: d.color,
@@ -164,7 +196,7 @@ const AnalyticsScreen = () => {
             <Text style={styles.statValue}>{stats.past}</Text>
           </View>
           <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Busiest Day (Next 15)</Text>
+            <Text style={styles.statLabel}>Busiest Day (Next 7)</Text>
             <Text style={styles.statValue}>{busyDay}</Text>
           </View>
           <View style={styles.statRow}>
@@ -180,7 +212,7 @@ const AnalyticsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: "#F8F9FA",
   },
   scrollContent: {
     paddingBottom: 36,
@@ -191,57 +223,57 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 30,
-    fontWeight: 'bold',
-    color: '#3498DB',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#3498DB",
+    textAlign: "center",
     marginBottom: 24,
     letterSpacing: 1,
   },
   statRow: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 14,
     padding: 18,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
+    borderColor: "#E0E0E0",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 6,
     elevation: 2,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   statLabel: {
     fontSize: 18,
-    color: '#2C3E50',
-    fontWeight: 'bold',
+    color: "#2C3E50",
+    fontWeight: "bold",
   },
   statValue: {
     fontSize: 18,
-    color: '#3498DB',
-    fontWeight: '700',
+    color: "#3498DB",
+    fontWeight: "700",
   },
   chartSection: {
     marginTop: 18,
     marginBottom: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   chartTitle: {
     fontSize: 18,
-    color: '#2C3E50',
-    fontWeight: 'bold',
+    color: "#2C3E50",
+    fontWeight: "bold",
     marginBottom: 10,
     letterSpacing: 0.5,
   },
   sectionLabel: {
     fontSize: 20,
-    color: '#3498DB',
-    fontWeight: 'bold',
+    color: "#3498DB",
+    fontWeight: "bold",
     marginTop: 18,
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: 0.5,
   },
 });

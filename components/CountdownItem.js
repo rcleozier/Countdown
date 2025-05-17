@@ -47,23 +47,19 @@ const CountdownItem = ({ event, index, onDelete }) => {
             <Text style={styles.icon}>{event.icon}</Text>
             <View style={styles.textContainer}>
               <Text style={styles.title}>{event.name}</Text>
+              {timeLeft === null ? (
+                <Text style={styles.expiredText}>Expired</Text>
+              ) : (
+                <Text style={styles.countdownText}>
+                  {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+                </Text>
+              )}
               <Text style={styles.date}>
                 {moment(event.date).format("ddd, D MMM YYYY")}
               </Text>
             </View>
           </View>
           <View style={styles.rightSection}>
-            {timeLeft === null ? (
-              <Text style={styles.expiredText}>Expired</Text>
-            ) : (
-              <Text
-                style={styles.countdownText}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
-              </Text>
-            )}
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => setDeleteModalVisible(true)}
@@ -137,7 +133,7 @@ const styles = StyleSheet.create({
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1.5,
+    flex: 1.2,
   },
   icon: {
     fontSize: wp("8%"),
@@ -171,15 +167,18 @@ const styles = StyleSheet.create({
   },
   rightSection: {
     alignItems: "flex-end",
-    flex: 1,
+    justifyContent: "center",
+    minWidth: wp("20%"),
+    maxWidth: wp("28%"),
   },
   countdownText: {
     fontSize: wp("3.5%"),
     color: "#273746",
     fontWeight: "bold",
-    marginBottom: wp("2%"),
+    marginBottom: wp("1%"),
     fontFamily: "monospace",
     letterSpacing: 1,
+    textAlign: "left",
   },
   expiredText: {
     fontSize: wp("4%"),

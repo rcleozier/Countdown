@@ -35,9 +35,60 @@ const HomeScreen = () => {
   const [newIcon, setNewIcon] = useState("💻");
 
   const eventIcons = [
-    "📅", "⏰", "⭐️", "✅", "🎉", "❤️", "📚", "💼", "📝", "🎂", "🏠", "🏆", "🎓", "🛒", "🚗", "✈️", "🎶", "🏥", "🍽", "👨‍👩‍👧‍👦",
-    "🏖", "🏢", "🏫", "🏀", "⚽️", "🏈", "🏐", "🏸", "🏊‍♂️", "🚴‍♂️", "🏃‍♂️", "🧘‍♂️", "🧑‍💻", "🧑‍🎓", "🧑‍🍳", "🧑‍🎤", "🧑‍🔬",
-    "🧑‍🎨", "🧑‍🚀", "🧑‍✈️", "🧑‍🌾", "🧑‍🔧", "🧑‍🏫", "🧑‍⚕️", "🧑‍🚒", "💡", "🔔", "📆", "📈", "📊", "🎯", "🎙️", "🎤", "🎬"
+    "📅",
+    "⏰",
+    "⭐️",
+    "✅",
+    "🎉",
+    "❤️",
+    "📚",
+    "💼",
+    "📝",
+    "🎂",
+    "🏠",
+    "🏆",
+    "🎓",
+    "🛒",
+    "🚗",
+    "✈️",
+    "🎶",
+    "🏥",
+    "🍽",
+    "👨‍👩‍👧‍👦",
+    "🏖",
+    "🏢",
+    "🏫",
+    "🏀",
+    "⚽️",
+    "🏈",
+    "🏐",
+    "🏸",
+    "🏊‍♂️",
+    "🚴‍♂️",
+    "🏃‍♂️",
+    "🧘‍♂️",
+    "🧑‍💻",
+    "🧑‍🎓",
+    "🧑‍🍳",
+    "🧑‍🎤",
+    "🧑‍🔬",
+    "🧑‍🎨",
+    "🧑‍🚀",
+    "🧑‍✈️",
+    "🧑‍🌾",
+    "🧑‍🔧",
+    "🧑‍🏫",
+    "🧑‍⚕️",
+    "🧑‍🚒",
+    "💡",
+    "🔔",
+    "📆",
+    "📈",
+    "📊",
+    "🎯",
+    "🎙️",
+    "🎤",
+    "🎬",
   ];
 
   // ----- Load / Save Data -----
@@ -72,8 +123,12 @@ const HomeScreen = () => {
   }, [countdowns]);
 
   // Sort & filter upcoming
-  const sortedCountdowns = [...countdowns].sort((a, b) => new Date(a.date) - new Date(b.date));
-  const upcomingEvents = sortedCountdowns.filter(event => new Date(event.date) > new Date());
+  const sortedCountdowns = [...countdowns].sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  );
+  const upcomingEvents = sortedCountdowns.filter(
+    (event) => new Date(event.date) > new Date()
+  );
 
   const handleOpenCalendar = () => {
     setTempSelectedDate(null);
@@ -90,7 +145,11 @@ const HomeScreen = () => {
       return;
     }
     const [year, month, day] = tempSelectedDate.split("-");
-    const finalDate = new Date(year, parseInt(month, 10) - 1, parseInt(day, 10));
+    const finalDate = new Date(
+      year,
+      parseInt(month, 10) - 1,
+      parseInt(day, 10)
+    );
     setSelectedDate(finalDate);
     setCalendarModalVisible(false);
   };
@@ -107,7 +166,7 @@ const HomeScreen = () => {
       date: selectedDate.toISOString(),
       icon: newIcon,
     };
-    setCountdowns(prev => [...prev, newCountdown]);
+    setCountdowns((prev) => [...prev, newCountdown]);
     setNewName("");
     setNewIcon("💻");
     setSelectedDate(new Date());
@@ -115,7 +174,7 @@ const HomeScreen = () => {
   };
 
   const deleteCountdown = (id) => {
-    setCountdowns(prev => prev.filter(item => item.id !== id));
+    setCountdowns((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
@@ -127,26 +186,40 @@ const HomeScreen = () => {
       {upcomingEvents.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No countdowns yet!</Text>
-          <Text style={styles.emptySubText}>Create your first upcoming event to get started.</Text>
+          <Text style={styles.emptySubText}>
+            Create your first upcoming event to get started.
+          </Text>
         </View>
       ) : (
         <FlatList
           data={upcomingEvents}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => (
-            <CountdownItem event={item} index={index} onDelete={deleteCountdown} />
+            <CountdownItem
+              event={item}
+              index={index}
+              onDelete={deleteCountdown}
+            />
           )}
           contentContainerStyle={styles.listContainer}
         />
       )}
 
       {/* Floating Button to Add New Countdown */}
-      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.floatingButton}>
+      <TouchableOpacity
+        onPress={() => setModalVisible(true)}
+        style={styles.floatingButton}
+      >
         <Text style={styles.floatingButtonText}>+ Add New Countdown</Text>
       </TouchableOpacity>
 
       {/* Modal for creating a new countdown */}
-      <Modal animationType="slide" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+      <Modal
+        animationType="slide"
+        transparent
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Create New Countdown</Text>
@@ -160,14 +233,22 @@ const HomeScreen = () => {
 
             {/* Date Label + Button */}
             <Text style={styles.iconLabel}>Date</Text>
-            <TouchableOpacity style={styles.iconButton} onPress={handleOpenCalendar}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={handleOpenCalendar}
+            >
               <Text style={styles.iconButtonText}>
                 {moment(selectedDate).format("ddd, D MMM YYYY")}
               </Text>
             </TouchableOpacity>
 
             {/* Calendar Modal */}
-            <Modal animationType="fade" transparent visible={calendarModalVisible} onRequestClose={() => setCalendarModalVisible(false)}>
+            <Modal
+              animationType="fade"
+              transparent
+              visible={calendarModalVisible}
+              onRequestClose={() => setCalendarModalVisible(false)}
+            >
               <View style={styles.calendarModalOverlay}>
                 <View style={styles.calendarModalContent}>
                   <Text style={styles.modalTitle}>Select a Date</Text>
@@ -188,12 +269,12 @@ const HomeScreen = () => {
                       textDisabledColor: "#BDC3C7",
                       dotColor: "#3498DB",
                       selectedDotColor: "#FFFFFF",
-                      'stylesheet.calendar.header': {
+                      "stylesheet.calendar.header": {
                         week: {
                           marginTop: 6,
-                          flexDirection: 'row',
-                          justifyContent: 'space-between'
-                        }
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        },
                       },
                     }}
                   />
@@ -217,12 +298,22 @@ const HomeScreen = () => {
 
             {/* Icon Label + Button */}
             <Text style={styles.iconLabel}>Icon</Text>
-            <TouchableOpacity onPress={() => setIconPickerVisible(true)} style={styles.iconButton}>
-              <Text style={styles.iconButtonText}>{newIcon ? `Icon: ${newIcon}` : "Select Icon"}</Text>
+            <TouchableOpacity
+              onPress={() => setIconPickerVisible(true)}
+              style={styles.iconButton}
+            >
+              <Text style={styles.iconButtonText}>
+                {newIcon ? `Icon: ${newIcon}` : "Select Icon"}
+              </Text>
             </TouchableOpacity>
 
             {/* Icon Picker Modal */}
-            <Modal animationType="fade" transparent visible={iconPickerVisible} onRequestClose={() => setIconPickerVisible(false)}>
+            <Modal
+              animationType="fade"
+              transparent
+              visible={iconPickerVisible}
+              onRequestClose={() => setIconPickerVisible(false)}
+            >
               <View style={styles.iconModalContainer}>
                 <View style={styles.iconModalContent}>
                   <Text style={styles.modalTitle}>Select Icon</Text>
@@ -273,7 +364,7 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { 
+  container: {
     flex: 1,
     backgroundColor: "#F8F9FA",
   },
@@ -284,7 +375,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
-    marginBottom: wp("2%")
+    marginBottom: wp("2%"),
   },
   headerTitle: {
     fontSize: wp("5%"),
@@ -302,7 +393,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp("4%"),
     paddingBottom: wp("20%"),
   },
-  emptyContainer: { 
+  emptyContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
