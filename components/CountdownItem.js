@@ -55,7 +55,14 @@ const CountdownItem = ({ event, index, onDelete }) => {
                 </Text>
               )}
               <Text style={styles.date}>
-                {moment(event.date).format("ddd, D MMM YYYY")}
+                {(() => {
+                  const m = moment(event.date);
+                  if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
+                    return m.format("ddd, D MMM YYYY") + " (All Day)";
+                  } else {
+                    return m.format("ddd, D MMM YYYY at hh:mm A");
+                  }
+                })()}
               </Text>
             </View>
           </View>

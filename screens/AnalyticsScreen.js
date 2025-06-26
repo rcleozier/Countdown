@@ -94,7 +94,7 @@ const AnalyticsScreen = () => {
             (a, b) => new Date(a.date) - new Date(b.date)
           );
           setNextEventDate(
-            moment(sortedUpcoming[0].date).format("ddd, D MMM YYYY")
+            moment(sortedUpcoming[0].date).format("ddd, D MMM YYYY at hh:mm A")
           );
         } else {
           setNextEventDate("N/A");

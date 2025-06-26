@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import CountdownItem from "../components/CountdownItem";
 import { Calendar } from "react-native-calendars";
+import { Picker } from '@react-native-picker/picker';
 import moment from "moment";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 
@@ -29,8 +30,11 @@ const HomeScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
+  const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [tempSelectedDate, setTempSelectedDate] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedHour, setSelectedHour] = useState(new Date().getHours());
+  const [selectedMinute, setSelectedMinute] = useState(new Date().getMinutes());
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("💻");
 
@@ -135,6 +139,10 @@ const HomeScreen = () => {
     setCalendarModalVisible(true);
   };
 
+  const handleOpenTimePicker = () => {
+    setTimePickerVisible(true);
+  };
+
   const handleDayPress = (day) => {
     setTempSelectedDate(day.dateString);
   };
@@ -154,22 +162,33 @@ const HomeScreen = () => {
     setCalendarModalVisible(false);
   };
 
+  const handleConfirmTime = () => {
+    setTimePickerVisible(false);
+  };
+
   const handleAddCountdown = () => {
     if (!newName) return;
-    if (selectedDate <= new Date()) {
-      Alert.alert("Invalid Date", "Please select a date in the future.");
+    const combinedDateTime = new Date(selectedDate);
+    combinedDateTime.setHours(selectedHour);
+    combinedDateTime.setMinutes(selectedMinute);
+    combinedDateTime.setSeconds(0);
+    combinedDateTime.setMilliseconds(0);
+    if (combinedDateTime <= new Date()) {
+      Alert.alert("Invalid Date/Time", "Please select a date and time in the future.");
       return;
     }
     const newCountdown = {
       id: generateGUID(),
       name: newName,
-      date: selectedDate.toISOString(),
+      date: combinedDateTime.toISOString(),
       icon: newIcon,
     };
     setCountdowns((prev) => [...prev, newCountdown]);
     setNewName("");
     setNewIcon("💻");
     setSelectedDate(new Date());
+    setSelectedHour(new Date().getHours());
+    setSelectedMinute(new Date().getMinutes());
     setModalVisible(false);
   };
 
@@ -232,13 +251,13 @@ const HomeScreen = () => {
             />
 
             {/* Date Label + Button */}
-            <Text style={styles.iconLabel}>Date</Text>
+            <Text style={styles.iconLabel}>Date & Time</Text>
             <TouchableOpacity
               style={styles.iconButton}
               onPress={handleOpenCalendar}
             >
               <Text style={styles.iconButtonText}>
-                {moment(selectedDate).format("ddd, D MMM YYYY")}
+                {moment(selectedDate).format("ddd, D MMM YYYY")} at {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
               </Text>
             </TouchableOpacity>
 
@@ -288,6 +307,66 @@ const HomeScreen = () => {
                     <TouchableOpacity
                       style={[styles.button, { backgroundColor: "#66FCF1" }]}
                       onPress={handleConfirmDate}
+                    >
+                      <Text style={styles.buttonText}>Confirm</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
+            {/* Time Label + Button */}
+            <Text style={styles.iconLabel}>Time</Text>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={handleOpenTimePicker}
+            >
+              <Text style={styles.iconButtonText}>
+                {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Time Picker Modal */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={timePickerVisible}
+              onRequestClose={() => setTimePickerVisible(false)}
+            >
+              <View style={styles.timePickerOverlay}>
+                <View style={styles.timePickerContent}>
+                  <Text style={styles.modalTitle}>Select Time</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                    <Picker
+                      selectedValue={selectedHour}
+                      style={{ width: 100 }}
+                      onValueChange={(itemValue) => setSelectedHour(itemValue)}
+                    >
+                      {[...Array(24).keys()].map((h) => (
+                        <Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
+                      ))}
+                    </Picker>
+                    <Text style={{ fontSize: 24, marginHorizontal: 8 }}>:</Text>
+                    <Picker
+                      selectedValue={selectedMinute}
+                      style={{ width: 100 }}
+                      onValueChange={(itemValue) => setSelectedMinute(itemValue)}
+                    >
+                      {[...Array(60).keys()].map((m) => (
+                        <Picker.Item key={m} label={m.toString().padStart(2, '0')} value={m} />
+                      ))}
+                    </Picker>
+                  </View>
+                  <View style={styles.timePickerButtonContainer}>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: "#444" }]}
+                      onPress={() => setTimePickerVisible(false)}
+                    >
+                      <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: "#66FCF1" }]}
+                      onPress={() => setTimePickerVisible(false)}
                     >
                       <Text style={styles.buttonText}>Confirm</Text>
                     </TouchableOpacity>
@@ -553,6 +632,24 @@ const styles = StyleSheet.create({
     marginBottom: wp("4%"),
   },
   calendarButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  timePickerOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timePickerContent: {
+    width: wp("90%"),
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("2%"),
+    padding: wp("4%"),
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  timePickerButtonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
