@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import appConfig from '../app.json';
+import { Analytics } from '../util/analytics';
 
 const SettingsScreen = () => {
   const [eventCount, setEventCount] = useState(0);
@@ -42,11 +43,17 @@ const SettingsScreen = () => {
     }, [])
   );
 
+  useEffect(() => {
+    Analytics.initialize();
+    Analytics.trackScreenView('Settings');
+  }, []);
+
   // Clear all events
   const clearEvents = async () => {
     try {
       await AsyncStorage.removeItem("countdowns");
       setEventCount(0);
+      Analytics.trackEvent && Analytics.trackEvent('clear_all_events', { timestamp: new Date().toISOString() });
     } catch (error) {
       console.error("Error clearing events", error);
     }
@@ -55,22 +62,22 @@ const SettingsScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerSubtitle}>Manage your app preferences and data</Text>
+      </View>
       <View style={styles.container}>
-        {/* App Info Card */}
-        <View style={styles.infoCard}>
-          <Text style={styles.appName}>{appInfo.name}</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>App Info</Text>
           <Text style={styles.appVersion}>Version {appInfo.version}</Text>
-          <Text style={styles.appDescription}>{appInfo.description}</Text>
         </View>
-        {/* Event Stats Card */}
-        <View style={styles.statsCard}>
-          <Text style={styles.sectionHeader}>Event Stats</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Event Stats</Text>
           <Text style={styles.statLabel}>Total Events</Text>
           <Text style={styles.statValue}>{eventCount}</Text>
         </View>
-        {/* Actions Card */}
-        <View style={styles.actionsCard}>
-          <Text style={styles.sectionHeader}>Actions</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Actions</Text>
           <TouchableOpacity
             onPress={() => setModalVisible(true)}
             style={styles.clearButton}
@@ -78,7 +85,6 @@ const SettingsScreen = () => {
             <Text style={styles.clearButtonText}>Clear All Events</Text>
           </TouchableOpacity>
         </View>
-        {/* Confirmation Modal */}
         <Modal
           animationType="fade"
           transparent
@@ -94,15 +100,15 @@ const SettingsScreen = () => {
               <View style={styles.modalButtonContainer}>
                 <TouchableOpacity
                   onPress={() => setModalVisible(false)}
-                  style={[styles.modalButton, { backgroundColor: "#444" }]}
+                  style={[styles.button, { backgroundColor: "#444" }]}
                 >
-                  <Text style={styles.modalButtonText}>Cancel</Text>
+                  <Text style={styles.buttonText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={clearEvents}
-                  style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
+                  style={[styles.button, { backgroundColor: "#E74C3C" }]}
                 >
-                  <Text style={styles.modalButtonText}>Confirm</Text>
+                  <Text style={styles.buttonText}>Confirm</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -123,15 +129,46 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: wp("4%")
   },
-  infoCard: {
-    width: "100%",
-    backgroundColor: "#FFFFFF",
-    borderRadius: wp("3%"),
-    padding: wp("5%"),
-    alignItems: "center",
+  headerContainer: {
+    paddingHorizontal: wp('4%'),
+    paddingTop: wp('8%'),
+    paddingBottom: wp('4%'),
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    marginBottom: wp('2%'),
+  },
+  headerTitle: {
+    fontSize: wp('5%'),
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    fontFamily: 'monospace',
+  },
+  headerSubtitle: {
+    fontSize: wp('3%'),
+    color: '#7F8C8D',
+    fontFamily: 'monospace',
+    marginTop: wp('1%'),
+  },
+  card: {
+    width: '100%',
+    backgroundColor: '#FFF',
+    borderRadius: wp('3%'),
+    padding: wp('5%'),
+    marginBottom: wp('3%'),
     borderWidth: 1,
-    borderColor: "#E0E0E0",
-    marginBottom: wp("4%")
+    borderColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOpacity: 0.07,
+    shadowRadius: wp('2%'),
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: wp('4%'),
+    color: '#3498DB',
+    fontWeight: 'bold',
+    marginBottom: wp('2%'),
+    fontFamily: 'monospace',
   },
   appName: {
     fontSize: wp("5%"),
@@ -152,23 +189,6 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
     textAlign: "center"
   },
-  statsCard: {
-    width: "100%",
-    backgroundColor: "#FFFFFF",
-    borderRadius: wp("3%"),
-    padding: wp("5%"),
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    marginBottom: wp("4%")
-  },
-  sectionHeader: {
-    fontSize: wp("4%"),
-    fontWeight: "bold",
-    color: "#2C3E50",
-    fontFamily: "monospace",
-    marginBottom: wp("2%")
-  },
   statLabel: {
     fontSize: wp("3%"),
     color: "#7F8C8D",
@@ -181,16 +201,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontFamily: "monospace",
     marginBottom: wp("1%")
-  },
-  actionsCard: {
-    width: "100%",
-    backgroundColor: "#FFFFFF",
-    borderRadius: wp("3%"),
-    padding: wp("5%"),
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    marginBottom: wp("4%")
   },
   clearButton: {
     backgroundColor: "#3498DB",
@@ -241,14 +251,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
   },
-  modalButton: {
+  button: {
     flex: 1,
     marginHorizontal: wp("1%"),
     padding: wp("3.5%"),
     borderRadius: wp("2%"),
     alignItems: "center",
   },
-  modalButtonText: {
+  buttonText: {
     color: "#FFFFFF",
     fontSize: wp("2%"),
     fontWeight: "bold",

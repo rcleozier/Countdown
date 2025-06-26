@@ -5,6 +5,7 @@ import CountdownItem from "../components/CountdownItem";
 import moment from "moment";
 import { useFocusEffect } from "@react-navigation/native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { Analytics } from '../util/analytics';
 
 const PastScreen = () => {
   const [pastEvents, setPastEvents] = useState([]);
@@ -38,6 +39,11 @@ const PastScreen = () => {
     }, [])
   );
 
+  useEffect(() => {
+    Analytics.initialize();
+    Analytics.trackScreenView('Past');
+  }, []);
+
   // Delete function (duplicates HomeScreen's logic)
   const deleteCountdown = async (id) => {
     try {
@@ -51,6 +57,7 @@ const PastScreen = () => {
         await AsyncStorage.setItem("countdowns", JSON.stringify(allEvents));
         // Reload pastEvents so UI stays in sync
         loadPastEvents();
+        Analytics.trackEvent && Analytics.trackEvent('delete_countdown', { id });
       }
     } catch (error) {
       console.error("Error deleting countdown from past events", error);

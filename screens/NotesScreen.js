@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, SafeAreaView, Modal } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { Ionicons } from '@expo/vector-icons';
+import { Analytics } from '../util/analytics';
 
 const NOTES_KEY = "notes";
 
@@ -12,6 +14,8 @@ const NotesScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
+    Analytics.initialize();
+    Analytics.trackScreenView('Notes');
     loadNotes();
   }, []);
 
@@ -33,18 +37,22 @@ const NotesScreen = () => {
       Alert.alert("Note too long", "Notes must be 300 characters or less.");
       return;
     }
-    const newNotes = [...notes, { text: noteText.trim(), date: new Date().toISOString() }];
+    const newNote = { text: noteText.trim(), date: new Date().toISOString() };
+    const newNotes = [...notes, newNote];
     saveNotes(newNotes);
     setNoteText("");
     setModalVisible(false);
+    Analytics.trackEvent && Analytics.trackEvent('add_note', newNote);
   };
 
   const deleteNote = (idx) => {
     Alert.alert("Delete Note", "Are you sure you want to delete this note?", [
       { text: "Cancel", style: "cancel" },
       { text: "Delete", style: "destructive", onPress: () => {
+        const noteToDelete = notes[idx];
         const newNotes = notes.filter((_, i) => i !== idx);
         saveNotes(newNotes);
+        Analytics.trackEvent && Analytics.trackEvent('delete_note', noteToDelete);
       }}
     ]);
   };
@@ -70,8 +78,11 @@ const NotesScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Notes</Text>
+        <Text style={styles.headerSubtitle}>Jot down your thoughts, reminders, and ideas</Text>
+      </View>
       <View style={styles.container}>
-        <Text style={styles.header}>Notes</Text>
         <FlatList
           data={notes}
           keyExtractor={(_, i) => i.toString()}
@@ -82,11 +93,11 @@ const NotesScreen = () => {
                 Created: {new Date(item.date).toLocaleDateString()} at {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </Text>
               <View style={styles.noteActions}>
-                <TouchableOpacity onPress={() => startEdit(index)} style={styles.actionButton}>
-                  <Text style={styles.actionText}>Edit</Text>
+                <TouchableOpacity onPress={() => startEdit(index)} style={styles.iconButton}>
+                  <Ionicons name="pencil" size={20} color="#3498DB" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => deleteNote(index)} style={styles.actionButton}>
-                  <Text style={[styles.actionText, { color: '#E74C3C' }]}>Delete</Text>
+                <TouchableOpacity onPress={() => deleteNote(index)} style={styles.iconButton}>
+                  <Ionicons name="trash" size={20} color="#E74C3C" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -102,7 +113,7 @@ const NotesScreen = () => {
             setModalVisible(true); 
           }}
         >
-          <Text style={styles.floatingButtonText}>+ Add Note</Text>
+          <Ionicons name="add" size={24} color="#FFF" />
         </TouchableOpacity>
         <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
@@ -115,14 +126,15 @@ const NotesScreen = () => {
                 maxLength={300}
                 multiline
                 placeholder="Write your note (max 300 chars)"
+                placeholderTextColor="#888"
               />
               <Text style={styles.charCount}>{noteText.length}/300</Text>
               <View style={styles.modalActions}>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalButton}>
-                  <Text style={styles.modalButtonText}>Cancel</Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.button, { backgroundColor: "#444" }]}>
+                  <Text style={styles.buttonText}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={editingIndex !== null ? saveEdit : addNote} style={[styles.modalButton, { backgroundColor: '#3498DB' }] }>
-                  <Text style={[styles.modalButtonText, { color: '#FFF' }]}>{editingIndex !== null ? "Save" : "Add"}</Text>
+                <TouchableOpacity onPress={editingIndex !== null ? saveEdit : addNote} style={[styles.button, { backgroundColor: '#3498DB' }] }>
+                  <Text style={[styles.buttonText, { color: '#FFF' }]}>{editingIndex !== null ? "Save" : "Add"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -137,58 +149,64 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8F9FA' },
   container: { flex: 1 },
   header: { 
-    fontSize: 28, 
+    fontSize: wp('5%'), 
     fontWeight: 'bold', 
     color: '#3498DB', 
-    marginBottom: 18, 
+    marginBottom: wp('4%'), 
     textAlign: 'center',
-    marginTop: 20
+    marginTop: wp('8%'),
+    fontFamily: 'monospace',
+    letterSpacing: 1,
   },
   listContainer: {
-    padding: 20,
-    paddingBottom: 80
+    padding: wp('4%'),
+    paddingBottom: wp('20%'),
   },
   noteCard: { 
     backgroundColor: '#FFF', 
-    borderRadius: 10, 
-    padding: 16, 
-    marginBottom: 14, 
+    borderRadius: wp('3%'), 
+    padding: wp('4%'), 
+    marginBottom: wp('3%'), 
     borderWidth: 1, 
     borderColor: '#E0E0E0', 
     shadowColor: '#000', 
     shadowOpacity: 0.07, 
-    shadowRadius: 4, 
-    elevation: 2 
+    shadowRadius: wp('2%'), 
+    elevation: 2,
   },
   noteText: { 
-    fontSize: 18, 
+    fontSize: wp('4%'), 
     color: '#2C3E50', 
-    marginBottom: 8,
-    lineHeight: 24
+    marginBottom: wp('2%'),
+    lineHeight: wp('6%'),
+    fontFamily: 'monospace',
   },
   noteDate: {
-    fontSize: 14,
+    fontSize: wp('2.7%'),
     color: '#7F8C8D',
-    marginBottom: 12,
-    fontStyle: 'italic'
+    marginBottom: wp('2.5%'),
+    fontStyle: 'italic',
+    fontFamily: 'monospace',
   },
   noteActions: { 
     flexDirection: 'row', 
-    justifyContent: 'flex-end' 
+    justifyContent: 'flex-end',
+    marginTop: wp('1%'),
   },
-  actionButton: { 
-    marginLeft: 18 
-  },
-  actionText: { 
-    color: '#3498DB', 
-    fontWeight: 'bold', 
-    fontSize: 16 
+  iconButton: {
+    marginLeft: wp('3%'),
+    padding: wp('1.5%'),
+    borderRadius: wp('2%'),
+    backgroundColor: '#F4F8FB',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyText: { 
     color: '#7F8C8D', 
     textAlign: 'center', 
-    marginTop: 40, 
-    fontSize: 16 
+    marginTop: wp('10%'), 
+    fontSize: wp('3%'),
+    fontFamily: 'monospace',
   },
   floatingButton: {
     position: "absolute",
@@ -199,6 +217,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp("4%"),
     borderRadius: wp("2%"),
     zIndex: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.07,
+    shadowRadius: wp('2%'),
+    elevation: 3,
   },
   floatingButtonText: {
     color: "#FFFFFF",
@@ -206,14 +230,88 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontFamily: "monospace",
   },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.15)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { backgroundColor: '#FFF', borderRadius: 12, padding: 24, width: '90%', elevation: 5 },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#3498DB', marginBottom: 12, textAlign: 'center' },
-  input: { borderWidth: 1, borderColor: '#E0E0E0', borderRadius: 8, padding: 12, minHeight: 80, fontSize: 16, color: '#2C3E50', backgroundColor: '#F8F9FA' },
-  charCount: { alignSelf: 'flex-end', color: '#7F8C8D', fontSize: 13, marginTop: 4 },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 18 },
-  modalButton: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 8, backgroundColor: '#EEE', marginLeft: 10 },
-  modalButtonText: { color: '#3498DB', fontWeight: 'bold', fontSize: 16 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("2%"),
+    padding: wp("4%"),
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    width: '90%',
+  },
+  modalTitle: {
+    fontSize: wp("4%"),
+    fontWeight: "bold",
+    marginBottom: wp("2.5%"),
+    textAlign: "center",
+    color: "#2C3E50",
+    fontFamily: "monospace",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    padding: wp("2%"),
+    marginBottom: wp("2.5%"),
+    borderRadius: wp("1%"),
+    color: "#2C3E50",
+    fontFamily: "monospace",
+    fontSize: wp("3%"),
+    backgroundColor: "#FFFFFF",
+    minHeight: wp('16%'),
+    textAlignVertical: 'top',
+  },
+  charCount: {
+    alignSelf: 'flex-end',
+    color: '#888',
+    fontSize: wp('2.5%'),
+    marginBottom: wp('2%'),
+    fontFamily: 'monospace',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: wp('2%'),
+  },
+  button: {
+    flex: 1,
+    padding: wp('2%'),
+    borderRadius: wp('1%'),
+    alignItems: 'center',
+    marginHorizontal: wp('1%'),
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: wp('3%'),
+    fontFamily: 'monospace',
+  },
+  headerContainer: {
+    paddingHorizontal: wp('4%'),
+    paddingTop: wp('8%'),
+    paddingBottom: wp('4%'),
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    marginBottom: wp('2%'),
+  },
+  headerTitle: {
+    fontSize: wp('5%'),
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    fontFamily: 'monospace',
+  },
+  headerSubtitle: {
+    fontSize: wp('3%'),
+    color: '#7F8C8D',
+    fontFamily: 'monospace',
+    marginTop: wp('1%'),
+  },
 });
 
 export default NotesScreen; 

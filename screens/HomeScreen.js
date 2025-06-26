@@ -18,6 +18,7 @@ import { Picker } from '@react-native-picker/picker';
 import moment from "moment";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import * as Notifications from 'expo-notifications';
+import { Analytics } from '../util/analytics';
 
 const generateGUID = () =>
   "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -216,6 +217,11 @@ const HomeScreen = () => {
     setSelectedHour(9);
     setSelectedMinute(0);
     setModalVisible(false);
+    Analytics.trackEvent && Analytics.trackEvent('add_countdown', {
+      name: newName,
+      date: combinedDateTime.toISOString(),
+      icon: newIcon,
+    });
   };
 
   const deleteCountdown = (id) => {
@@ -226,7 +232,16 @@ const HomeScreen = () => {
       }
       return prev.filter((item) => item.id !== id);
     });
+    Analytics.trackEvent && Analytics.trackEvent('delete_countdown', {
+      id,
+    });
   };
+
+  // Initialize analytics on mount
+  useEffect(() => {
+    Analytics.initialize();
+    Analytics.trackScreenView('Home');
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>

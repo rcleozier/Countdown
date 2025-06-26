@@ -2,9 +2,9 @@ import { Platform } from "react-native";
 import Aptabase, { trackEvent } from "@aptabase/react-native";
 
 const EVENTS = {
-  ADD_DRINK: "add_drink",
-  DELETE_DRINK: "delete_drink",
   SCREEN_VIEW: "screen_view",
+  ADD_COUNTDOWN: "add_countdown",
+  DELETE_COUNTDOWN: "delete_countdown",
 };
 
 const isNative = Platform.OS === "ios" || Platform.OS === "android";
@@ -13,7 +13,7 @@ export const Analytics = {
   initialize() {
     if (isNative) {
       try {
-        Aptabase.init("A-US-6674327791");
+        Aptabase.init("A-US-0908125562");
       } catch (error) {
         console.error("Error initializing Aptabase:", error);
       }
