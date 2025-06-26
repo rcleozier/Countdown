@@ -17,6 +17,7 @@ import { Calendar } from "react-native-calendars";
 import { Picker } from '@react-native-picker/picker';
 import moment from "moment";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
+import * as Notifications from 'expo-notifications';
 
 const generateGUID = () =>
   "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -33,66 +34,68 @@ const HomeScreen = () => {
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [tempSelectedDate, setTempSelectedDate] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedHour, setSelectedHour] = useState(new Date().getHours());
-  const [selectedMinute, setSelectedMinute] = useState(new Date().getMinutes());
+  const [selectedHour, setSelectedHour] = useState(9);
+  const [selectedMinute, setSelectedMinute] = useState(0);
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("💻");
 
   const eventIcons = [
-    "📅",
-    "⏰",
-    "⭐️",
-    "✅",
-    "🎉",
-    "❤️",
-    "📚",
-    "💼",
-    "📝",
-    "🎂",
-    "🏠",
-    "🏆",
-    "🎓",
-    "🛒",
-    "🚗",
-    "✈️",
-    "🎶",
-    "🏥",
-    "🍽",
-    "👨‍👩‍👧‍👦",
-    "🏖",
-    "🏢",
-    "🏫",
-    "🏀",
-    "⚽️",
-    "🏈",
-    "🏐",
-    "🏸",
-    "🏊‍♂️",
-    "🚴‍♂️",
-    "🏃‍♂️",
-    "🧘‍♂️",
-    "🧑‍💻",
-    "🧑‍🎓",
-    "🧑‍🍳",
-    "🧑‍🎤",
-    "🧑‍🔬",
-    "🧑‍🎨",
-    "🧑‍🚀",
-    "🧑‍✈️",
-    "🧑‍🌾",
-    "🧑‍🔧",
-    "🧑‍🏫",
-    "🧑‍⚕️",
-    "🧑‍🚒",
-    "💡",
-    "🔔",
-    "📆",
-    "📈",
-    "📊",
-    "🎯",
-    "🎙️",
-    "🎤",
-    "🎬",
+    "🎂", // Birthday
+    "🗓️", // Appointment
+    "🏖️", // Vacation
+    "✈️", // Flight
+    "🏫", // School
+    "🏢", // Work
+    "💍", // Wedding
+    "👶", // Baby
+    "🏠", // Move
+    "🏥", // Doctor
+    "🏆", // Competition
+    "🎓", // Graduation
+    "🎉", // Party
+    "🏃‍♂️", // Race
+    "🏟️", // Concert
+    "🏀", // Basketball
+    "⚽️", // Soccer
+    "🏈", // Football
+    "🏐", // Volleyball
+    "🏸", // Badminton
+    "🏊‍♂️", // Swim
+    "🚴‍♂️", // Bike
+    "🏃‍♀️", // Run
+    "🧘‍♂️", // Yoga
+    "🏕️", // Camping
+    "🏰", // Trip
+    "🏡", // Home
+    "🏠", // Housewarming
+    "🏢", // Office
+    "🏫", // Exam
+    "🏆", // Award
+    "🎬", // Movie
+    "🎤", // Show
+    "🎵", // Festival
+    "🎮", // Game
+    "🏅", // Achievement
+    "🏋️‍♂️", // Workout
+    "🧳", // Travel
+    "🕒", // Meeting
+    "💼", // Interview
+    "🚗", // Car
+    "🛒", // Shopping
+    "💡", // Idea
+    "📅", // Event
+    "🏥", // Checkup
+    "🏜️", // Adventure
+    "🏙️", // City
+    "🧑‍🤝‍🧑", // Friends
+    "👨‍👩‍👧‍👦", // Family
+    "🧑‍🎓", // Study
+    "🧑‍💻", // Project
+    "🧑‍🍳", // Cook
+    "🧑‍🔬", // Science
+    "🧑‍🎤", // Music
+    "🧑‍🚀", // Space
+    "🧑‍✈️", // Flight
   ];
 
   // ----- Load / Save Data -----
@@ -166,7 +169,13 @@ const HomeScreen = () => {
     setTimePickerVisible(false);
   };
 
-  const handleAddCountdown = () => {
+  const handleOpenModal = () => {
+    setModalVisible(true);
+    setSelectedHour(9);
+    setSelectedMinute(0);
+  };
+
+  const handleAddCountdown = async () => {
     if (!newName) return;
     const combinedDateTime = new Date(selectedDate);
     combinedDateTime.setHours(selectedHour);
@@ -177,23 +186,46 @@ const HomeScreen = () => {
       Alert.alert("Invalid Date/Time", "Please select a date and time in the future.");
       return;
     }
+    let notificationId = null;
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === 'granted') {
+        notificationId = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'Countdown Reminder',
+            body: `"${newName}" is happening now!`,
+            sound: true,
+          },
+          trigger: combinedDateTime,
+        });
+      }
+    } catch (e) {
+      console.warn('Could not schedule notification:', e);
+    }
     const newCountdown = {
       id: generateGUID(),
       name: newName,
       date: combinedDateTime.toISOString(),
       icon: newIcon,
+      notificationId,
     };
     setCountdowns((prev) => [...prev, newCountdown]);
     setNewName("");
     setNewIcon("💻");
     setSelectedDate(new Date());
-    setSelectedHour(new Date().getHours());
-    setSelectedMinute(new Date().getMinutes());
+    setSelectedHour(9);
+    setSelectedMinute(0);
     setModalVisible(false);
   };
 
   const deleteCountdown = (id) => {
-    setCountdowns((prev) => prev.filter((item) => item.id !== id));
+    setCountdowns((prev) => {
+      const countdownToDelete = prev.find((item) => item.id === id);
+      if (countdownToDelete && countdownToDelete.notificationId) {
+        Notifications.cancelScheduledNotificationAsync(countdownToDelete.notificationId).catch(() => {});
+      }
+      return prev.filter((item) => item.id !== id);
+    });
   };
 
   return (
@@ -226,7 +258,7 @@ const HomeScreen = () => {
 
       {/* Floating Button to Add New Countdown */}
       <TouchableOpacity
-        onPress={() => setModalVisible(true)}
+        onPress={handleOpenModal}
         style={styles.floatingButton}
       >
         <Text style={styles.floatingButtonText}>+ Add New Countdown</Text>
