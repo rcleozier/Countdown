@@ -209,6 +209,7 @@ const HomeScreen = () => {
       date: combinedDateTime.toISOString(),
       icon: newIcon,
       notificationId,
+      createdAt: new Date().toISOString(),
     };
     setCountdowns((prev) => [...prev, newCountdown]);
     setNewName("");

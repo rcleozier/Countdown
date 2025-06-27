@@ -38,6 +38,19 @@ const CountdownItem = ({ event, index, onDelete }) => {
     return () => clearInterval(interval);
   }, [event.date]);
 
+  // Progress calculation
+  const getProgress = () => {
+    const now = moment();
+    const start = moment().startOf('day'); // Use today as the start
+    const end = moment(event.date);
+    if (now.isAfter(end)) return 1;
+    if (now.isBefore(start)) return 0;
+    const total = end.diff(start);
+    const elapsed = now.diff(start);
+    return Math.min(Math.max(elapsed / total, 0), 1);
+  };
+  const progress = getProgress();
+
   return (
     <>
       {/* Main Item Row */}
@@ -75,6 +88,15 @@ const CountdownItem = ({ event, index, onDelete }) => {
             </TouchableOpacity>
           </View>
         </View>
+        {/* Progress Bar */}
+        <View style={styles.progressBarBackground}>
+          <View style={[styles.progressBarFill, { width: `${Math.round(progress * 100)}%` }]} />
+        </View>
+        <Text style={styles.progressText}>
+          {progress === 0
+            ? 'Just started!'
+            : `${Math.round(progress * 100)}% of the way there`}
+        </Text>
       </View>
 
       {/* Confirmation Modal */}
@@ -255,6 +277,27 @@ const styles = StyleSheet.create({
     fontSize: wp("3.75%"),
     fontWeight: "bold",
     fontFamily: "monospace",
+  },
+  progressBarBackground: {
+    height: 8,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 4,
+    marginHorizontal: wp('4%'),
+    marginTop: 6,
+    marginBottom: 2,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: 8,
+    backgroundColor: '#3498DB',
+    borderRadius: 4,
+  },
+  progressText: {
+    fontSize: wp('2.7%'),
+    color: '#7F8C8D',
+    fontFamily: 'monospace',
+    marginLeft: wp('4%'),
+    marginBottom: 6,
   },
 });
 
