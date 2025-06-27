@@ -18,7 +18,9 @@ import { Analytics } from '../util/analytics';
 
 const SettingsScreen = () => {
   const [eventCount, setEventCount] = useState(0);
+  const [noteCount, setNoteCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
+  const [clearNotesModal, setClearNotesModal] = useState(false);
   const appInfo = appConfig.expo;
 
   // Function to load events from AsyncStorage
@@ -36,10 +38,26 @@ const SettingsScreen = () => {
     }
   };
 
+  // Function to load notes from AsyncStorage
+  const loadNotes = async () => {
+    try {
+      const storedNotes = await AsyncStorage.getItem("notes");
+      if (storedNotes) {
+        const notes = JSON.parse(storedNotes);
+        setNoteCount(notes.length);
+      } else {
+        setNoteCount(0);
+      }
+    } catch (error) {
+      console.error("Error loading notes", error);
+    }
+  };
+
   // Refresh data every time the screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadEvents();
+      loadNotes();
     }, [])
   );
 
@@ -60,6 +78,17 @@ const SettingsScreen = () => {
     setModalVisible(false);
   };
 
+  // Clear all notes
+  const clearNotes = async () => {
+    try {
+      await AsyncStorage.removeItem("notes");
+      setNoteCount(0);
+    } catch (error) {
+      console.error("Error clearing notes", error);
+    }
+    setClearNotesModal(false);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
@@ -75,6 +104,8 @@ const SettingsScreen = () => {
           <Text style={styles.cardTitle}>Event Stats</Text>
           <Text style={styles.statLabel}>Total Events</Text>
           <Text style={styles.statValue}>{eventCount}</Text>
+          <Text style={styles.statLabel}>Total Notes</Text>
+          <Text style={styles.statValue}>{noteCount}</Text>
         </View>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Actions</Text>
@@ -83,6 +114,12 @@ const SettingsScreen = () => {
             style={styles.clearButton}
           >
             <Text style={styles.clearButtonText}>Clear All Events</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setClearNotesModal(true)}
+            style={[styles.clearButton, { backgroundColor: '#E74C3C', marginTop: wp('2%') }]}
+          >
+            <Text style={styles.clearButtonText}>Clear All Notes</Text>
           </TouchableOpacity>
         </View>
         <Modal
@@ -106,6 +143,35 @@ const SettingsScreen = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={clearEvents}
+                  style={[styles.button, { backgroundColor: "#E74C3C" }]}
+                >
+                  <Text style={styles.buttonText}>Confirm</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+        <Modal
+          animationType="fade"
+          transparent
+          visible={clearNotesModal}
+          onRequestClose={() => setClearNotesModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Confirm Clear</Text>
+              <Text style={styles.modalMessage}>
+                Are you sure you want to clear all notes?
+              </Text>
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                  onPress={() => setClearNotesModal(false)}
+                  style={[styles.button, { backgroundColor: "#444" }]}
+                >
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={clearNotes}
                   style={[styles.button, { backgroundColor: "#E74C3C" }]}
                 >
                   <Text style={styles.buttonText}>Confirm</Text>
