@@ -20,38 +20,6 @@ export const Analytics = {
     }
   },
 
-  trackAddDrink(drink) {
-    if (isNative) {
-      try {
-        trackEvent(EVENTS.ADD_DRINK, {
-          drink_type: drink.type.label,
-          drink_amount: drink.amount,
-          drink_price: drink.price,
-          drink_abv: drink.type.abv,
-          timestamp: new Date().toISOString(),
-        });
-      } catch (error) {
-        console.error("Error tracking add drink:", error);
-      }
-    }
-  },
-
-  trackDeleteDrink(drink) {
-    if (isNative) {
-      try {
-        trackEvent(EVENTS.DELETE_DRINK, {
-          drink_type: drink.type.label,
-          drink_amount: drink.amount,
-          drink_price: drink.price,
-          drink_abv: drink.type.abv,
-          timestamp: new Date().toISOString(),
-        });
-      } catch (error) {
-        console.error("Error tracking delete drink:", error);
-      }
-    }
-  },
-
   trackScreenView(screenName) {
     if (isNative) {
       try {
