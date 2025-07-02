@@ -14,6 +14,7 @@ import { LineChart, PieChart, BarChart } from "react-native-chart-kit";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { Analytics } from '../util/analytics';
 import { Ionicons } from '@expo/vector-icons';
+import OptimizedBannerAd from '../components/Ads';
 
 const chartColors = [
   "#66FCF1", "#45A29E", "#1F2833", "#C5C6C7", "#F5F5F5", "#FFB347", "#FF6961", "#6A5ACD", "#20B2AA", "#FFD700",
@@ -176,6 +177,7 @@ const AnalyticsScreen = () => {
           <Text style={styles.headerTitle}>Analytics</Text>
           <Text style={styles.headerSubtitle}>Visualize your countdowns and event trends</Text>
         </View>
+        <OptimizedBannerAd />
         <View style={styles.container}>
           <View style={styles.card}>
             <Text style={styles.chartTitle}>Upcoming Events (Next 7 Days)</Text>

@@ -19,6 +19,7 @@ import moment from "moment";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import * as Notifications from 'expo-notifications';
 import { Analytics } from '../util/analytics';
+import OptimizedBannerAd from '../components/Ads';
 
 const generateGUID = () =>
   "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -197,7 +198,7 @@ const HomeScreen = () => {
             body: `"${newName}" is happening now!`,
             sound: true,
           },
-          trigger: combinedDateTime,
+          trigger: { date: combinedDateTime },
         });
       }
     } catch (e) {
@@ -244,6 +245,16 @@ const HomeScreen = () => {
     Analytics.trackScreenView('Home');
   }, []);
 
+  const renderItem = ({ item, index }) => {
+    const showAd = (index + 1) % 5 === 0;
+    return (
+      <>
+        <CountdownItem event={item} index={index} onDelete={deleteCountdown} />
+        {showAd && <OptimizedBannerAd />}
+      </>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
@@ -256,22 +267,16 @@ const HomeScreen = () => {
           <Text style={styles.emptySubText}>
             Create your first upcoming event to get started.
           </Text>
+          <OptimizedBannerAd />
         </View>
       ) : (
         <FlatList
           data={upcomingEvents}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => (
-            <CountdownItem
-              event={item}
-              index={index}
-              onDelete={deleteCountdown}
-            />
-          )}
+          renderItem={renderItem}
           contentContainerStyle={styles.listContainer}
         />
       )}
-
       {/* Floating Button to Add New Countdown */}
       <TouchableOpacity
         onPress={handleOpenModal}

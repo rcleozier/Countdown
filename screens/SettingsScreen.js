@@ -20,7 +20,6 @@ const SettingsScreen = () => {
   const [eventCount, setEventCount] = useState(0);
   const [noteCount, setNoteCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-  const [clearNotesModal, setClearNotesModal] = useState(false);
   const appInfo = appConfig.expo;
 
   // Function to load events from AsyncStorage
@@ -78,16 +77,6 @@ const SettingsScreen = () => {
     setModalVisible(false);
   };
 
-  // Clear all notes
-  const clearNotes = async () => {
-    try {
-      await AsyncStorage.removeItem("notes");
-      setNoteCount(0);
-    } catch (error) {
-      console.error("Error clearing notes", error);
-    }
-    setClearNotesModal(false);
-  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -114,12 +103,6 @@ const SettingsScreen = () => {
             style={styles.clearButton}
           >
             <Text style={styles.clearButtonText}>Clear All Events</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setClearNotesModal(true)}
-            style={[styles.clearButton, { backgroundColor: '#E74C3C', marginTop: wp('2%') }]}
-          >
-            <Text style={styles.clearButtonText}>Clear All Notes</Text>
           </TouchableOpacity>
         </View>
         <Modal

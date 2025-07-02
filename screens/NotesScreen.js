@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { Ionicons } from '@expo/vector-icons';
 import { Analytics } from '../util/analytics';
+import OptimizedBannerAd from '../components/Ads';
 
 const NOTES_KEY = "notes";
 
@@ -82,6 +83,7 @@ const NotesScreen = () => {
         <Text style={styles.headerTitle}>Notes</Text>
         <Text style={styles.headerSubtitle}>Jot down your thoughts, reminders, and ideas</Text>
       </View>
+      <OptimizedBannerAd />
       <View style={styles.container}>
         <FlatList
           data={notes}

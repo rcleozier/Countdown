@@ -6,6 +6,7 @@ import moment from "moment";
 import { useFocusEffect } from "@react-navigation/native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { Analytics } from '../util/analytics';
+import OptimizedBannerAd from '../components/Ads';
 
 const PastScreen = () => {
   const [pastEvents, setPastEvents] = useState([]);
@@ -67,6 +68,7 @@ const PastScreen = () => {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        <OptimizedBannerAd />
         {pastEvents.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No Past Events</Text>
