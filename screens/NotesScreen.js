@@ -77,33 +77,43 @@ const NotesScreen = () => {
     setModalVisible(false);
   };
 
+  // Prepare data with ad as the first item
+  let listData = [];
+  if (notes.length > 0) {
+    listData = [{ type: 'ad', key: 'ad' }, ...notes.map((note, idx) => ({ ...note, type: 'note', key: idx.toString() }))];
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Notes</Text>
         <Text style={styles.headerSubtitle}>Jot down your thoughts, reminders, and ideas</Text>
       </View>
-      <OptimizedBannerAd />
       <View style={styles.container}>
         <FlatList
-          data={notes}
-          keyExtractor={(_, i) => i.toString()}
-          renderItem={({ item, index }) => (
-            <View style={styles.noteCard}>
-              <Text style={styles.noteText}>{item.text}</Text>
-              <Text style={styles.noteDate}>
-                Created: {new Date(item.date).toLocaleDateString()} at {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </Text>
-              <View style={styles.noteActions}>
-                <TouchableOpacity onPress={() => startEdit(index)} style={styles.iconButton}>
-                  <Ionicons name="pencil" size={20} color="#3498DB" />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => deleteNote(index)} style={styles.iconButton}>
-                  <Ionicons name="trash" size={20} color="#E74C3C" />
-                </TouchableOpacity>
+          data={listData}
+          keyExtractor={(item) => item.key}
+          renderItem={({ item, index }) => {
+            if (item.type === 'ad') {
+              return <OptimizedBannerAd />;
+            }
+            return (
+              <View style={styles.noteCard}>
+                <Text style={styles.noteText}>{item.text}</Text>
+                <Text style={styles.noteDate}>
+                  Created: {new Date(item.date).toLocaleDateString()} at {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+                <View style={styles.noteActions}>
+                  <TouchableOpacity onPress={() => startEdit(index - 1)} style={styles.iconButton}>
+                    <Ionicons name="pencil" size={20} color="#3498DB" />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => deleteNote(index - 1)} style={styles.iconButton}>
+                    <Ionicons name="trash" size={20} color="#E74C3C" />
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          )}
+            );
+          }}
           ListEmptyComponent={<Text style={styles.emptyText}>No notes yet.</Text>}
           contentContainerStyle={styles.listContainer}
         />

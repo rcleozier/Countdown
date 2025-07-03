@@ -65,6 +65,17 @@ const PastScreen = () => {
     }
   };
 
+  // Prepare data with ad every 5 items
+  let listData = [];
+  if (pastEvents.length > 0) {
+    pastEvents.forEach((event, idx) => {
+      listData.push({ ...event, type: 'event', key: event.id });
+      if ((idx + 1) % 5 === 0) {
+        listData.push({ type: 'ad', key: `ad-${idx}` });
+      }
+    });
+  }
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -72,7 +83,6 @@ const PastScreen = () => {
           <Text style={styles.headerTitle}>Past Events</Text>
           <Text style={styles.headerSubtitle}>Review your completed and expired countdowns</Text>
         </View>
-        <OptimizedBannerAd />
         {pastEvents.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No Past Events</Text>
@@ -82,12 +92,15 @@ const PastScreen = () => {
           </View>
         ) : (
           <FlatList
-            data={pastEvents}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item, index }) => (
+            data={listData}
+            keyExtractor={(item) => item.key}
+            renderItem={({ item, index }) => {
+              if (item.type === 'ad') {
+                return <OptimizedBannerAd />;
+              }
               // Pass the delete function to CountdownItem
-              <CountdownItem event={item} index={index} onDelete={deleteCountdown} />
-            )}
+              return <CountdownItem event={item} index={index} onDelete={deleteCountdown} />;
+            }}
             contentContainerStyle={styles.listContainer}
           />
         )}
