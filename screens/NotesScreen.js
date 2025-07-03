@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   listContainer: {
-    padding: wp('4%'),
+    paddingHorizontal: wp('4%'),
     paddingBottom: wp('20%'),
   },
   noteCard: { 
