@@ -18,7 +18,6 @@ import { Analytics } from '../util/analytics';
 
 const SettingsScreen = () => {
   const [eventCount, setEventCount] = useState(0);
-  const [noteCount, setNoteCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const appInfo = appConfig.expo;
 
@@ -37,26 +36,10 @@ const SettingsScreen = () => {
     }
   };
 
-  // Function to load notes from AsyncStorage
-  const loadNotes = async () => {
-    try {
-      const storedNotes = await AsyncStorage.getItem("notes");
-      if (storedNotes) {
-        const notes = JSON.parse(storedNotes);
-        setNoteCount(notes.length);
-      } else {
-        setNoteCount(0);
-      }
-    } catch (error) {
-      console.error("Error loading notes", error);
-    }
-  };
-
   // Refresh data every time the screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadEvents();
-      loadNotes();
     }, [])
   );
 
@@ -93,8 +76,6 @@ const SettingsScreen = () => {
           <Text style={styles.cardTitle}>Event Stats</Text>
           <Text style={styles.statLabel}>Total Events</Text>
           <Text style={styles.statValue}>{eventCount}</Text>
-          <Text style={styles.statLabel}>Total Notes</Text>
-          <Text style={styles.statValue}>{noteCount}</Text>
         </View>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Actions</Text>
@@ -126,35 +107,6 @@ const SettingsScreen = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={clearEvents}
-                  style={[styles.button, { backgroundColor: "#E74C3C" }]}
-                >
-                  <Text style={styles.buttonText}>Confirm</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          animationType="fade"
-          transparent
-          visible={clearNotesModal}
-          onRequestClose={() => setClearNotesModal(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Confirm Clear</Text>
-              <Text style={styles.modalMessage}>
-                Are you sure you want to clear all notes?
-              </Text>
-              <View style={styles.modalButtonContainer}>
-                <TouchableOpacity
-                  onPress={() => setClearNotesModal(false)}
-                  style={[styles.button, { backgroundColor: "#444" }]}
-                >
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={clearNotes}
                   style={[styles.button, { backgroundColor: "#E74C3C" }]}
                 >
                   <Text style={styles.buttonText}>Confirm</Text>

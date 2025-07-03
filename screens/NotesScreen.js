@@ -107,15 +107,15 @@ const NotesScreen = () => {
           ListEmptyComponent={<Text style={styles.emptyText}>No notes yet.</Text>}
           contentContainerStyle={styles.listContainer}
         />
-        <TouchableOpacity 
-          style={styles.floatingButton} 
-          onPress={() => { 
-            setEditingIndex(null); 
-            setNoteText(""); 
-            setModalVisible(true); 
+        <TouchableOpacity
+          style={styles.addNoteButton}
+          onPress={() => {
+            setEditingIndex(null);
+            setNoteText("");
+            setModalVisible(true);
           }}
         >
-          <Ionicons name="add" size={24} color="#FFF" />
+          <Text style={styles.addNoteButtonText}>+ Add New Note</Text>
         </TouchableOpacity>
         <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
@@ -210,14 +210,14 @@ const styles = StyleSheet.create({
     fontSize: wp('3%'),
     fontFamily: 'monospace',
   },
-  floatingButton: {
-    position: "absolute",
-    bottom: wp("4%"),
-    right: wp("4%"),
-    backgroundColor: "#3498DB",
-    paddingVertical: wp("3%"),
-    paddingHorizontal: wp("4%"),
-    borderRadius: wp("2%"),
+  addNoteButton: {
+    position: 'absolute',
+    bottom: wp('4%'),
+    right: wp('4%'),
+    backgroundColor: '#0099F7',
+    paddingVertical: wp('3%'),
+    paddingHorizontal: wp('4%'),
+    borderRadius: wp('2%'),
     zIndex: 999,
     alignItems: 'center',
     justifyContent: 'center',
@@ -226,11 +226,11 @@ const styles = StyleSheet.create({
     shadowRadius: wp('2%'),
     elevation: 3,
   },
-  floatingButtonText: {
-    color: "#FFFFFF",
-    fontSize: wp("3%"),
-    fontWeight: "bold",
-    fontFamily: "monospace",
+  addNoteButtonText: {
+    color: '#FFFFFF',
+    fontSize: wp('3%'),
+    fontWeight: 'bold',
+    fontFamily: 'monospace',
   },
   modalOverlay: {
     flex: 1,

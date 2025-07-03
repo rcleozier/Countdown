@@ -68,6 +68,10 @@ const PastScreen = () => {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerTitle}>Past Events</Text>
+          <Text style={styles.headerSubtitle}>Review your completed and expired countdowns</Text>
+        </View>
         <OptimizedBannerAd />
         {pastEvents.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -124,6 +128,27 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: wp("4%"),
     paddingHorizontal: wp("4%"),
+  },
+  headerContainer: {
+    paddingHorizontal: wp('4%'),
+    paddingTop: wp('8%'),
+    paddingBottom: wp('4%'),
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    marginBottom: wp('2%'),
+  },
+  headerTitle: {
+    fontSize: wp('5%'),
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    fontFamily: 'monospace',
+  },
+  headerSubtitle: {
+    fontSize: wp('3%'),
+    color: '#7F8C8D',
+    fontFamily: 'monospace',
+    marginTop: wp('1%'),
   },
 });
 
