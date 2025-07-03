@@ -80,7 +80,9 @@ const NotesScreen = () => {
   // Prepare data with ad as the first item
   let listData = [];
   if (notes.length > 0) {
-    listData = [{ type: 'ad', key: 'ad' }, ...notes.map((note, idx) => ({ ...note, type: 'note', key: idx.toString() }))];
+    // Sort notes by date descending (newest first)
+    const sortedNotes = [...notes].sort((a, b) => new Date(b.date) - new Date(a.date));
+    listData = [{ type: 'ad', key: 'ad' }, ...sortedNotes.map((note, idx) => ({ ...note, type: 'note', key: idx.toString() }))];
   }
 
   return (
