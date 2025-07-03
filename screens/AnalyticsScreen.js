@@ -166,9 +166,8 @@ const AnalyticsScreen = () => {
     Analytics.trackScreenView('Analytics');
   }, []);
 
-  const CARD_HORIZONTAL_PADDING = wp('4%');
-  const CARD_MARGIN = wp('3%');
-  const chartWidth = Dimensions.get('window').width - 2 * (CARD_HORIZONTAL_PADDING + CARD_MARGIN);
+  const CARD_HORIZONTAL_PADDING = wp('8%');
+  const chartWidth = Dimensions.get('window').width - 2 * CARD_HORIZONTAL_PADDING;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -208,7 +207,7 @@ const AnalyticsScreen = () => {
                   },
                 }}
                 bezier
-                style={{ marginVertical: 12, borderRadius: 16 }}
+                style={{ marginVertical: 12, borderRadius: 16, width: '100%' }}
               />
             )}
           </View>
@@ -258,7 +257,7 @@ const AnalyticsScreen = () => {
                     stroke: "#E0E0E0",
                   },
                 }}
-                style={{ marginVertical: 12, borderRadius: 16 }}
+                style={{ marginVertical: 12, borderRadius: 16, width: '100%' }}
               />
             )}
           </View>
@@ -334,7 +333,7 @@ const AnalyticsScreen = () => {
                   style: { borderRadius: 16 },
                   propsForBackgroundLines: { stroke: "#E0E0E0" },
                 }}
-                style={{ marginVertical: 12, borderRadius: 16 }}
+                style={{ marginVertical: 12, borderRadius: 16, width: '100%' }}
               />
             )}
           </View>

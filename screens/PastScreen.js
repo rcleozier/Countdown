@@ -103,7 +103,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    paddingHorizontal: wp("4%"),
     paddingBottom: wp("4%"),
   },
   emptyContainer: {

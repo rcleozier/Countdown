@@ -41,12 +41,12 @@ const CountdownItem = ({ event, index, onDelete }) => {
   // Progress calculation
   const getProgress = () => {
     const now = moment();
-    const start = event.createdAt ? moment(event.createdAt) : moment().startOf('day');
     const end = moment(event.date);
+    const todayStart = moment().startOf('day');
     if (now.isAfter(end)) return 1;
-    if (now.isBefore(start)) return 0;
-    const total = end.diff(start);
-    const elapsed = now.diff(start);
+    if (now.isBefore(todayStart)) return 0;
+    const total = end.diff(todayStart);
+    const elapsed = now.diff(todayStart);
     return Math.min(Math.max(elapsed / total, 0), 1);
   };
   const progress = getProgress();
