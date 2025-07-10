@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Sentry from "@sentry/react-native";
+import { requestTrackingPermission } from './util/adPersonalization';
 
 import HomeScreen from "./screens/HomeScreen";
 import PastScreen from "./screens/PastScreen";
@@ -84,6 +85,10 @@ function AnalyticsScreenStack() {
 }
 
 function App() {
+  useEffect(() => {
+    requestTrackingPermission();
+  }, []);
+
   return (
     <NavigationContainer>
       <Tab.Navigator
