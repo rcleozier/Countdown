@@ -6,6 +6,7 @@ import {
   Modal,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -19,6 +20,7 @@ import { Analytics } from '../util/analytics';
 const SettingsScreen = () => {
   const [eventCount, setEventCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
+  const [appInfoTapCount, setAppInfoTapCount] = useState(0);
   const appInfo = appConfig.expo;
 
   // Function to load events from AsyncStorage
@@ -60,6 +62,92 @@ const SettingsScreen = () => {
     setModalVisible(false);
   };
 
+  // Easter egg: Seed data after 7 taps
+  const handleAppInfoTap = async () => {
+    setAppInfoTapCount((prev) => {
+      const next = prev + 1;
+      if (next === 7) {
+        seedTestData();
+        return 0;
+      }
+      return next;
+    });
+  };
+
+  // Seed test data function
+  const seedTestData = async () => {
+    try {
+      // Clear all data
+      await AsyncStorage.removeItem("countdowns");
+      await AsyncStorage.removeItem("notes");
+      // Today's date
+      const now = new Date();
+      // Helper to add days
+      const addDays = (date, days) => {
+        const d = new Date(date);
+        d.setDate(d.getDate() + days);
+        return d;
+      };
+      // 7 upcoming countdowns
+      const upcoming = [
+        { name: "Sarah's Birthday", icon: "🎂", days: 1 },
+        { name: "Baseball Game", icon: "⚾️", days: 5 },
+        { name: "Vacation", icon: "✈️", days: 10 },
+        { name: "Graduation", icon: "🎓", days: 15 },
+        { name: "Beach Day", icon: "🏖️", days: 20 },
+        { name: "Marathon", icon: "🏆", days: 30 },
+        { name: "Party", icon: "🎉", days: 45 },
+      ].map((e, i) => {
+        const eventDate = addDays(now, e.days);
+        // Randomly pick a createdAt between 1 and (days-1) days ago
+        const minAgo = 1;
+        const maxAgo = Math.max(e.days - 1, 1);
+        const daysAgo = Math.floor(Math.random() * (maxAgo - minAgo + 1)) + minAgo;
+        const createdAt = addDays(now, -daysAgo);
+        return {
+          id: `upcoming-${i}`,
+          name: e.name,
+          icon: e.icon,
+          date: eventDate.toISOString(),
+          createdAt: createdAt.toISOString(),
+        };
+      });
+      // 7 past countdowns
+      const past = [
+        { name: "Dentist", icon: "🦷", days: -2 },
+        { name: "Basketball Game", icon: "🏀", days: -5 },
+        { name: "Movie Night", icon: "🎬", days: -10 },
+        { name: "School Start", icon: "🏫", days: -15 },
+        { name: "Interview", icon: "💼", days: -20 },
+        { name: "Housewarming", icon: "🏠", days: -30 },
+        { name: "Concert", icon: "🎤", days: -45 },
+      ].map((e, i) => ({
+        id: `past-${i}`,
+        name: e.name,
+        icon: e.icon,
+        date: addDays(now, e.days).toISOString(),
+        createdAt: addDays(now, e.days - 5).toISOString(),
+      }));
+      // 7 notes
+      const notes = [
+        { text: "Buy cake for Mom's birthday!", date: addDays(now, 2).toISOString() },
+        { text: "Pack baseball glove for the game.", date: addDays(now, 4).toISOString() },
+        { text: "Book hotel for vacation.", date: addDays(now, 8).toISOString() },
+        { text: "Order graduation gown.", date: addDays(now, 12).toISOString() },
+        { text: "Invite friends to beach day.", date: addDays(now, 18).toISOString() },
+        { text: "Register for marathon.", date: addDays(now, 25).toISOString() },
+        { text: "Plan party playlist.", date: addDays(now, 40).toISOString() },
+      ];
+      // Save to storage
+      await AsyncStorage.setItem("countdowns", JSON.stringify([...upcoming, ...past]));
+      await AsyncStorage.setItem("notes", JSON.stringify(notes));
+      setEventCount(upcoming.length + past.length);
+      Alert.alert("Seeded!", "App data has been reset and seeded with test data.");
+    } catch (error) {
+      Alert.alert("Error", "Failed to seed test data.");
+    }
+  };
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -69,8 +157,10 @@ const SettingsScreen = () => {
       </View>
       <View style={styles.container}>
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>App Info</Text>
-          <Text style={styles.appVersion}>Version {appInfo.version}</Text>
+          <TouchableOpacity activeOpacity={0.7} onPress={handleAppInfoTap}>
+            <Text style={styles.cardTitle}>App Info</Text>
+            <Text style={styles.appVersion}>Version {appInfo.version}</Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Event Stats</Text>
