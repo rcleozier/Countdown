@@ -9,7 +9,6 @@ import {
   StyleSheet,
   SafeAreaView,
   Alert,
-  Animated,
   Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
