@@ -204,6 +204,46 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             borderRadius: 12
           }
         ]}>
+          {/* Top right buttons */}
+          <View style={styles.topRightButtons}>
+            <TouchableOpacity
+              style={[
+                styles.smallIconButton, 
+                { 
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.primary,
+                  borderWidth: 1,
+                  shadowColor: theme.colors.primary,
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 2,
+                  elevation: 2
+                }
+              ]}
+              onPress={handleOpenEditModal}
+            >
+              <Ionicons name="pencil" size={wp('2.5%')} color={theme.colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.smallIconButton, 
+                { 
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.error,
+                  borderWidth: 1,
+                  shadowColor: theme.colors.error,
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 2,
+                  elevation: 2
+                }
+              ]}
+              onPress={() => setDeleteModalVisible(true)}
+            >
+              <Ionicons name="trash" size={wp('2.5%')} color={theme.colors.error} />
+            </TouchableOpacity>
+          </View>
+          
           <View style={styles.leftSection}>
             <View style={[
               styles.iconContainer,
@@ -248,10 +288,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   { 
                     color: theme.colors.primary,
                     fontWeight: '600',
-                    fontSize: wp('4%'),
-                    textShadowColor: theme.colors.primary,
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 2
+                    fontSize: wp('4%')
                   }
                 ]}>
                   {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
@@ -275,46 +312,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   }
                 })()}
               </Text>
-            </View>
-          </View>
-          <View style={styles.rightSection}>
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={[
-                  styles.iconButton, 
-                  { 
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.primary,
-                    borderWidth: 1.5,
-                    shadowColor: theme.colors.primary,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                    elevation: 3
-                  }
-                ]}
-                onPress={handleOpenEditModal}
-              >
-                <Ionicons name="pencil" size={wp('4%')} color={theme.colors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.iconButton, 
-                  { 
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.error,
-                    borderWidth: 1.5,
-                    shadowColor: theme.colors.error,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                    elevation: 3
-                  }
-                ]}
-                onPress={() => setDeleteModalVisible(true)}
-              >
-                <Ionicons name="trash" size={wp('4%')} color={theme.colors.error} />
-              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -409,14 +406,17 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               style={styles.input}
             />
 
-            {/* Date & Time */}
-            <Text style={styles.iconLabel}>Date & Time</Text>
+            {/* Date */}
+            <Text style={styles.iconLabel}>Date</Text>
             <TouchableOpacity
               style={styles.iconButton}
-              onPress={() => setCalendarModalVisible(true)}
+              onPress={() => {
+                setTempSelectedDate(moment(selectedDate).format("YYYY-MM-DD"));
+                setCalendarModalVisible(true);
+              }}
             >
               <Text style={styles.iconButtonText}>
-                {moment(selectedDate).format("ddd, D MMM YYYY")} at {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
+                {moment(selectedDate).format("ddd, D MMM YYYY")}
               </Text>
             </TouchableOpacity>
 
@@ -475,6 +475,18 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               style={styles.calendar}
               onDayPress={handleDayPress}
               minDate={moment().format("YYYY-MM-DD")}
+              markedDates={{
+                [moment(selectedDate).format("YYYY-MM-DD")]: {
+                  selected: true,
+                  selectedColor: "#3498DB",
+                },
+                ...(tempSelectedDate && {
+                  [tempSelectedDate]: {
+                    selected: true,
+                    selectedColor: "#66FCF1",
+                  },
+                }),
+              }}
               theme={{
                 backgroundColor: "#FFFFFF",
                 calendarBackground: "#F8F9FA",
@@ -620,7 +632,8 @@ const styles = StyleSheet.create({
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1.2,
+    flex: 1,
+    paddingRight: wp('15%'), // Add padding to avoid overlap with buttons
   },
   icon: {
     fontSize: wp("8%"),
@@ -665,6 +678,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: wp('1.5%'),
     justifyContent: "flex-end",
+  },
+  topRightButtons: {
+    position: "absolute",
+    top: wp('2%'),
+    right: wp('2%'),
+    flexDirection: "row",
+    gap: wp('1%'),
+    zIndex: 10,
+  },
+  smallIconButton: {
+    padding: wp('1%'),
+    borderRadius: wp('1%'),
+    alignItems: "center",
+    justifyContent: "center",
+    width: wp('6%'),
+    height: wp('6%'),
+    minWidth: wp('6%'),
+    minHeight: wp('6%'),
   },
   countdownText: {
     fontSize: wp("3.5%"),

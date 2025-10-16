@@ -372,10 +372,18 @@ const HomeScreen = () => {
       if (countdownToDelete && countdownToDelete.notificationId) {
         Notifications.cancelScheduledNotificationAsync(countdownToDelete.notificationId).catch(() => {});
       }
+      
+      // Track deletion with item details before removing from state
+      if (countdownToDelete) {
+        Analytics.trackEvent && Analytics.trackEvent('delete_countdown', {
+          id,
+          name: countdownToDelete.name,
+          date: countdownToDelete.date,
+          icon: countdownToDelete.icon,
+        });
+      }
+      
       return prev.filter((item) => item.id !== id);
-    });
-    Analytics.trackEvent && Analytics.trackEvent('delete_countdown', {
-      id,
     });
   };
 

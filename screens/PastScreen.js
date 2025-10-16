@@ -111,13 +111,24 @@ const PastScreen = () => {
       const stored = await AsyncStorage.getItem("countdowns");
       if (stored) {
         let allEvents = JSON.parse(stored);
+        const eventToDelete = allEvents.find(item => item.id === id);
+        
+        // Track deletion with item details before removing from storage
+        if (eventToDelete) {
+          Analytics.trackEvent && Analytics.trackEvent('delete_countdown', {
+            id,
+            name: eventToDelete.name,
+            date: eventToDelete.date,
+            icon: eventToDelete.icon,
+          });
+        }
+        
         // Remove the item by id
         allEvents = allEvents.filter((item) => item.id !== id);
         // Save the updated array back to AsyncStorage
         await AsyncStorage.setItem("countdowns", JSON.stringify(allEvents));
         // Reload pastEvents so UI stays in sync
         loadPastEvents();
-        Analytics.trackEvent && Analytics.trackEvent('delete_countdown', { id });
       }
     } catch (error) {
       console.error("Error deleting countdown from past events", error);
