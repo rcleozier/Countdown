@@ -184,20 +184,88 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   return (
     <>
       {/* Main Item Row */}
-      <View style={[styles.gradientBorder, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        <View style={[styles.container, { backgroundColor: theme.colors.card }]}>
+      <View style={[
+        styles.gradientBorder, 
+        { 
+          backgroundColor: theme.colors.card, 
+          borderColor: theme.colors.border,
+          borderWidth: 1,
+          shadowColor: theme.colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: theme.name === 'dark' ? 0.3 : 0.1,
+          shadowRadius: 8,
+          elevation: 4
+        }
+      ]}>
+        <View style={[
+          styles.container, 
+          { 
+            backgroundColor: theme.colors.card,
+            borderRadius: 12
+          }
+        ]}>
           <View style={styles.leftSection}>
-            <Text style={styles.icon}>{event.icon}</Text>
+            <View style={[
+              styles.iconContainer,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+                borderWidth: 1,
+                borderRadius: 12,
+                shadowColor: theme.colors.shadow,
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 2
+              }
+            ]}>
+              <Text style={[styles.icon, { fontSize: 24 }]}>{event.icon}</Text>
+            </View>
             <View style={styles.textContainer}>
-              <Text style={[styles.title, { color: theme.colors.text }]}>{event.name}</Text>
+              <Text style={[
+                styles.title, 
+                { 
+                  color: theme.colors.text,
+                  fontWeight: '700',
+                  fontSize: 18,
+                  textShadowColor: theme.name === 'dark' ? theme.colors.shadow : 'transparent',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 2
+                }
+              ]}>{event.name}</Text>
               {timeLeft === null ? (
-                <Text style={[styles.expiredText, { color: theme.colors.error }]}>Expired</Text>
+                <Text style={[
+                  styles.expiredText, 
+                  { 
+                    color: theme.colors.error,
+                    fontWeight: '600',
+                    fontSize: 16
+                  }
+                ]}>Expired</Text>
               ) : (
-                <Text style={[styles.countdownText, { color: theme.colors.primary }]}>
+                <Text style={[
+                  styles.countdownText, 
+                  { 
+                    color: theme.colors.primary,
+                    fontWeight: '600',
+                    fontSize: 16,
+                    textShadowColor: theme.colors.primary,
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2
+                  }
+                ]}>
                   {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
                 </Text>
               )}
-              <Text style={[styles.date, { color: theme.colors.textSecondary }]}>
+              <Text style={[
+                styles.date, 
+                { 
+                  color: theme.colors.textSecondary,
+                  fontWeight: '500',
+                  fontSize: 14,
+                  opacity: 0.8
+                }
+              ]}>
                 {(() => {
                   const m = moment(event.date);
                   if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
@@ -212,25 +280,76 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           <View style={styles.rightSection}>
             <View style={styles.buttonRow}>
               <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: theme.colors.buttonSecondary }]}
+                style={[
+                  styles.iconButton, 
+                  { 
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.primary,
+                    borderWidth: 1.5,
+                    shadowColor: theme.colors.primary,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3
+                  }
+                ]}
                 onPress={handleOpenEditModal}
               >
-                <Ionicons name="pencil" size={18} color={theme.colors.primary} />
+                <Ionicons name="pencil" size={16} color={theme.colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: theme.colors.buttonSecondary }]}
+                style={[
+                  styles.iconButton, 
+                  { 
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.error,
+                    borderWidth: 1.5,
+                    shadowColor: theme.colors.error,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3
+                  }
+                ]}
                 onPress={() => setDeleteModalVisible(true)}
               >
-                <Ionicons name="trash" size={18} color={theme.colors.error} />
+                <Ionicons name="trash" size={16} color={theme.colors.error} />
               </TouchableOpacity>
             </View>
           </View>
         </View>
         {/* Progress Bar */}
-        <View style={[styles.progressBarBackground, { backgroundColor: theme.colors.progressBackground }]}>
-          <View style={[styles.progressBarFill, { width: `${Math.round(progress * 100)}%`, backgroundColor: theme.colors.progressFill }]} />
+        <View style={[
+          styles.progressBarBackground, 
+          { 
+            backgroundColor: theme.colors.progressBackground,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            borderRadius: 8
+          }
+        ]}>
+          <View style={[
+            styles.progressBarFill, 
+            { 
+              width: `${Math.round(progress * 100)}%`, 
+              backgroundColor: theme.colors.progressFill,
+              borderRadius: 7,
+              shadowColor: theme.colors.progressFill,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.3,
+              shadowRadius: 2,
+              elevation: 2
+            }
+          ]} />
         </View>
-        <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
+        <Text style={[
+          styles.progressText, 
+          { 
+            color: theme.colors.textSecondary,
+            fontWeight: '500',
+            fontSize: 12
+          }
+        ]}>
           {progress === 0
             ? 'Just started!'
             : `${Math.round(progress * 100)}% of the way there`}
@@ -505,11 +624,13 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: wp("8%"),
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: wp("3%"),
-    backgroundColor: "#EAF6FF",
-    borderRadius: wp("2%"),
-    padding: wp("2%"),
-    overflow: "hidden",
   },
   textContainer: {
     justifyContent: "center",
@@ -542,7 +663,8 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 8,
+    justifyContent: "flex-end",
   },
   countdownText: {
     fontSize: wp("3.5%"),
@@ -561,15 +683,14 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
   },
   iconButton: {
-    backgroundColor: "#F8F9FA",
-    padding: 4,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
+    padding: 8,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-    width: 24,
-    height: 24,
+    width: 36,
+    height: 36,
+    minWidth: 36,
+    minHeight: 36,
   },
   modalOverlay: {
     flex: 1,

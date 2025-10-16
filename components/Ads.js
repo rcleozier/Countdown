@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
-import { AD_UNIT_IDS, AD_REQUEST_OPTIONS, AD_REFRESH_INTERVAL, handleAdError } from '../util/adConfig';
+import { AD_UNIT_IDS, AD_REQUEST_OPTIONS, AD_REFRESH_INTERVAL, handleAdError, getDynamicAdRequestOptions } from '../util/adConfig';
 import { useTheme } from '../context/ThemeContext';
 
 const TEST_BANNER_ID = 'ca-app-pub-3940256099942544/6300978111';
@@ -12,26 +12,64 @@ const bannerId = useTestAd ? TEST_BANNER_ID : AD_UNIT_IDS.banner;
 const OptimizedBannerAd = ({ style, containerStyle }) => {
   const [adKey, setAdKey] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
-  const maxRetries = 3;
+  const [adRequestOptions, setAdRequestOptions] = useState(AD_REQUEST_OPTIONS);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasFailed, setHasFailed] = useState(false);
+  const maxRetries = 5; // Increased retry attempts
   const { theme } = useTheme();
+
+  // Load international-optimized ad request options
+  useEffect(() => {
+    const loadAdOptions = async () => {
+      try {
+        const options = await getDynamicAdRequestOptions();
+        setAdRequestOptions(options);
+      } catch (error) {
+        console.error('Error loading international ad options:', error);
+        // Fallback to static options
+        setAdRequestOptions(AD_REQUEST_OPTIONS);
+      }
+    };
+    loadAdOptions();
+  }, []);
 
   const handleAdFailedToLoad = (error) => {
     console.log(`Ad failed to load (attempt ${retryCount + 1}):`, error);
     handleAdError(error, 'banner');
     
-    // Retry with exponential backoff
+    // Enhanced retry logic with jitter to avoid thundering herd
     if (retryCount < maxRetries) {
-      const retryDelay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+      const baseDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s, 4s, 8s, 16s
+      const jitter = Math.random() * 1000; // Add random jitter up to 1s
+      const retryDelay = baseDelay + jitter;
+      
+      console.log(`Retrying ad load in ${Math.round(retryDelay)}ms...`);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
         setAdKey(prev => prev + 1); // Force remount
+        setIsLoading(true);
+        setHasFailed(false);
       }, retryDelay);
+    } else {
+      console.log('Max retry attempts reached, giving up on ad load');
+      setIsLoading(false);
+      setHasFailed(true);
     }
   };
 
   const handleAdLoaded = () => {
     console.log('Ad loaded successfully');
     setRetryCount(0); // Reset retry count on successful load
+    setIsLoading(false);
+    setHasFailed(false);
+  };
+
+  const handleAdOpened = () => {
+    console.log('Ad opened');
+  };
+
+  const handleAdClosed = () => {
+    console.log('Ad closed');
   };
 
   return (
@@ -40,10 +78,12 @@ const OptimizedBannerAd = ({ style, containerStyle }) => {
         key={adKey}
         unitId={bannerId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        requestOptions={AD_REQUEST_OPTIONS}
+        requestOptions={adRequestOptions}
         style={[styles.banner, style]}
         onAdLoaded={handleAdLoaded}
         onAdFailedToLoad={handleAdFailedToLoad}
+        onAdOpened={handleAdOpened}
+        onAdClosed={handleAdClosed}
       />
     </View>
   );
@@ -86,7 +126,7 @@ export const FallbackBannerAd = ({ style, containerStyle }) => {
         key={adKey}
         unitId={bannerId}
         size={BannerAdSize.BANNER} // Use standard banner size as fallback
-        requestOptions={AD_REQUEST_OPTIONS}
+        requestOptions={adRequestOptions}
         style={[styles.banner, style]}
         onAdLoaded={() => console.log('Fallback ad loaded')}
         onAdFailedToLoad={handleAdFailedToLoad}

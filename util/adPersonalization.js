@@ -4,37 +4,70 @@ import * as Tracking from "expo-tracking-transparency";
 
 const TRACKING_PERMISSION_KEY = "@ad_tracking_permission";
 const DEFAULT_KEYWORDS = [
-  "finance app",
-  "budget tracker",
-  "personal finance",
-  "expense tracker",
-  "investment app",
-  "stock market",
-  "savings goals",
-  "debt payoff",
-  "credit score",
-  "money management",
-  "financial planning",
-  "retirement savings",
-  "tax calculator",
-  "loan calculator",
-  "mortgage calculator",
-  "crypto wallet",
-  "cryptocurrency",
-  "banking app",
-  "cashback rewards",
-  "bill reminder",
-  "payday countdown",
-  "wealth management",
-  "insurance quotes",
-  "student loans",
-  "side hustle",
-  "financial literacy",
-  "spending tracker",
-  "net worth calculator",
-  "budgeting tips",
-  "money saving",
-  "financial goals"
+  // Universal app categories that work globally
+  "mobile app",
+  "smartphone app",
+  "digital tool",
+  "productivity app",
+  "utility app",
+  "lifestyle app",
+  "personal app",
+  "business app",
+  "work app",
+  "organization app",
+  "planning app",
+  "time management",
+  "calendar app",
+  "reminder app",
+  "event app",
+  "countdown app",
+  "timer app",
+  "schedule app",
+  "appointment app",
+  "meeting app",
+  "birthday app",
+  "anniversary app",
+  "holiday app",
+  "vacation app",
+  "deadline app",
+  "goal app",
+  "milestone app",
+  "celebration app",
+  "party app",
+  "wedding app",
+  "graduation app",
+  "retirement app",
+  "productivity",
+  "organization",
+  "planning",
+  "lifestyle",
+  "personal",
+  "family",
+  "work",
+  "business",
+  "entertainment",
+  // International-friendly tech terms
+  "technology",
+  "software",
+  "application",
+  "platform",
+  "solution",
+  "innovation",
+  "modern",
+  "convenient",
+  "efficient",
+  "user-friendly",
+  "helpful",
+  "practical",
+  "useful",
+  "digital",
+  "online",
+  "mobile",
+  "smartphone",
+  "device",
+  "gadget",
+  "tool",
+  "service"
 ];
 
 // Get the user's tracking permission status
@@ -87,23 +120,64 @@ export const requestTrackingPermission = async () => {
   }
 };
 
-// Get optimized ad request options based on tracking permission
+// Get optimized ad request options for international traffic
 export const getAdRequestOptions = async () => {
   const hasTrackingPermission = await getTrackingPermissionStatus();
 
   return {
     keywords: DEFAULT_KEYWORDS,
     requestNonPersonalizedAdsOnly: !hasTrackingPermission,
-    // Add additional targeting options when tracking is allowed
+    // Enhanced targeting for international markets
+    gender: "all",
+    location: "all",
+    maxAdContentRating: "G",
+    tagForChildDirectedTreatment: false,
+    tagForUnderAgeOfConsent: false,
+    // Additional targeting options for better international fill rates
     ...(hasTrackingPermission && {
-      // Add more sophisticated targeting options here
-      // These will only be used when tracking is allowed
-      gender: "all",
-      location: "all",
-      maxAdContentRating: "G",
-      tagForChildDirectedTreatment: false,
-      tagForUnderAgeOfConsent: false,
+      // Advanced targeting for users with tracking permission
+      ageGroup: "all",
+      interests: [
+        "technology",
+        "productivity",
+        "lifestyle",
+        "business",
+        "personal development",
+        "organization",
+        "planning",
+        "time management"
+      ],
+      // Content categories that work well internationally
+      contentCategories: [
+        "general",
+        "business",
+        "technology",
+        "lifestyle",
+        "productivity",
+        "utilities"
+      ],
+      // Exclude categories that might have lower international fill rates
+      excludeCategories: [
+        "adult",
+        "violence",
+        "profanity",
+        "gambling"
+      ]
     }),
+    // Global compatibility settings
+    language: "all",
+    region: "all",
+    // Enhanced ad request for international markets
+    adRequestOptions: {
+      // Request higher value ad formats
+      preferredAdFormats: ["banner", "interstitial", "rewarded"],
+      // Optimize for international advertisers
+      targetingOptions: {
+        includeInternational: true,
+        includeLocal: true,
+        includeGlobal: true
+      }
+    }
   };
 };
 

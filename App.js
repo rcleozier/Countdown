@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { StatusBar } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Sentry from "@sentry/react-native";
 import { requestTrackingPermission } from './util/adPersonalization';
@@ -90,10 +91,15 @@ function AnalyticsScreenStack() {
 }
 
 function ThemedApp() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   
   return (
-    <NavigationContainer>
+    <>
+      <StatusBar 
+        barStyle={isDark ? "light-content" : "dark-content"} 
+        backgroundColor={theme.colors.background}
+      />
+      <NavigationContainer>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
@@ -139,6 +145,7 @@ function ThemedApp() {
         <Tab.Screen name="Settings" component={SettingsScreenStack} />
       </Tab.Navigator>
     </NavigationContainer>
+    </>
   );
 }
 
