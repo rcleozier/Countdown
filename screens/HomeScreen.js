@@ -48,62 +48,75 @@ const HomeScreen = () => {
   const { theme } = useTheme();
 
   const eventIcons = [
-    "🎂", // Birthday
-    "🗓️", // Appointment
-    "🏖️", // Vacation
-    "✈️", // Flight
-    "🏫", // School
-    "🏢", // Work
-    "💍", // Wedding
-    "👶", // Baby
-    "🏠", // Move
-    "🏥", // Doctor
-    "🏆", // Competition
-    "🎓", // Graduation
-    "🎉", // Party
-    "🏃‍♂️", // Race
-    "🏟️", // Concert
+    // Sports & Activities
+    "⚾", // Baseball
     "🏀", // Basketball
-    "⚽️", // Soccer
     "🏈", // Football
+    "⚽", // Soccer
     "🏐", // Volleyball
     "🏸", // Badminton
-    "🏊‍♂️", // Swim
-    "🚴‍♂️", // Bike
-    "🏃‍♀️", // Run
-    "🧘‍♂️", // Yoga
+    "🏊‍♂️", // Swimming
+    "🚴‍♂️", // Cycling
+    "🏃‍♂️", // Running
+    "🏋️‍♂️", // Weightlifting
+    
+    // Life Events & Milestones
+    "🎂", // Birthday
+    "🎓", // Graduation
+    "💍", // Wedding
+    "👶", // Baby
+    "🏆", // Achievement
+    "🎉", // Celebration
+    "🎊", // Party
+    "🏅", // Award
+    "🎖️", // Medal
+    
+    // Work & Education
+    "💼", // Work
+    "🏢", // Office
+    "🏫", // School
+    "📚", // Study
+    "🎓", // Graduation
+    "💡", // Idea
+    "📝", // Exam
+    "🎯", // Goal
+    "📈", // Promotion
+    "💻", // Project
+    
+    // Health & Medical
+    "🏥", // Doctor
+    "💊", // Medicine
+    "🩺", // Checkup
+    "🏃‍♀️", // Fitness
+    "🧘‍♂️", // Wellness
+    "💪", // Health
+    "🦷", // Dental
+    "👁️", // Eye exam
+    "🧠", // Mental health
+    
+    // Travel & Adventure
+    "✈️", // Flight
+    "🏖️", // Vacation
     "🏕️", // Camping
     "🏰", // Trip
-    "🏡", // Home
-    "🏠", // Housewarming
-    "🏢", // Office
-    "🏫", // Exam
-    "🏆", // Award
-    "🎬", // Movie
-    "🎤", // Show
-    "🎵", // Festival
-    "🎮", // Game
-    "🏅", // Achievement
-    "🏋️‍♂️", // Workout
     "🧳", // Travel
-    "🕒", // Meeting
-    "💼", // Interview
-    "🚗", // Car
-    "🛒", // Shopping
-    "💡", // Idea
-    "📅", // Event
-    "🏥", // Checkup
-    "🏜️", // Adventure
-    "🏙️", // City
-    "🧑‍🤝‍🧑", // Friends
+    "🚗", // Road trip
+    "🚢", // Cruise
+    "🏔️", // Hiking
+    "🌍", // World travel
+    "🗺️", // Adventure
+    
+    // Home & Family
+    "🏠", // Home
+    "🏡", // House
     "👨‍👩‍👧‍👦", // Family
-    "🧑‍🎓", // Study
-    "🧑‍💻", // Project
-    "🧑‍🍳", // Cook
-    "🧑‍🔬", // Science
-    "🧑‍🎤", // Music
-    "🧑‍🚀", // Space
-    "🧑‍✈️", // Flight
+    "👫", // Couple
+    "👶", // Baby
+    "🎈", // Baby shower
+    "🏠", // Moving
+    "🔑", // New home
+    "🎊", // Housewarming
+    "📅", // Calendar
   ];
 
   // ----- Load / Save Data -----
