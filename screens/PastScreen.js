@@ -7,6 +7,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { Analytics } from '../util/analytics';
 import OptimizedBannerAd from '../components/Ads';
+import * as Notifications from 'expo-notifications';
 
 const PastScreen = () => {
   const [pastEvents, setPastEvents] = useState([]);
@@ -45,6 +46,62 @@ const PastScreen = () => {
     Analytics.trackScreenView('Past');
   }, []);
 
+  // Edit function
+  const editCountdown = async (updatedEvent) => {
+    try {
+      // Load the full "countdowns" array from AsyncStorage
+      const stored = await AsyncStorage.getItem("countdowns");
+      if (stored) {
+        let allEvents = JSON.parse(stored);
+        
+        // Cancel old notification if it exists
+        const existingEvent = allEvents.find(item => item.id === updatedEvent.id);
+        if (existingEvent && existingEvent.notificationId) {
+          await Notifications.cancelScheduledNotificationAsync(existingEvent.notificationId).catch(() => {});
+        }
+
+        // Schedule new notification if the event is now in the future
+        let notificationId = null;
+        if (new Date(updatedEvent.date) > new Date()) {
+          const { status } = await Notifications.requestPermissionsAsync();
+          if (status === 'granted') {
+            notificationId = await Notifications.scheduleNotificationAsync({
+              content: {
+                title: 'Countdown Reminder',
+                body: `"${updatedEvent.name}" is happening now!`,
+                sound: true,
+              },
+              trigger: { date: new Date(updatedEvent.date) },
+            });
+          }
+        }
+
+        // Update the event
+        const finalUpdatedEvent = {
+          ...updatedEvent,
+          notificationId,
+        };
+
+        allEvents = allEvents.map(item => 
+          item.id === updatedEvent.id ? finalUpdatedEvent : item
+        );
+        
+        // Save the updated array back to AsyncStorage
+        await AsyncStorage.setItem("countdowns", JSON.stringify(allEvents));
+        // Reload pastEvents so UI stays in sync
+        loadPastEvents();
+        Analytics.trackEvent && Analytics.trackEvent('edit_countdown', {
+          id: updatedEvent.id,
+          name: updatedEvent.name,
+          date: updatedEvent.date,
+          icon: updatedEvent.icon,
+        });
+      }
+    } catch (error) {
+      console.error("Error editing countdown from past events", error);
+    }
+  };
+
   // Delete function (duplicates HomeScreen's logic)
   const deleteCountdown = async (id) => {
     try {
@@ -79,10 +136,6 @@ const PastScreen = () => {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>Past Events</Text>
-          <Text style={styles.headerSubtitle}>Review your completed and expired countdowns</Text>
-        </View>
         {pastEvents.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No Past Events</Text>
@@ -98,8 +151,8 @@ const PastScreen = () => {
               if (item.type === 'ad') {
                 return <OptimizedBannerAd />;
               }
-              // Pass the delete function to CountdownItem
-              return <CountdownItem event={item} index={index} onDelete={deleteCountdown} />;
+              // Pass the delete and edit functions to CountdownItem
+              return <CountdownItem event={item} index={index} onDelete={deleteCountdown} onEdit={editCountdown} />;
             }}
             contentContainerStyle={styles.listContainer}
           />
@@ -140,28 +193,9 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: wp("4%"),
     paddingHorizontal: wp("4%"),
+    paddingTop: wp("8%"),
   },
-  headerContainer: {
-    paddingHorizontal: wp('4%'),
-    paddingTop: wp('8%'),
-    paddingBottom: wp('4%'),
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    marginBottom: wp('2%'),
-  },
-  headerTitle: {
-    fontSize: wp('5%'),
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    fontFamily: 'monospace',
-  },
-  headerSubtitle: {
-    fontSize: wp('3%'),
-    color: '#7F8C8D',
-    fontFamily: 'monospace',
-    marginTop: wp('1%'),
-  },
+
 });
 
 export default PastScreen;

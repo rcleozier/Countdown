@@ -77,20 +77,16 @@ const NotesScreen = () => {
     setModalVisible(false);
   };
 
-  // Prepare data with ad as the first item
+  // Prepare data with ad at the bottom
   let listData = [];
   if (notes.length > 0) {
     // Sort notes by date descending (newest first)
     const sortedNotes = [...notes].sort((a, b) => new Date(b.date) - new Date(a.date));
-    listData = [{ type: 'ad', key: 'ad' }, ...sortedNotes.map((note) => ({ ...note, type: 'note', key: note.date }))];
+    listData = [...sortedNotes.map((note) => ({ ...note, type: 'note', key: note.date })), { type: 'ad', key: 'ad' }];
   }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Notes</Text>
-        <Text style={styles.headerSubtitle}>Jot down your thoughts, reminders, and ideas</Text>
-      </View>
       <View style={styles.container}>
         <FlatList
           data={listData}
@@ -118,7 +114,12 @@ const NotesScreen = () => {
               </View>
             );
           }}
-          ListEmptyComponent={<Text style={styles.emptyText}>No notes yet.</Text>}
+          ListEmptyComponent={
+            <View>
+              <Text style={styles.emptyText}>No notes yet.</Text>
+              <OptimizedBannerAd />
+            </View>
+          }
           contentContainerStyle={styles.listContainer}
         />
         <TouchableOpacity
@@ -177,6 +178,7 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingHorizontal: wp('4%'),
     paddingBottom: wp('20%'),
+    paddingTop: wp('8%'),
   },
   noteCard: { 
     backgroundColor: '#FFF', 
@@ -307,27 +309,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3%'),
     fontFamily: 'monospace',
   },
-  headerContainer: {
-    paddingHorizontal: wp('4%'),
-    paddingTop: wp('8%'),
-    paddingBottom: wp('4%'),
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    marginBottom: wp('2%'),
-  },
-  headerTitle: {
-    fontSize: wp('5%'),
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    fontFamily: 'monospace',
-  },
-  headerSubtitle: {
-    fontSize: wp('3%'),
-    color: '#7F8C8D',
-    fontFamily: 'monospace',
-    marginTop: wp('1%'),
-  },
+
 });
 
 export default NotesScreen; 

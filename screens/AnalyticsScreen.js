@@ -172,11 +172,6 @@ const AnalyticsScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>Analytics</Text>
-          <Text style={styles.headerSubtitle}>Visualize your countdowns and event trends</Text>
-        </View>
-        <OptimizedBannerAd />
         <View style={styles.container}>
           <View style={styles.card}>
             <Text style={styles.chartTitle}>Upcoming Events (Next 7 Days)</Text>
@@ -337,6 +332,7 @@ const AnalyticsScreen = () => {
               />
             )}
           </View>
+          <OptimizedBannerAd />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -345,28 +341,8 @@ const AnalyticsScreen = () => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#F8F9FA" },
-  scrollContent: { paddingBottom: 36 },
-  headerContainer: {
-    paddingHorizontal: wp('4%'),
-    paddingTop: wp('8%'),
-    paddingBottom: wp('4%'),
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    marginBottom: wp('2%'),
-  },
-  headerTitle: {
-    fontSize: wp('5%'),
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    fontFamily: 'monospace',
-  },
-  headerSubtitle: {
-    fontSize: wp('3%'),
-    color: '#7F8C8D',
-    fontFamily: 'monospace',
-    marginTop: wp('1%'),
-  },
+  scrollContent: { paddingBottom: 36, paddingTop: wp('8%') },
+
   container: { flex: 1, padding: wp('4%') },
   card: {
     backgroundColor: '#FFF',

@@ -5,13 +5,29 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
+  TextInput,
 } from "react-native";
 import moment from "moment";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { Calendar } from "react-native-calendars";
+import { Picker } from '@react-native-picker/picker';
+import { Ionicons } from '@expo/vector-icons';
 
-const CountdownItem = ({ event, index, onDelete }) => {
+const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [calendarModalVisible, setCalendarModalVisible] = useState(false);
+  const [timePickerVisible, setTimePickerVisible] = useState(false);
+  const [iconPickerVisible, setIconPickerVisible] = useState(false);
+  
+  // Edit form states
+  const [editName, setEditName] = useState(event.name);
+  const [editIcon, setEditIcon] = useState(event.icon);
+  const [tempSelectedDate, setTempSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date(event.date));
+  const [selectedHour, setSelectedHour] = useState(moment(event.date).hour());
+  const [selectedMinute, setSelectedMinute] = useState(moment(event.date).minute());
 
   // Calculate time left down to seconds, or return null if expired
   function getTimeLeft(date) {
@@ -51,6 +67,118 @@ const CountdownItem = ({ event, index, onDelete }) => {
   };
   const progress = getProgress();
 
+  const eventIcons = [
+    "🎂", // Birthday
+    "🗓️", // Appointment
+    "🏖️", // Vacation
+    "✈️", // Flight
+    "🏫", // School
+    "🏢", // Work
+    "💍", // Wedding
+    "👶", // Baby
+    "🏠", // Move
+    "🏥", // Doctor
+    "🏆", // Competition
+    "🎓", // Graduation
+    "🎉", // Party
+    "🏃‍♂️", // Race
+    "🏟️", // Concert
+    "🏀", // Basketball
+    "⚽️", // Soccer
+    "🏈", // Football
+    "🏐", // Volleyball
+    "🏸", // Badminton
+    "🏊‍♂️", // Swim
+    "🚴‍♂️", // Bike
+    "🏃‍♀️", // Run
+    "🧘‍♂️", // Yoga
+    "🏕️", // Camping
+    "🏰", // Trip
+    "🏡", // Home
+    "🏠", // Housewarming
+    "🏢", // Office
+    "🏫", // Exam
+    "🏆", // Award
+    "🎬", // Movie
+    "🎤", // Show
+    "🎵", // Festival
+    "🎮", // Game
+    "🏅", // Achievement
+    "🏋️‍♂️", // Workout
+    "🧳", // Travel
+    "🕒", // Meeting
+    "💼", // Interview
+    "🚗", // Car
+    "🛒", // Shopping
+    "💡", // Idea
+    "📅", // Event
+    "🏥", // Checkup
+    "🏜️", // Adventure
+    "🏙️", // City
+    "🧑‍🤝‍🧑", // Friends
+    "👨‍👩‍👧‍👦", // Family
+    "🧑‍🎓", // Study
+    "🧑‍💻", // Project
+    "🧑‍🍳", // Cook
+    "🧑‍🔬", // Science
+    "🧑‍🎤", // Music
+    "🧑‍🚀", // Space
+    "🧑‍✈️", // Flight
+  ];
+
+  const handleOpenEditModal = () => {
+    setEditName(event.name);
+    setEditIcon(event.icon);
+    setSelectedDate(new Date(event.date));
+    setSelectedHour(moment(event.date).hour());
+    setSelectedMinute(moment(event.date).minute());
+    setEditModalVisible(true);
+  };
+
+  const handleDayPress = (day) => {
+    setTempSelectedDate(day.dateString);
+  };
+
+  const handleConfirmDate = () => {
+    if (!tempSelectedDate) {
+      alert("Please pick a date on the calendar.");
+      return;
+    }
+    const [year, month, day] = tempSelectedDate.split("-");
+    const finalDate = new Date(
+      year,
+      parseInt(month, 10) - 1,
+      parseInt(day, 10)
+    );
+    setSelectedDate(finalDate);
+    setCalendarModalVisible(false);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editName.trim()) return;
+    
+    const combinedDateTime = new Date(selectedDate);
+    combinedDateTime.setHours(selectedHour);
+    combinedDateTime.setMinutes(selectedMinute);
+    combinedDateTime.setSeconds(0);
+    combinedDateTime.setMilliseconds(0);
+    
+    if (combinedDateTime <= new Date()) {
+      alert("Please select a date and time in the future.");
+      return;
+    }
+    
+    const updatedEvent = {
+      ...event,
+      name: editName,
+      icon: editIcon,
+      date: combinedDateTime.toISOString(),
+    };
+    
+    onEdit(updatedEvent);
+    setEditModalVisible(false);
+  };
+
   return (
     <>
       {/* Main Item Row */}
@@ -80,12 +208,20 @@ const CountdownItem = ({ event, index, onDelete }) => {
             </View>
           </View>
           <View style={styles.rightSection}>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => setDeleteModalVisible(true)}
-            >
-              <Text style={styles.deleteButtonText}>Delete</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={handleOpenEditModal}
+              >
+                <Ionicons name="pencil" size={18} color="#3498DB" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => setDeleteModalVisible(true)}
+              >
+                <Ionicons name="trash" size={18} color="#E74C3C" />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
         {/* Progress Bar */}
@@ -129,6 +265,207 @@ const CountdownItem = ({ event, index, onDelete }) => {
                 <Text style={styles.modalButtonText}>Delete</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        transparent
+        animationType="slide"
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.editModalContent}>
+            <Text style={styles.modalTitle}>Edit Countdown</Text>
+            
+            <TextInput
+              placeholder="Countdown Name"
+              placeholderTextColor="#888"
+              value={editName}
+              onChangeText={setEditName}
+              style={styles.input}
+            />
+
+            {/* Date & Time */}
+            <Text style={styles.iconLabel}>Date & Time</Text>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setCalendarModalVisible(true)}
+            >
+              <Text style={styles.iconButtonText}>
+                {moment(selectedDate).format("ddd, D MMM YYYY")} at {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Time */}
+            <Text style={styles.iconLabel}>Time</Text>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setTimePickerVisible(true)}
+            >
+              <Text style={styles.iconButtonText}>
+                {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Icon */}
+            <Text style={styles.iconLabel}>Icon</Text>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setIconPickerVisible(true)}
+            >
+              <Text style={styles.iconButtonText}>
+                {editIcon ? `Icon: ${editIcon}` : "Select Icon"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Action Buttons */}
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: "#444" }]}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
+                onPress={handleSaveEdit}
+              >
+                <Text style={styles.modalButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Calendar Modal */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={calendarModalVisible}
+        onRequestClose={() => setCalendarModalVisible(false)}
+      >
+        <View style={styles.calendarModalOverlay}>
+          <View style={styles.calendarModalContent}>
+            <Text style={styles.modalTitle}>Select a Date</Text>
+            <Calendar
+              style={styles.calendar}
+              onDayPress={handleDayPress}
+              minDate={moment().format("YYYY-MM-DD")}
+              theme={{
+                backgroundColor: "#FFFFFF",
+                calendarBackground: "#F8F9FA",
+                textSectionTitleColor: "#3498DB",
+                dayTextColor: "#2C3E50",
+                todayTextColor: "#3498DB",
+                monthTextColor: "#3498DB",
+                arrowColor: "#3498DB",
+                selectedDayBackgroundColor: "#3498DB",
+                selectedDayTextColor: "#FFFFFF",
+                textDisabledColor: "#BDC3C7",
+                dotColor: "#3498DB",
+                selectedDotColor: "#FFFFFF",
+              }}
+            />
+            <View style={styles.calendarButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: "#444" }]}
+                onPress={() => setCalendarModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
+                onPress={handleConfirmDate}
+              >
+                <Text style={styles.modalButtonText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Time Picker Modal */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={timePickerVisible}
+        onRequestClose={() => setTimePickerVisible(false)}
+      >
+        <View style={styles.timePickerOverlay}>
+          <View style={styles.timePickerContent}>
+            <Text style={styles.modalTitle}>Select Time</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+              <Picker
+                selectedValue={selectedHour}
+                style={{ width: 100 }}
+                onValueChange={(itemValue) => setSelectedHour(itemValue)}
+              >
+                {[...Array(24).keys()].map((h) => (
+                  <Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
+                ))}
+              </Picker>
+              <Text style={{ fontSize: 24, marginHorizontal: 8 }}>:</Text>
+              <Picker
+                selectedValue={selectedMinute}
+                style={{ width: 100 }}
+                onValueChange={(itemValue) => setSelectedMinute(itemValue)}
+              >
+                {[...Array(60).keys()].map((m) => (
+                  <Picker.Item key={m} label={m.toString().padStart(2, '0')} value={m} />
+                ))}
+              </Picker>
+            </View>
+            <View style={styles.timePickerButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: "#444" }]}
+                onPress={() => setTimePickerVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
+                onPress={() => setTimePickerVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Icon Picker Modal */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={iconPickerVisible}
+        onRequestClose={() => setIconPickerVisible(false)}
+      >
+        <View style={styles.iconModalContainer}>
+          <View style={styles.iconModalContent}>
+            <Text style={styles.modalTitle}>Select Icon</Text>
+            <View style={styles.iconList}>
+              {eventIcons.map((icon, index) => (
+                <TouchableOpacity
+                  key={`${icon}-${index}`}
+                  onPress={() => {
+                    setEditIcon(icon);
+                    setIconPickerVisible(false);
+                  }}
+                  style={styles.iconItem}
+                >
+                  <Text style={styles.iconText}>{icon}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity
+              onPress={() => setIconPickerVisible(false)}
+              style={[styles.modalButton, { backgroundColor: "#444", alignSelf: 'center', paddingHorizontal: wp('8%') }]}
+            >
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -197,8 +534,13 @@ const styles = StyleSheet.create({
   rightSection: {
     alignItems: "flex-end",
     justifyContent: "center",
-    minWidth: wp("20%"),
-    maxWidth: wp("28%"),
+    minWidth: wp("8%"),
+    maxWidth: wp("10%"),
+  },
+  buttonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   countdownText: {
     fontSize: wp("3.5%"),
@@ -216,18 +558,16 @@ const styles = StyleSheet.create({
     marginBottom: wp("2%"),
     fontFamily: "monospace",
   },
-  deleteButton: {
-    backgroundColor: "#FDEDEC",
-    paddingVertical: wp("1.5%"),
-    paddingHorizontal: wp("4%"),
-    borderRadius: wp("2%"),
-    marginTop: wp("0.5%"),
-  },
-  deleteButtonText: {
-    color: "#E74C3C",
-    fontSize: wp("2.7%"),
-    fontWeight: "600",
-    fontFamily: "monospace",
+  iconButton: {
+    backgroundColor: "#F8F9FA",
+    padding: 4,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 24,
+    height: 24,
   },
   modalOverlay: {
     flex: 1,
@@ -298,6 +638,126 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     marginLeft: wp('4%'),
     marginBottom: 6,
+  },
+  editModalContent: {
+    width: "90%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("2.5%"),
+    padding: wp("4%"),
+    alignItems: "center",
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    maxHeight: '80%',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    padding: wp("2%"),
+    marginBottom: wp("2.5%"),
+    borderRadius: wp("1%"),
+    color: "#2C3E50",
+    fontFamily: "monospace",
+    fontSize: wp("3%"),
+    backgroundColor: "#FFFFFF",
+    width: '100%',
+  },
+  iconLabel: {
+    fontSize: wp("2.5%"),
+    color: "#2C3E50",
+    fontFamily: "monospace",
+    marginBottom: wp("1%"),
+    alignSelf: 'flex-start',
+  },
+  iconButton: {
+    borderWidth: 1,
+    borderColor: "#3498DB",
+    paddingVertical: wp("2%"),
+    paddingHorizontal: wp("3%"),
+    borderRadius: wp("1%"),
+    backgroundColor: "#FFFFFF",
+    marginBottom: wp("2.5%"),
+    alignItems: "center",
+    width: '100%',
+  },
+  iconButtonText: {
+    fontSize: wp("3%"),
+    color: "#2C3E50",
+    fontFamily: "monospace",
+  },
+  calendarModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  calendarModalContent: {
+    width: wp("90%"),
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("2%"),
+    padding: wp("4%"),
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  calendar: {
+    borderRadius: wp("2%"),
+    marginBottom: wp("4%"),
+  },
+  calendarButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  timePickerOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timePickerContent: {
+    width: wp("90%"),
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("2%"),
+    padding: wp("4%"),
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  timePickerButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  iconModalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.9)",
+  },
+  iconModalContent: {
+    margin: wp("4%"),
+    backgroundColor: "#FFFFFF",
+    borderRadius: wp("2%"),
+    padding: wp("4%"),
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    maxHeight: '80%',
+  },
+  iconList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    marginBottom: wp("2.5%"),
+  },
+  iconItem: {
+    margin: wp("1%"),
+    padding: wp("2%"),
+    borderRadius: wp("1%"),
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  iconText: {
+    fontSize: wp("3%"),
   },
 });
 

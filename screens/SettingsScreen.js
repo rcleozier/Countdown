@@ -151,10 +151,6 @@ const SettingsScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Settings</Text>
-        <Text style={styles.headerSubtitle}>Manage your app preferences and data</Text>
-      </View>
       <View style={styles.container}>
         <View style={styles.card}>
           <TouchableOpacity activeOpacity={0.7} onPress={handleAppInfoTap}>
@@ -218,29 +214,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    padding: wp("4%")
+    padding: wp("4%"),
+    paddingTop: wp("8%")
   },
-  headerContainer: {
-    paddingHorizontal: wp('4%'),
-    paddingTop: wp('8%'),
-    paddingBottom: wp('4%'),
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    marginBottom: wp('2%'),
-  },
-  headerTitle: {
-    fontSize: wp('5%'),
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    fontFamily: 'monospace',
-  },
-  headerSubtitle: {
-    fontSize: wp('3%'),
-    color: '#7F8C8D',
-    fontFamily: 'monospace',
-    marginTop: wp('1%'),
-  },
+
   card: {
     width: '100%',
     backgroundColor: '#FFF',

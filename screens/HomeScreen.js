@@ -9,6 +9,8 @@ import {
   StyleSheet,
   SafeAreaView,
   Alert,
+  Animated,
+  Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -20,6 +22,8 @@ import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import * as Notifications from 'expo-notifications';
 import { Analytics } from '../util/analytics';
 import OptimizedBannerAd from '../components/Ads';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const generateGUID = () =>
   "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -104,13 +108,102 @@ const HomeScreen = () => {
   const loadCountdowns = async () => {
     try {
       const storedCountdowns = await AsyncStorage.getItem("countdowns");
+      const hasLaunchedBefore = await AsyncStorage.getItem("hasLaunchedBefore");
+      
       if (storedCountdowns) {
         setCountdowns(JSON.parse(storedCountdowns));
+      } else if (!hasLaunchedBefore) {
+        // First time user - seed with test data
+        await seedTestDataForNewUser();
+        await AsyncStorage.setItem("hasLaunchedBefore", "true");
       } else {
         setCountdowns([]);
       }
     } catch (error) {
       console.error("Error loading countdowns", error);
+    }
+  };
+
+  const seedTestDataForNewUser = async () => {
+    try {
+      const now = new Date();
+      const addDays = (date, days) => {
+        const d = new Date(date);
+        d.setDate(d.getDate() + days);
+        return d;
+      };
+      
+      // 7 upcoming countdowns with varied times
+      const upcoming = [
+        { name: "Sarah's Birthday", icon: "🎂", days: 1, hour: 14, minute: 30 },
+        { name: "Baseball Game", icon: "⚾️", days: 5, hour: 19, minute: 0 },
+        { name: "Vacation", icon: "✈️", days: 10, hour: 9, minute: 15 },
+        { name: "Graduation", icon: "🎓", days: 15, hour: 16, minute: 0 },
+        { name: "Beach Day", icon: "🏖️", days: 20, hour: 11, minute: 30 },
+        { name: "Marathon", icon: "🏆", days: 30, hour: 7, minute: 0 },
+        { name: "Party", icon: "🎉", days: 45, hour: 20, minute: 0 },
+      ].map((e, i) => {
+        const eventDate = addDays(now, e.days);
+        eventDate.setHours(e.hour, e.minute, 0, 0);
+        
+        // Random createdAt between 1 and (days-1) days ago
+        const minAgo = 1;
+        const maxAgo = Math.max(e.days - 1, 1);
+        const daysAgo = Math.floor(Math.random() * (maxAgo - minAgo + 1)) + minAgo;
+        const createdAt = addDays(now, -daysAgo);
+        
+        return {
+          id: `upcoming-${i}-${Date.now()}`,
+          name: e.name,
+          icon: e.icon,
+          date: eventDate.toISOString(),
+          createdAt: createdAt.toISOString(),
+          notificationId: null, // Will be set if notifications are enabled
+        };
+      });
+      
+      // 7 past countdowns
+      const past = [
+        { name: "Dentist", icon: "🦷", days: -2, hour: 10, minute: 0 },
+        { name: "Basketball Game", icon: "🏀", days: -5, hour: 18, minute: 30 },
+        { name: "Movie Night", icon: "🎬", days: -10, hour: 21, minute: 0 },
+        { name: "School Start", icon: "🏫", days: -15, hour: 8, minute: 0 },
+        { name: "Interview", icon: "💼", days: -20, hour: 14, minute: 0 },
+        { name: "Housewarming", icon: "🏠", days: -30, hour: 17, minute: 30 },
+        { name: "Concert", icon: "🎤", days: -45, hour: 19, minute: 30 },
+      ].map((e, i) => {
+        const eventDate = addDays(now, e.days);
+        eventDate.setHours(e.hour, e.minute, 0, 0);
+        
+        return {
+          id: `past-${i}-${Date.now()}`,
+          name: e.name,
+          icon: e.icon,
+          date: eventDate.toISOString(),
+          createdAt: addDays(now, e.days - 5).toISOString(),
+          notificationId: null,
+        };
+      });
+      
+      // 7 sample notes
+      const notes = [
+        { text: "Buy cake for Mom's birthday!", date: addDays(now, 2).toISOString() },
+        { text: "Pack baseball glove for the game.", date: addDays(now, 4).toISOString() },
+        { text: "Book hotel for vacation.", date: addDays(now, 8).toISOString() },
+        { text: "Order graduation gown.", date: addDays(now, 12).toISOString() },
+        { text: "Invite friends to beach day.", date: addDays(now, 18).toISOString() },
+        { text: "Register for marathon.", date: addDays(now, 25).toISOString() },
+        { text: "Plan party playlist.", date: addDays(now, 40).toISOString() },
+      ];
+      
+      // Save to storage
+      const allCountdowns = [...upcoming, ...past];
+      await AsyncStorage.setItem("countdowns", JSON.stringify(allCountdowns));
+      await AsyncStorage.setItem("notes", JSON.stringify(notes));
+      setCountdowns(allCountdowns);
+      
+    } catch (error) {
+      console.error("Error seeding test data:", error);
     }
   };
 
@@ -226,6 +319,51 @@ const HomeScreen = () => {
     });
   };
 
+  const editCountdown = async (updatedEvent) => {
+    try {
+      // Cancel old notification if it exists
+      const existingEvent = countdowns.find(item => item.id === updatedEvent.id);
+      if (existingEvent && existingEvent.notificationId) {
+        await Notifications.cancelScheduledNotificationAsync(existingEvent.notificationId).catch(() => {});
+      }
+
+      // Schedule new notification
+      let notificationId = null;
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === 'granted') {
+        notificationId = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'Countdown Reminder',
+            body: `"${updatedEvent.name}" is happening now!`,
+            sound: true,
+          },
+          trigger: { date: new Date(updatedEvent.date) },
+        });
+      }
+
+      // Update the countdown with new notification ID
+      const finalUpdatedEvent = {
+        ...updatedEvent,
+        notificationId,
+      };
+
+      setCountdowns((prev) => 
+        prev.map((item) => 
+          item.id === updatedEvent.id ? finalUpdatedEvent : item
+        )
+      );
+
+      Analytics.trackEvent && Analytics.trackEvent('edit_countdown', {
+        id: updatedEvent.id,
+        name: updatedEvent.name,
+        date: updatedEvent.date,
+        icon: updatedEvent.icon,
+      });
+    } catch (e) {
+      console.warn('Could not update notification:', e);
+    }
+  };
+
   const deleteCountdown = (id) => {
     setCountdowns((prev) => {
       const countdownToDelete = prev.find((item) => item.id === id);
@@ -249,7 +387,7 @@ const HomeScreen = () => {
     const showAd = (index + 1) % 5 === 0;
     return (
       <>
-        <CountdownItem event={item} index={index} onDelete={deleteCountdown} />
+        <CountdownItem event={item} index={index} onDelete={deleteCountdown} onEdit={editCountdown} />
         {showAd && <OptimizedBannerAd />}
       </>
     );
@@ -257,16 +395,37 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Upcoming Events</Text>
-        <Text style={styles.headerSubtitle}>Track your important moments</Text>
-      </View>
+
       {upcomingEvents.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No countdowns yet!</Text>
+          <View style={styles.emptyIconContainer}>
+            <Ionicons name="calendar-outline" size={80} color="#BDC3C7" />
+          </View>
+          <Text style={styles.emptyText}>Ready to start counting?</Text>
           <Text style={styles.emptySubText}>
-            Create your first upcoming event to get started.
+            Create your first event and never miss important moments again!
           </Text>
+          <View style={styles.emptyFeatures}>
+            <View style={styles.featureItem}>
+              <Ionicons name="notifications-outline" size={20} color="#3498DB" />
+              <Text style={styles.featureText}>Smart reminders</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="trending-up-outline" size={20} color="#3498DB" />
+              <Text style={styles.featureText}>Progress tracking</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="time-outline" size={20} color="#3498DB" />
+              <Text style={styles.featureText}>Live countdowns</Text>
+            </View>
+          </View>
+          <TouchableOpacity 
+            style={styles.emptyActionButton}
+            onPress={handleOpenModal}
+          >
+            <Ionicons name="add" size={20} color="#FFFFFF" />
+            <Text style={styles.emptyActionText}>Create Your First Event</Text>
+          </TouchableOpacity>
           <OptimizedBannerAd />
         </View>
       ) : (
@@ -277,12 +436,13 @@ const HomeScreen = () => {
           contentContainerStyle={styles.listContainer}
         />
       )}
-      {/* Floating Button to Add New Countdown */}
+      {/* Floating Button to Add New Event */}
       <TouchableOpacity
         onPress={handleOpenModal}
         style={styles.floatingButton}
       >
-        <Text style={styles.floatingButtonText}>+ Add New Countdown</Text>
+        <Ionicons name="add" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+        <Text style={styles.floatingButtonText}>Add New Event</Text>
       </TouchableOpacity>
 
       {/* Modal for creating a new countdown */}
@@ -500,57 +660,89 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8F9FA",
   },
-  headerContainer: {
-    paddingHorizontal: wp("4%"),
-    paddingTop: wp("8%"),
-    paddingBottom: wp("4%"),
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-    marginBottom: wp("2%"),
-  },
-  headerTitle: {
-    fontSize: wp("5%"),
-    fontWeight: "bold",
-    color: "#2C3E50",
-    fontFamily: "monospace",
-  },
-  headerSubtitle: {
-    fontSize: wp("3%"),
-    color: "#7F8C8D",
-    fontFamily: "monospace",
-    marginTop: wp("1%"),
-  },
+
   listContainer: {
     paddingHorizontal: wp("4%"),
     paddingBottom: wp("20%"),
+    paddingTop: wp("8%"),
   },
   emptyContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: wp("4%"),
+    paddingHorizontal: wp("6%"),
+    paddingVertical: wp("8%"),
+  },
+  emptyIconContainer: {
+    marginBottom: wp("6%"),
+    opacity: 0.7,
   },
   emptyText: {
-    fontSize: wp("4.5%"),
-    fontWeight: "bold",
+    fontSize: wp("5.5%"),
+    fontWeight: "800",
     color: "#2C3E50",
-    marginBottom: wp("2.5%"),
+    marginBottom: wp("3%"),
     fontFamily: "monospace",
     textAlign: "center",
   },
   emptySubText: {
-    fontSize: wp("2.5%"),
+    fontSize: wp("3.5%"),
     color: "#7F8C8D",
     textAlign: "center",
-    marginBottom: wp("2.5%"),
+    marginBottom: wp("6%"),
     fontFamily: "monospace",
+    lineHeight: wp("5%"),
+  },
+  emptyFeatures: {
+    alignItems: "center",
+    marginBottom: wp("8%"),
+  },
+  featureItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: wp("3%"),
+    paddingHorizontal: wp("4%"),
+    paddingVertical: wp("2%"),
+    backgroundColor: "#F8F9FA",
+    borderRadius: wp("2%"),
+    borderWidth: 1,
+    borderColor: "#E9ECEF",
+  },
+  featureText: {
+    fontSize: wp("3.2%"),
+    color: "#495057",
+    fontFamily: "monospace",
+    marginLeft: wp("2%"),
+    fontWeight: "600",
+  },
+  emptyActionButton: {
+    backgroundColor: "#3498DB",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: wp("4%"),
+    paddingHorizontal: wp("8%"),
+    borderRadius: wp("3%"),
+    marginBottom: wp("6%"),
+    shadowColor: "#3498DB",
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+  },
+  emptyActionText: {
+    color: "#FFFFFF",
+    fontSize: wp("3.8%"),
+    fontWeight: "bold",
+    fontFamily: "monospace",
+    marginLeft: wp("2%"),
   },
   floatingButton: {
     position: "absolute",
     bottom: wp("4%"),
     right: wp("4%"),
     backgroundColor: "#3498DB",
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: wp("3%"),
     paddingHorizontal: wp("4%"),
     borderRadius: wp("2%"),
