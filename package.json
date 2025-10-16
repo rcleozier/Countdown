@@ -23,7 +23,7 @@
     "wrap-ansi": "^7.0.0"
   },
   "dependencies": {
-    "@aptabase/react-native": "^0.3.10",
+    "@aptabase/react-native": "^0.4.0",
     "@expo/config-plugins": "~9.0.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-picker/picker": "2.9.0",
