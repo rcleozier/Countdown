@@ -422,26 +422,9 @@ const HomeScreen = () => {
       {upcomingEvents.length === 0 ? (
         <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background }]}>
           <View style={styles.emptyIconContainer}>
-            <Ionicons name="calendar-outline" size={80} color={theme.colors.textLight} />
+            <Ionicons name="calendar-outline" size={60} color={theme.colors.primary} />
           </View>
           <Text style={[styles.emptyText, { color: theme.colors.text }]}>Ready to start counting?</Text>
-          <Text style={[styles.emptySubText, { color: theme.colors.textSecondary }]}>
-            Create your first event and never miss important moments again!
-          </Text>
-          <View style={styles.emptyFeatures}>
-            <View style={styles.featureItem}>
-              <Ionicons name="notifications-outline" size={20} color={theme.colors.primary} />
-              <Text style={[styles.featureText, { color: theme.colors.text }]}>Smart reminders</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="trending-up-outline" size={20} color={theme.colors.primary} />
-              <Text style={[styles.featureText, { color: theme.colors.text }]}>Progress tracking</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="time-outline" size={20} color={theme.colors.primary} />
-              <Text style={[styles.featureText, { color: theme.colors.text }]}>Live countdowns</Text>
-            </View>
-          </View>
           <TouchableOpacity 
             style={[styles.emptyActionButton, { backgroundColor: theme.colors.button }]}
             onPress={handleOpenModal}
@@ -449,24 +432,25 @@ const HomeScreen = () => {
             <Ionicons name="add" size={20} color={theme.colors.buttonText} />
             <Text style={[styles.emptyActionText, { color: theme.colors.buttonText }]}>Create Your First Event</Text>
           </TouchableOpacity>
-          <OptimizedBannerAd />
         </View>
       ) : (
-        <FlatList
-          data={upcomingEvents}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
-        />
+        <>
+          <FlatList
+            data={upcomingEvents}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
+          />
+          {/* Floating Button to Add New Event */}
+          <TouchableOpacity
+            onPress={handleOpenModal}
+            style={[styles.floatingButton, { backgroundColor: theme.colors.button }]}
+          >
+            <Ionicons name="add" size={20} color={theme.colors.buttonText} style={{ marginRight: 8 }} />
+            <Text style={[styles.floatingButtonText, { color: theme.colors.buttonText }]}>Add New Event</Text>
+          </TouchableOpacity>
+        </>
       )}
-      {/* Floating Button to Add New Event */}
-      <TouchableOpacity
-        onPress={handleOpenModal}
-        style={[styles.floatingButton, { backgroundColor: theme.colors.button }]}
-      >
-        <Ionicons name="add" size={20} color={theme.colors.buttonText} style={{ marginRight: 8 }} />
-        <Text style={[styles.floatingButtonText, { color: theme.colors.buttonText }]}>Add New Event</Text>
-      </TouchableOpacity>
 
       {/* Modal for creating a new countdown */}
       <Modal
@@ -487,13 +471,13 @@ const HomeScreen = () => {
             />
 
             {/* Date Label + Button */}
-            <Text style={[styles.iconLabel, { color: theme.colors.text }]}>Date & Time</Text>
+            <Text style={[styles.iconLabel, { color: theme.colors.text }]}>Date</Text>
             <TouchableOpacity
               style={[styles.iconButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
               onPress={handleOpenCalendar}
             >
               <Text style={[styles.iconButtonText, { color: theme.colors.text }]}>
-                {moment(selectedDate).format("ddd, D MMM YYYY")} at {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
+                {moment(selectedDate).format("ddd, D MMM YYYY")}
               </Text>
             </TouchableOpacity>
 

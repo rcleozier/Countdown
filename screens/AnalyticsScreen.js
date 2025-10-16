@@ -4,33 +4,21 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
-  Dimensions,
   ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { useFocusEffect } from "@react-navigation/native";
-import { LineChart, PieChart, BarChart } from "react-native-chart-kit";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { Analytics } from '../util/analytics';
 import { Ionicons } from '@expo/vector-icons';
 import OptimizedBannerAd from '../components/Ads';
 import { useTheme } from '../context/ThemeContext';
 
-const chartColors = [
-  "#66FCF1", "#45A29E", "#1F2833", "#C5C6C7", "#F5F5F5", "#FFB347", "#FF6961", "#6A5ACD", "#20B2AA", "#FFD700",
-];
-
 const AnalyticsScreen = () => {
   const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0 });
-  const [lineData, setLineData] = useState({ labels: [], data: [] });
-  const [pieData, setPieData] = useState([]);
-  const [barData, setBarData] = useState({ labels: [], data: [] });
-  const [donutData, setDonutData] = useState([]);
-  const [topTypes, setTopTypes] = useState([]);
-  const [busyDay, setBusyDay] = useState("");
-  const [nextEventDate, setNextEventDate] = useState("");
-  const [notesStats, setNotesStats] = useState({ total: 0, avgLength: 0, bar: { labels: [], data: [] } });
+  const [nextEvent, setNextEvent] = useState(null);
+  const [topIcons, setTopIcons] = useState([]);
   const { theme } = useTheme();
 
   const loadAnalytics = async () => {
@@ -41,121 +29,39 @@ const AnalyticsScreen = () => {
         const now = moment();
         const upcoming = allEvents.filter((e) => moment(e.date).isAfter(now));
         const past = allEvents.filter((e) => moment(e.date).isBefore(now));
+        
         setStats({
           total: allEvents.length,
           upcoming: upcoming.length,
           past: past.length,
         });
 
-        // Line chart: next 7 days (by event count)
-        const days = [];
-        const dayLabels = [];
-        for (let i = 0; i < 7; i++) {
-          const day = moment().add(i, "days").startOf("day");
-          days.push(day);
-          dayLabels.push(day.format("MM/DD"));
+        // Next upcoming event
+        const sortedUpcoming = upcoming.sort((a, b) => moment(a.date).diff(moment(b.date)));
+        if (sortedUpcoming.length > 0) {
+          setNextEvent(sortedUpcoming[0]);
         }
-        const dailyCounts = days.map((day) => {
-          const events = allEvents.filter((e) => moment(e.date).isSame(day, "day"));
-          return events.length;
-        });
-        setLineData({ labels: dayLabels, data: dailyCounts });
 
-        // Pie chart: event type distribution (next 7 days)
-        const sevenDaysFromNow = moment().add(6, "days").endOf("day");
-        const nextSevenEvents = allEvents.filter(
-          (e) => moment(e.date).isSameOrAfter(now, "day") && moment(e.date).isSameOrBefore(sevenDaysFromNow, "day")
-        );
-        const typeCounts = {};
-        nextSevenEvents.forEach((e) => {
-          const key = e.icon || "Other";
-          typeCounts[key] = (typeCounts[key] || 0) + 1;
-        });
-        const pie = Object.keys(typeCounts).map((label, idx) => ({
-          name: label,
-          count: typeCounts[label],
-          color: chartColors[idx % chartColors.length],
-          legendFontColor: "#2C3E50",
-          legendFontSize: 16,
-        }));
-        setPieData(pie);
-
-        // Bar chart: events per month (last 6 months)
-        const months = [];
-        const monthLabels = [];
-        for (let i = 5; i >= 0; i--) {
-          const m = moment().subtract(i, "months");
-          months.push(m);
-          monthLabels.push(m.format("MMM YY"));
-        }
-        const monthlyCounts = months.map((m) => {
-          const events = allEvents.filter((e) => moment(e.date).isSame(m, "month"));
-          return events.length;
-        });
-        setBarData({ labels: monthLabels, data: monthlyCounts });
-
-        // Donut chart: upcoming vs past
-        setDonutData([
-          { name: "Upcoming", population: upcoming.length, color: "#3498DB", legendFontColor: "#2C3E50", legendFontSize: 16 },
-          { name: "Past", population: past.length, color: "#E74C3C", legendFontColor: "#2C3E50", legendFontSize: 16 },
-        ]);
-
-        // Top event types (all time)
-        const allTypeCounts = {};
+        // Top 5 most used icons
+        const iconCounts = {};
         allEvents.forEach((e) => {
-          const key = e.icon || "Other";
-          allTypeCounts[key] = (allTypeCounts[key] || 0) + 1;
+          iconCounts[e.icon] = (iconCounts[e.icon] || 0) + 1;
         });
-        const sortedTypes = Object.entries(allTypeCounts)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5)
-          .map(([icon, count]) => ({ icon, count }));
-        setTopTypes(sortedTypes);
-
-        // Find busiest day (most events in a day, next 7 days)
-        const maxCount = Math.max(...dailyCounts);
-        const maxIdx = dailyCounts.indexOf(maxCount);
-        setBusyDay(maxCount > 0 ? dayLabels[maxIdx] : "N/A");
-
-        // Next event date
-        if (upcoming.length > 0) {
-          const sortedUpcoming = [...upcoming].sort((a, b) => new Date(a.date) - new Date(b.date));
-          setNextEventDate(moment(sortedUpcoming[0].date).format("ddd, D MMM YYYY at hh:mm A"));
-        } else {
-          setNextEventDate("N/A");
-        }
-
-        // --- Notes stats ---
-        const notesRaw = await AsyncStorage.getItem('notes');
-        let notes = [];
-        if (notesRaw) notes = JSON.parse(notesRaw);
-        const totalNotes = notes.length;
-        const avgLength = totalNotes > 0 ? Math.round(notes.reduce((sum, n) => sum + n.text.length, 0) / totalNotes) : 0;
-        // Notes per month (last 6 months)
-        const notesMonths = [];
-        const notesMonthLabels = [];
-        for (let i = 5; i >= 0; i--) {
-          const m = moment().subtract(i, "months");
-          notesMonths.push(m);
-          notesMonthLabels.push(m.format("MMM YY"));
-        }
-        const notesMonthlyCounts = notesMonths.map((m) => notes.filter((n) => moment(n.date).isSame(m, "month")).length);
-        setNotesStats({ total: totalNotes, avgLength, bar: { labels: notesMonthLabels, data: notesMonthlyCounts } });
-      } else {
-        setStats({ total: 0, upcoming: 0, past: 0 });
-        setLineData({ labels: [], data: [] });
-        setPieData([]);
-        setBarData({ labels: [], data: [] });
-        setDonutData([]);
-        setTopTypes([]);
-        setBusyDay("N/A");
-        setNextEventDate("N/A");
-        setNotesStats({ total: 0, avgLength: 0, bar: { labels: [], data: [] } });
+        const topIconsArray = Object.entries(iconCounts)
+          .map(([icon, count]) => ({ icon, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+        setTopIcons(topIconsArray);
       }
     } catch (error) {
-      console.error("Error loading analytics", error);
+      console.error("Error loading analytics:", error);
     }
   };
+
+  useEffect(() => {
+    Analytics.initialize();
+    Analytics.trackScreenView('Analytics');
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -163,177 +69,80 @@ const AnalyticsScreen = () => {
     }, [])
   );
 
-  useEffect(() => {
-    Analytics.initialize();
-    Analytics.trackScreenView('Analytics');
-  }, []);
-
-  const CARD_HORIZONTAL_PADDING = wp('8%');
-  const chartWidth = Dimensions.get('window').width - 2 * CARD_HORIZONTAL_PADDING;
+  const StatCard = ({ title, value, icon, color }) => (
+    <View style={[styles.statCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+      <View style={styles.statHeader}>
+        <Ionicons name={icon} size={wp('6%')} color={color} />
+        <Text style={[styles.statTitle, { color: theme.colors.text }]}>{title}</Text>
+      </View>
+      <Text style={[styles.statValue, { color: theme.colors.primary }]}>{value}</Text>
+    </View>
+  );
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
-      <ScrollView contentContainerStyle={[styles.scrollContent, { backgroundColor: theme.colors.background }]}>
+      <ScrollView style={[styles.scrollContent, { backgroundColor: theme.colors.background }]}>
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Upcoming Events (Next 7 Days)</Text>
-            {lineData.labels.length > 0 && (
-              <LineChart
-                data={{
-                  labels: lineData.labels,
-                  datasets: [{ data: lineData.data }],
-                }}
-                width={chartWidth}
-                height={180}
-                yAxisSuffix=""
-                chartConfig={{
-                  backgroundColor: theme.colors.background,
-                  backgroundGradientFrom: theme.colors.background,
-                  backgroundGradientTo: theme.colors.background,
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
-                  labelColor: (opacity = 1) => `${theme.colors.text}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
-                  style: { borderRadius: 16 },
-                  propsForDots: {
-                    r: "5",
-                    strokeWidth: "2",
-                    stroke: theme.colors.primary,
-                  },
-                  propsForBackgroundLines: {
-                    stroke: theme.colors.border,
-                  },
-                }}
-                bezier
-                style={{ marginVertical: 12, borderRadius: 16, width: '100%' }}
+          
+          {/* Overview Stats */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Overview</Text>
+            <View style={styles.statsGrid}>
+              <StatCard 
+                title="Total Events" 
+                value={stats.total} 
+                icon="calendar-outline" 
+                color={theme.colors.primary} 
               />
-            )}
-          </View>
-          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Event Type Distribution (Next 7 Days)</Text>
-            {pieData.length > 0 && (
-              <PieChart
-                data={pieData.map((d) => ({
-                  name: d.name,
-                  population: d.count,
-                  color: d.color,
-                  legendFontColor: theme.colors.text,
-                  legendFontSize: d.legendFontSize,
-                }))}
-                width={chartWidth}
-                height={180}
-                chartConfig={{
-                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
-                }}
-                accessor="population"
-                backgroundColor="transparent"
-                paddingLeft="15"
-                absolute
+              <StatCard 
+                title="Upcoming" 
+                value={stats.upcoming} 
+                icon="time-outline" 
+                color="#4CAF50" 
               />
-            )}
-          </View>
-          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Events Per Month (Last 6 Months)</Text>
-            {barData.labels.length > 0 && (
-              <BarChart
-                data={{
-                  labels: barData.labels,
-                  datasets: [{ data: barData.data }],
-                }}
-                width={chartWidth}
-                height={180}
-                yAxisLabel=""
-                chartConfig={{
-                  backgroundColor: theme.colors.background,
-                  backgroundGradientFrom: theme.colors.background,
-                  backgroundGradientTo: theme.colors.background,
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
-                  labelColor: (opacity = 1) => `${theme.colors.text}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
-                  style: { borderRadius: 16 },
-                  propsForBackgroundLines: {
-                    stroke: theme.colors.border,
-                  },
-                }}
-                style={{ marginVertical: 12, borderRadius: 16, width: '100%' }}
+              <StatCard 
+                title="Past Events" 
+                value={stats.past} 
+                icon="checkmark-circle-outline" 
+                color="#FF9800" 
               />
-            )}
+            </View>
           </View>
-          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Upcoming vs Past Events</Text>
-            {donutData.length > 0 && (
-              <PieChart
-                data={donutData}
-                width={chartWidth}
-                height={180}
-                chartConfig={{
-                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
-                }}
-                accessor="population"
-                backgroundColor="transparent"
-                paddingLeft="15"
-                absolute
-                hasLegend={true}
-              />
-            )}
-          </View>
-          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Top Event Types</Text>
-            {topTypes.length > 0 ? (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 }}>
-                {topTypes.map((t, idx) => (
-                  <View key={t.icon} style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 32 }}>{t.icon}</Text>
-                    <Text style={{ color: theme.colors.text, fontFamily: 'monospace', fontSize: 16 }}>{t.count}</Text>
+
+          {/* Next Event */}
+          {nextEvent && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Next Event</Text>
+              <View style={[styles.nextEventCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                <View style={styles.nextEventHeader}>
+                  <Text style={styles.nextEventIcon}>{nextEvent.icon}</Text>
+                  <View style={styles.nextEventInfo}>
+                    <Text style={[styles.nextEventName, { color: theme.colors.text }]}>{nextEvent.name}</Text>
+                    <Text style={[styles.nextEventDate, { color: theme.colors.textSecondary }]}>
+                      {moment(nextEvent.date).format("MMM D, YYYY [at] h:mm A")}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Top Icons */}
+          {topIcons.length > 0 && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Most Used Icons</Text>
+              <View style={[styles.iconsCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                {topIcons.map((item, index) => (
+                  <View key={index} style={styles.iconRow}>
+                    <Text style={styles.iconEmoji}>{item.icon}</Text>
+                    <Text style={[styles.iconCount, { color: theme.colors.text }]}>{item.count}</Text>
                   </View>
                 ))}
               </View>
-            ) : (
-              <Text style={{ color: theme.colors.textSecondary, textAlign: 'center' }}>No data</Text>
-            )}
-          </View>
-          <View style={[styles.summaryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={[styles.sectionLabel, { color: theme.colors.text }]}>Summary</Text>
-            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Total Events</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{stats.total}</Text></View>
-            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Upcoming</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{stats.upcoming}</Text></View>
-            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Past</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{stats.past}</Text></View>
-            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Busiest Day (Next 7)</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{busyDay}</Text></View>
-            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Next Event</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{nextEventDate}</Text></View>
-          </View>
-          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Notes Overview</Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: wp('2%') }}>
-              <View style={{ alignItems: 'center', flex: 1 }}>
-                <Ionicons name="document-text-outline" size={32} color={theme.colors.primary} />
-                <Text style={{ color: theme.colors.text, fontFamily: 'monospace', fontSize: 16, marginTop: 4 }}>Total Notes</Text>
-                <Text style={{ color: theme.colors.primary, fontWeight: 'bold', fontSize: 20 }}>{notesStats.total}</Text>
-              </View>
-              <View style={{ alignItems: 'center', flex: 1 }}>
-                <Ionicons name="stats-chart-outline" size={32} color={theme.colors.primary} />
-                <Text style={{ color: theme.colors.text, fontFamily: 'monospace', fontSize: 16, marginTop: 4 }}>Avg. Length</Text>
-                <Text style={{ color: theme.colors.primary, fontWeight: 'bold', fontSize: 20 }}>{notesStats.avgLength}</Text>
-              </View>
             </View>
-            <Text style={[styles.chartTitle, { marginTop: wp('2%'), color: theme.colors.text }]}>Notes Per Month (Last 6 Months)</Text>
-            {notesStats.bar.labels.length > 0 && (
-              <BarChart
-                data={{ labels: notesStats.bar.labels, datasets: [{ data: notesStats.bar.data }] }}
-                width={chartWidth}
-                height={180}
-                yAxisLabel=""
-                chartConfig={{
-                  backgroundColor: theme.colors.background,
-                  backgroundGradientFrom: theme.colors.background,
-                  backgroundGradientTo: theme.colors.background,
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
-                  labelColor: (opacity = 1) => `${theme.colors.text}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
-                  style: { borderRadius: 16 },
-                  propsForBackgroundLines: { stroke: theme.colors.border },
-                }}
-                style={{ marginVertical: 12, borderRadius: 16, width: '100%' }}
-              />
-            )}
-          </View>
+          )}
+
+          {/* Ad */}
           <OptimizedBannerAd />
         </View>
       </ScrollView>
@@ -342,75 +151,94 @@ const AnalyticsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#F8F9FA" },
-  scrollContent: { paddingBottom: 36, paddingTop: wp('8%') },
-
-  container: { flex: 1, padding: wp('4%') },
-  card: {
-    backgroundColor: '#FFF',
-    borderRadius: wp('3%'),
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
     padding: wp('4%'),
+  },
+  section: {
+    marginBottom: wp('6%'),
+  },
+  sectionTitle: {
+    fontSize: wp('5%'),
+    fontWeight: '700',
     marginBottom: wp('3%'),
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: wp('2%'),
-    elevation: 2,
-    overflow: 'hidden',
   },
-  summaryCard: {
-    backgroundColor: '#FFF',
-    borderRadius: wp('3%'),
-    padding: wp('4%'),
-    marginBottom: wp('3%'),
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: wp('2%'),
-    elevation: 2,
-  },
-  chartTitle: {
-    fontSize: wp('4%'),
-    color: '#2C3E50',
-    fontWeight: 'bold',
-    marginBottom: wp('2%'),
-    letterSpacing: 0.5,
-    fontFamily: 'monospace',
-  },
-  sectionLabel: {
-    fontSize: wp('4%'),
-    color: '#3498DB',
-    fontWeight: 'bold',
-    marginTop: wp('2%'),
-    marginBottom: wp('2%'),
-    textAlign: 'center',
-    letterSpacing: 0.5,
-    fontFamily: 'monospace',
-  },
-  statRow: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: wp('2%'),
-    padding: wp('2%'),
-    marginBottom: wp('2%'),
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+  statsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
-  statLabel: {
+  statCard: {
+    width: '30%',
+    padding: wp('3%'),
+    borderRadius: wp('3%'),
+    borderWidth: 1,
+    alignItems: 'center',
+    marginBottom: wp('2%'),
+  },
+  statHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: wp('1%'),
+  },
+  statTitle: {
     fontSize: wp('3%'),
-    color: '#2C3E50',
-    fontWeight: 'bold',
-    fontFamily: 'monospace',
+    marginLeft: wp('1%'),
+    fontWeight: '500',
   },
   statValue: {
-    fontSize: wp('3%'),
-    color: '#3498DB',
+    fontSize: wp('6%'),
     fontWeight: '700',
-    fontFamily: 'monospace',
+  },
+  nextEventCard: {
+    padding: wp('4%'),
+    borderRadius: wp('3%'),
+    borderWidth: 1,
+  },
+  nextEventHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  nextEventIcon: {
+    fontSize: wp('8%'),
+    marginRight: wp('3%'),
+  },
+  nextEventInfo: {
+    flex: 1,
+  },
+  nextEventName: {
+    fontSize: wp('4.5%'),
+    fontWeight: '600',
+    marginBottom: wp('1%'),
+  },
+  nextEventDate: {
+    fontSize: wp('3.5%'),
+  },
+  iconsCard: {
+    padding: wp('4%'),
+    borderRadius: wp('3%'),
+    borderWidth: 1,
+  },
+  iconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: wp('2%'),
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  iconEmoji: {
+    fontSize: wp('6%'),
+  },
+  iconCount: {
+    fontSize: wp('4%'),
+    fontWeight: '600',
   },
 });
 
