@@ -2,7 +2,7 @@ import * as StoreReview from 'expo-store-review';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const REVIEW_REQUEST_KEY = 'last_review_request';
-const MIN_DRINKS_FOR_REVIEW = 5;
+const MIN_EVENTS_FOR_REVIEW = 3;
 const MIN_DAYS_BETWEEN_REVIEWS = 30;
 
 export const ReviewManager = {
@@ -20,12 +20,12 @@ export const ReviewManager = {
         if (daysSinceLastRequest < MIN_DAYS_BETWEEN_REVIEWS) return false;
       }
 
-      // Get total drinks count
-      const drinksStr = await AsyncStorage.getItem('drinks');
-      if (!drinksStr) return false;
+      // Get total events count
+      const eventsStr = await AsyncStorage.getItem('countdowns');
+      if (!eventsStr) return false;
       
-      const drinks = JSON.parse(drinksStr);
-      return drinks.length >= MIN_DRINKS_FOR_REVIEW;
+      const events = JSON.parse(eventsStr);
+      return events.length >= MIN_EVENTS_FOR_REVIEW;
     } catch (error) {
       console.error('Error checking review eligibility:', error);
       return false;

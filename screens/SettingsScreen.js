@@ -70,6 +70,7 @@ const SettingsScreen = () => {
     setModalVisible(false);
   };
 
+
   // Easter egg: Seed data after 7 taps
   const handleAppInfoTap = async () => {
     setAppInfoTapCount((prev) => {
@@ -191,7 +192,7 @@ const SettingsScreen = () => {
           <Text style={[styles.cardTitle, { color: theme.colors.primary }]}>Actions</Text>
           <TouchableOpacity
             onPress={() => setModalVisible(true)}
-            style={[styles.clearButton, { backgroundColor: theme.colors.button }]}
+            style={[styles.clearButton, { backgroundColor: theme.colors.error }]}
           >
             <Text style={[styles.clearButtonText, { color: theme.colors.buttonText }]}>Clear All Events</Text>
           </TouchableOpacity>

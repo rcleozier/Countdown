@@ -25,6 +25,7 @@ import OptimizedBannerAd from '../components/Ads';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
+import { ReviewManager } from '../util/reviewManager';
 
 const generateGUID = () =>
   "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -339,6 +340,15 @@ const HomeScreen = () => {
       date: combinedDateTime.toISOString(),
       icon: newIcon,
     });
+
+    // Request review if appropriate
+    setTimeout(async () => {
+      try {
+        await ReviewManager.requestReview();
+      } catch (error) {
+        console.error('Error requesting review:', error);
+      }
+    }, 2000); // Wait 2 seconds after successful creation
   };
 
   const editCountdown = async (updatedEvent) => {
