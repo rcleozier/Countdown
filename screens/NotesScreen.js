@@ -5,6 +5,7 @@ import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { Ionicons } from '@expo/vector-icons';
 import { Analytics } from '../util/analytics';
 import OptimizedBannerAd from '../components/Ads';
+import { useTheme } from '../context/ThemeContext';
 
 const NOTES_KEY = "notes";
 
@@ -13,6 +14,7 @@ const NotesScreen = () => {
   const [noteText, setNoteText] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     Analytics.initialize();
@@ -86,8 +88,8 @@ const NotesScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <FlatList
           data={listData}
           keyExtractor={(item) => item.key}
@@ -98,17 +100,17 @@ const NotesScreen = () => {
             // Find the correct index in the notes array by date
             const noteIdx = notes.findIndex(n => n.date === item.date);
             return (
-              <View style={styles.noteCard}>
-                <Text style={styles.noteText}>{item.text}</Text>
-                <Text style={styles.noteDate}>
+              <View style={[styles.noteCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                <Text style={[styles.noteText, { color: theme.colors.text }]}>{item.text}</Text>
+                <Text style={[styles.noteDate, { color: theme.colors.textSecondary }]}>
                   Created: {new Date(item.date).toLocaleDateString()} at {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </Text>
                 <View style={styles.noteActions}>
-                  <TouchableOpacity onPress={() => startEdit(noteIdx)} style={styles.iconButton}>
-                    <Ionicons name="pencil" size={20} color="#3498DB" />
+                  <TouchableOpacity onPress={() => startEdit(noteIdx)} style={[styles.iconButton, { backgroundColor: theme.colors.buttonSecondary }]}>
+                    <Ionicons name="pencil" size={20} color={theme.colors.primary} />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => deleteNote(noteIdx)} style={styles.iconButton}>
-                    <Ionicons name="trash" size={20} color="#E74C3C" />
+                  <TouchableOpacity onPress={() => deleteNote(noteIdx)} style={[styles.iconButton, { backgroundColor: theme.colors.buttonSecondary }]}>
+                    <Ionicons name="trash" size={20} color={theme.colors.error} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -116,42 +118,42 @@ const NotesScreen = () => {
           }}
           ListEmptyComponent={
             <View>
-              <Text style={styles.emptyText}>No notes yet.</Text>
+              <Text style={[styles.emptyText, { color: theme.colors.text }]}>No notes yet.</Text>
               <OptimizedBannerAd />
             </View>
           }
-          contentContainerStyle={styles.listContainer}
+          contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
         />
         <TouchableOpacity
-          style={styles.addNoteButton}
+          style={[styles.addNoteButton, { backgroundColor: theme.colors.button }]}
           onPress={() => {
             setEditingIndex(null);
             setNoteText("");
             setModalVisible(true);
           }}
         >
-          <Text style={styles.addNoteButtonText}>+ Add New Note</Text>
+          <Text style={[styles.addNoteButtonText, { color: theme.colors.buttonText }]}>+ Add New Note</Text>
         </TouchableOpacity>
         <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{editingIndex !== null ? "Edit Note" : "Add Note"}</Text>
+          <View style={[styles.modalOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
+            <View style={[styles.modalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>{editingIndex !== null ? "Edit Note" : "Add Note"}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.text }]}
                 value={noteText}
                 onChangeText={setNoteText}
                 maxLength={300}
                 multiline
                 placeholder="Write your note (max 300 chars)"
-                placeholderTextColor="#888"
+                placeholderTextColor={theme.colors.textLight}
               />
-              <Text style={styles.charCount}>{noteText.length}/300</Text>
+              <Text style={[styles.charCount, { color: theme.colors.textSecondary }]}>{noteText.length}/300</Text>
               <View style={styles.modalActions}>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.button, { backgroundColor: "#444" }]}>
-                  <Text style={styles.buttonText}>Cancel</Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.button, { backgroundColor: theme.colors.border }]}>
+                  <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={editingIndex !== null ? saveEdit : addNote} style={[styles.button, { backgroundColor: '#3498DB' }] }>
-                  <Text style={[styles.buttonText, { color: '#FFF' }]}>{editingIndex !== null ? "Save" : "Add"}</Text>
+                <TouchableOpacity onPress={editingIndex !== null ? saveEdit : addNote} style={[styles.button, { backgroundColor: theme.colors.primary }] }>
+                  <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>{editingIndex !== null ? "Save" : "Add"}</Text>
                 </TouchableOpacity>
               </View>
             </View>

@@ -12,6 +12,7 @@ import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { Calendar } from "react-native-calendars";
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
@@ -20,6 +21,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
+  const { theme } = useTheme();
   
   // Edit form states
   const [editName, setEditName] = useState(event.name);
@@ -182,20 +184,20 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   return (
     <>
       {/* Main Item Row */}
-      <View style={styles.gradientBorder}>
-        <View style={styles.container}>
+      <View style={[styles.gradientBorder, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+        <View style={[styles.container, { backgroundColor: theme.colors.card }]}>
           <View style={styles.leftSection}>
             <Text style={styles.icon}>{event.icon}</Text>
             <View style={styles.textContainer}>
-              <Text style={styles.title}>{event.name}</Text>
+              <Text style={[styles.title, { color: theme.colors.text }]}>{event.name}</Text>
               {timeLeft === null ? (
-                <Text style={styles.expiredText}>Expired</Text>
+                <Text style={[styles.expiredText, { color: theme.colors.error }]}>Expired</Text>
               ) : (
-                <Text style={styles.countdownText}>
+                <Text style={[styles.countdownText, { color: theme.colors.primary }]}>
                   {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
                 </Text>
               )}
-              <Text style={styles.date}>
+              <Text style={[styles.date, { color: theme.colors.textSecondary }]}>
                 {(() => {
                   const m = moment(event.date);
                   if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
@@ -210,25 +212,25 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           <View style={styles.rightSection}>
             <View style={styles.buttonRow}>
               <TouchableOpacity
-                style={styles.iconButton}
+                style={[styles.iconButton, { backgroundColor: theme.colors.buttonSecondary }]}
                 onPress={handleOpenEditModal}
               >
-                <Ionicons name="pencil" size={18} color="#3498DB" />
+                <Ionicons name="pencil" size={18} color={theme.colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.iconButton}
+                style={[styles.iconButton, { backgroundColor: theme.colors.buttonSecondary }]}
                 onPress={() => setDeleteModalVisible(true)}
               >
-                <Ionicons name="trash" size={18} color="#E74C3C" />
+                <Ionicons name="trash" size={18} color={theme.colors.error} />
               </TouchableOpacity>
             </View>
           </View>
         </View>
         {/* Progress Bar */}
-        <View style={styles.progressBarBackground}>
-          <View style={[styles.progressBarFill, { width: `${Math.round(progress * 100)}%` }]} />
+        <View style={[styles.progressBarBackground, { backgroundColor: theme.colors.progressBackground }]}>
+          <View style={[styles.progressBarFill, { width: `${Math.round(progress * 100)}%`, backgroundColor: theme.colors.progressFill }]} />
         </View>
-        <Text style={styles.progressText}>
+        <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
           {progress === 0
             ? 'Just started!'
             : `${Math.round(progress * 100)}% of the way there`}

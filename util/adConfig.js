@@ -28,48 +28,53 @@ export const handleAdError = (error, adType) => {
   });
 };
 
+// Static ad request options for better fill rates
+export const AD_REQUEST_OPTIONS = {
+  keywords: [
+    "countdown",
+    "timer",
+    "event",
+    "reminder",
+    "calendar",
+    "schedule",
+    "appointment",
+    "meeting",
+    "birthday",
+    "anniversary",
+    "holiday",
+    "vacation",
+    "deadline",
+    "goal",
+    "milestone",
+    "celebration",
+    "party",
+    "wedding",
+    "graduation",
+    "retirement",
+    "productivity",
+    "time management",
+    "organization",
+    "planning",
+    "lifestyle",
+    "personal",
+    "family",
+    "work",
+    "business",
+    "entertainment"
+  ],
+  requestNonPersonalizedAdsOnly: false,
+  maxAdContentRating: "G",
+  tagForChildDirectedTreatment: false,
+  tagForUnderAgeOfConsent: false,
+};
+
 // Get dynamic ad request options
 export const getDynamicAdRequestOptions = async () => {
   try {
     return await getAdRequestOptions();
   } catch (error) {
     console.error("Error getting dynamic ad options:", error);
-    // Fallback to non-personalized ads on error
-    return {
-      keywords: [
-        "finance app",
-        "budget tracker",
-        "personal finance",
-        "expense tracker",
-        "investment app",
-        "stock market",
-        "savings goals",
-        "debt payoff",
-        "credit score",
-        "money management",
-        "financial planning",
-        "retirement savings",
-        "tax calculator",
-        "loan calculator",
-        "mortgage calculator",
-        "crypto wallet",
-        "cryptocurrency",
-        "banking app",
-        "cashback rewards",
-        "bill reminder",
-        "payday countdown",
-        "wealth management",
-        "insurance quotes",
-        "student loans",
-        "side hustle",
-        "financial literacy",
-        "spending tracker",
-        "net worth calculator",
-        "budgeting tips",
-        "money saving",
-        "financial goals"
-      ],
-      requestNonPersonalizedAdsOnly: true,
-    };
+    // Fallback to static options
+    return AD_REQUEST_OPTIONS;
   }
 };

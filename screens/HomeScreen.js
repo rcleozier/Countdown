@@ -24,6 +24,7 @@ import { Analytics } from '../util/analytics';
 import OptimizedBannerAd from '../components/Ads';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../context/ThemeContext';
 
 const generateGUID = () =>
   "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -44,6 +45,7 @@ const HomeScreen = () => {
   const [selectedMinute, setSelectedMinute] = useState(0);
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("💻");
+  const { theme } = useTheme();
 
   const eventIcons = [
     "🎂", // Birthday
@@ -394,37 +396,37 @@ const HomeScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
 
       {upcomingEvents.length === 0 ? (
-        <View style={styles.emptyContainer}>
+        <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background }]}>
           <View style={styles.emptyIconContainer}>
-            <Ionicons name="calendar-outline" size={80} color="#BDC3C7" />
+            <Ionicons name="calendar-outline" size={80} color={theme.colors.textLight} />
           </View>
-          <Text style={styles.emptyText}>Ready to start counting?</Text>
-          <Text style={styles.emptySubText}>
+          <Text style={[styles.emptyText, { color: theme.colors.text }]}>Ready to start counting?</Text>
+          <Text style={[styles.emptySubText, { color: theme.colors.textSecondary }]}>
             Create your first event and never miss important moments again!
           </Text>
           <View style={styles.emptyFeatures}>
             <View style={styles.featureItem}>
-              <Ionicons name="notifications-outline" size={20} color="#3498DB" />
-              <Text style={styles.featureText}>Smart reminders</Text>
+              <Ionicons name="notifications-outline" size={20} color={theme.colors.primary} />
+              <Text style={[styles.featureText, { color: theme.colors.text }]}>Smart reminders</Text>
             </View>
             <View style={styles.featureItem}>
-              <Ionicons name="trending-up-outline" size={20} color="#3498DB" />
-              <Text style={styles.featureText}>Progress tracking</Text>
+              <Ionicons name="trending-up-outline" size={20} color={theme.colors.primary} />
+              <Text style={[styles.featureText, { color: theme.colors.text }]}>Progress tracking</Text>
             </View>
             <View style={styles.featureItem}>
-              <Ionicons name="time-outline" size={20} color="#3498DB" />
-              <Text style={styles.featureText}>Live countdowns</Text>
+              <Ionicons name="time-outline" size={20} color={theme.colors.primary} />
+              <Text style={[styles.featureText, { color: theme.colors.text }]}>Live countdowns</Text>
             </View>
           </View>
           <TouchableOpacity 
-            style={styles.emptyActionButton}
+            style={[styles.emptyActionButton, { backgroundColor: theme.colors.button }]}
             onPress={handleOpenModal}
           >
-            <Ionicons name="add" size={20} color="#FFFFFF" />
-            <Text style={styles.emptyActionText}>Create Your First Event</Text>
+            <Ionicons name="add" size={20} color={theme.colors.buttonText} />
+            <Text style={[styles.emptyActionText, { color: theme.colors.buttonText }]}>Create Your First Event</Text>
           </TouchableOpacity>
           <OptimizedBannerAd />
         </View>
@@ -433,16 +435,16 @@ const HomeScreen = () => {
           data={upcomingEvents}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContainer}
+          contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
         />
       )}
       {/* Floating Button to Add New Event */}
       <TouchableOpacity
         onPress={handleOpenModal}
-        style={styles.floatingButton}
+        style={[styles.floatingButton, { backgroundColor: theme.colors.button }]}
       >
-        <Ionicons name="add" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-        <Text style={styles.floatingButtonText}>Add New Event</Text>
+        <Ionicons name="add" size={20} color={theme.colors.buttonText} style={{ marginRight: 8 }} />
+        <Text style={[styles.floatingButtonText, { color: theme.colors.buttonText }]}>Add New Event</Text>
       </TouchableOpacity>
 
       {/* Modal for creating a new countdown */}
@@ -452,24 +454,24 @@ const HomeScreen = () => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Create New Countdown</Text>
+        <View style={[styles.modalContainer, { backgroundColor: theme.colors.modalOverlay }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Create New Countdown</Text>
             <TextInput
               placeholder="Countdown Name"
-              placeholderTextColor="#888"
+              placeholderTextColor={theme.colors.textLight}
               value={newName}
               onChangeText={setNewName}
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.text }]}
             />
 
             {/* Date Label + Button */}
-            <Text style={styles.iconLabel}>Date & Time</Text>
+            <Text style={[styles.iconLabel, { color: theme.colors.text }]}>Date & Time</Text>
             <TouchableOpacity
-              style={styles.iconButton}
+              style={[styles.iconButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
               onPress={handleOpenCalendar}
             >
-              <Text style={styles.iconButtonText}>
+              <Text style={[styles.iconButtonText, { color: theme.colors.text }]}>
                 {moment(selectedDate).format("ddd, D MMM YYYY")} at {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
               </Text>
             </TouchableOpacity>
@@ -481,9 +483,9 @@ const HomeScreen = () => {
               visible={calendarModalVisible}
               onRequestClose={() => setCalendarModalVisible(false)}
             >
-              <View style={styles.calendarModalOverlay}>
-                <View style={styles.calendarModalContent}>
-                  <Text style={styles.modalTitle}>Select a Date</Text>
+              <View style={[styles.calendarModalOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
+                <View style={[styles.calendarModalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
+                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select a Date</Text>
                   <Calendar
                     style={styles.calendar}
                     onDayPress={handleDayPress}
@@ -512,16 +514,16 @@ const HomeScreen = () => {
                   />
                   <View style={styles.calendarButtonContainer}>
                     <TouchableOpacity
-                      style={[styles.button, { backgroundColor: "#444" }]}
+                      style={[styles.button, { backgroundColor: theme.colors.border }]}
                       onPress={() => setCalendarModalVisible(false)}
                     >
-                      <Text style={styles.buttonText}>Cancel</Text>
+                      <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.button, { backgroundColor: "#66FCF1" }]}
+                      style={[styles.button, { backgroundColor: theme.colors.primary }]}
                       onPress={handleConfirmDate}
                     >
-                      <Text style={styles.buttonText}>Confirm</Text>
+                      <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>Confirm</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -529,12 +531,12 @@ const HomeScreen = () => {
             </Modal>
 
             {/* Time Label + Button */}
-            <Text style={styles.iconLabel}>Time</Text>
+            <Text style={[styles.iconLabel, { color: theme.colors.text }]}>Time</Text>
             <TouchableOpacity
-              style={styles.iconButton}
+              style={[styles.iconButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
               onPress={handleOpenTimePicker}
             >
-              <Text style={styles.iconButtonText}>
+              <Text style={[styles.iconButtonText, { color: theme.colors.text }]}>
                 {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
               </Text>
             </TouchableOpacity>
@@ -546,9 +548,9 @@ const HomeScreen = () => {
               visible={timePickerVisible}
               onRequestClose={() => setTimePickerVisible(false)}
             >
-              <View style={styles.timePickerOverlay}>
-                <View style={styles.timePickerContent}>
-                  <Text style={styles.modalTitle}>Select Time</Text>
+              <View style={[styles.timePickerOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
+                <View style={[styles.timePickerContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
+                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Time</Text>
                   <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                     <Picker
                       selectedValue={selectedHour}
@@ -572,16 +574,16 @@ const HomeScreen = () => {
                   </View>
                   <View style={styles.timePickerButtonContainer}>
                     <TouchableOpacity
-                      style={[styles.button, { backgroundColor: "#444" }]}
+                      style={[styles.button, { backgroundColor: theme.colors.border }]}
                       onPress={() => setTimePickerVisible(false)}
                     >
-                      <Text style={styles.buttonText}>Cancel</Text>
+                      <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.button, { backgroundColor: "#66FCF1" }]}
+                      style={[styles.button, { backgroundColor: theme.colors.primary }]}
                       onPress={() => setTimePickerVisible(false)}
                     >
-                      <Text style={styles.buttonText}>Confirm</Text>
+                      <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>Confirm</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -589,12 +591,12 @@ const HomeScreen = () => {
             </Modal>
 
             {/* Icon Label + Button */}
-            <Text style={styles.iconLabel}>Icon</Text>
+            <Text style={[styles.iconLabel, { color: theme.colors.text }]}>Icon</Text>
             <TouchableOpacity
               onPress={() => setIconPickerVisible(true)}
-              style={styles.iconButton}
+              style={[styles.iconButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             >
-              <Text style={styles.iconButtonText}>
+              <Text style={[styles.iconButtonText, { color: theme.colors.text }]}>
                 {newIcon ? `Icon: ${newIcon}` : "Select Icon"}
               </Text>
             </TouchableOpacity>
@@ -606,9 +608,9 @@ const HomeScreen = () => {
               visible={iconPickerVisible}
               onRequestClose={() => setIconPickerVisible(false)}
             >
-              <View style={styles.iconModalContainer}>
-                <View style={styles.iconModalContent}>
-                  <Text style={styles.modalTitle}>Select Icon</Text>
+              <View style={[styles.iconModalContainer, { backgroundColor: theme.colors.modalOverlay }]}>
+                <View style={[styles.iconModalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
+                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Icon</Text>
                   <View style={styles.iconList}>
                     {eventIcons.map((icon, index) => (
                       <TouchableOpacity
@@ -625,9 +627,9 @@ const HomeScreen = () => {
                   </View>
                   <TouchableOpacity
                     onPress={() => setIconPickerVisible(false)}
-                    style={[styles.button, { backgroundColor: "#444" }]}
+                    style={[styles.button, { backgroundColor: theme.colors.border }]}
                   >
-                    <Text style={styles.buttonText}>Cancel</Text>
+                    <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -637,15 +639,15 @@ const HomeScreen = () => {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
-                style={[styles.button, { backgroundColor: "#444" }]}
+                style={[styles.button, { backgroundColor: theme.colors.border }]}
               >
-                <Text style={styles.buttonText}>Cancel</Text>
+                <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleAddCountdown}
-                style={[styles.button, { backgroundColor: "#66FCF1" }]}
+                style={[styles.button, { backgroundColor: theme.colors.primary }]}
               >
-                <Text style={styles.buttonText}>Save Countdown</Text>
+                <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>Save Countdown</Text>
               </TouchableOpacity>
             </View>
           </View>

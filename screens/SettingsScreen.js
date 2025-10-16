@@ -7,6 +7,7 @@ import {
   StyleSheet,
   SafeAreaView,
   Alert,
+  Switch,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -16,12 +17,14 @@ import {
 } from "react-native-responsive-screen";
 import appConfig from '../app.json';
 import { Analytics } from '../util/analytics';
+import { useTheme } from '../context/ThemeContext';
 
 const SettingsScreen = () => {
   const [eventCount, setEventCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [appInfoTapCount, setAppInfoTapCount] = useState(0);
   const appInfo = appConfig.expo;
+  const { theme, isDark, toggleTheme } = useTheme();
 
   // Function to load events from AsyncStorage
   const loadEvents = async () => {
@@ -150,26 +153,38 @@ const SettingsScreen = () => {
 
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.card}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
           <TouchableOpacity activeOpacity={0.7} onPress={handleAppInfoTap}>
-            <Text style={styles.cardTitle}>App Info</Text>
-            <Text style={styles.appVersion}>Version {appInfo.version}</Text>
+            <Text style={[styles.cardTitle, { color: theme.colors.primary }]}>App Info</Text>
+            <Text style={[styles.appVersion, { color: theme.colors.text }]}>Version {appInfo.version}</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Event Stats</Text>
-          <Text style={styles.statLabel}>Total Events</Text>
-          <Text style={styles.statValue}>{eventCount}</Text>
+        <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+          <Text style={[styles.cardTitle, { color: theme.colors.primary }]}>Appearance</Text>
+          <View style={styles.themeToggleContainer}>
+            <Text style={[styles.themeLabel, { color: theme.colors.text }]}>Dark Theme</Text>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+              thumbColor={isDark ? theme.colors.surface : theme.colors.textLight}
+            />
+          </View>
         </View>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Actions</Text>
+        <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+          <Text style={[styles.cardTitle, { color: theme.colors.primary }]}>Event Stats</Text>
+          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Total Events</Text>
+          <Text style={[styles.statValue, { color: theme.colors.primary }]}>{eventCount}</Text>
+        </View>
+        <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+          <Text style={[styles.cardTitle, { color: theme.colors.primary }]}>Actions</Text>
           <TouchableOpacity
             onPress={() => setModalVisible(true)}
-            style={styles.clearButton}
+            style={[styles.clearButton, { backgroundColor: theme.colors.button }]}
           >
-            <Text style={styles.clearButtonText}>Clear All Events</Text>
+            <Text style={[styles.clearButtonText, { color: theme.colors.buttonText }]}>Clear All Events</Text>
           </TouchableOpacity>
         </View>
         <Modal
@@ -178,24 +193,24 @@ const SettingsScreen = () => {
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Confirm Clear</Text>
-              <Text style={styles.modalMessage}>
+          <View style={[styles.modalOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
+            <View style={[styles.modalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Confirm Clear</Text>
+              <Text style={[styles.modalMessage, { color: theme.colors.textSecondary }]}>
                 Are you sure you want to clear all events?
               </Text>
               <View style={styles.modalButtonContainer}>
                 <TouchableOpacity
                   onPress={() => setModalVisible(false)}
-                  style={[styles.button, { backgroundColor: "#444" }]}
+                  style={[styles.button, { backgroundColor: theme.colors.border }]}
                 >
-                  <Text style={styles.buttonText}>Cancel</Text>
+                  <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={clearEvents}
-                  style={[styles.button, { backgroundColor: "#E74C3C" }]}
+                  style={[styles.button, { backgroundColor: theme.colors.error }]}
                 >
-                  <Text style={styles.buttonText}>Confirm</Text>
+                  <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>Confirm</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -330,6 +345,17 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: wp("2%"),
     fontWeight: "bold",
+    fontFamily: "monospace",
+  },
+  // Theme toggle styles
+  themeToggleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: wp("2%"),
+  },
+  themeLabel: {
+    fontSize: wp("3.5%"),
     fontFamily: "monospace",
   },
 });

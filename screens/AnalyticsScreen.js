@@ -15,6 +15,7 @@ import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { Analytics } from '../util/analytics';
 import { Ionicons } from '@expo/vector-icons';
 import OptimizedBannerAd from '../components/Ads';
+import { useTheme } from '../context/ThemeContext';
 
 const chartColors = [
   "#66FCF1", "#45A29E", "#1F2833", "#C5C6C7", "#F5F5F5", "#FFB347", "#FF6961", "#6A5ACD", "#20B2AA", "#FFD700",
@@ -30,6 +31,7 @@ const AnalyticsScreen = () => {
   const [busyDay, setBusyDay] = useState("");
   const [nextEventDate, setNextEventDate] = useState("");
   const [notesStats, setNotesStats] = useState({ total: 0, avgLength: 0, bar: { labels: [], data: [] } });
+  const { theme } = useTheme();
 
   const loadAnalytics = async () => {
     try {
@@ -170,11 +172,11 @@ const AnalyticsScreen = () => {
   const chartWidth = Dimensions.get('window').width - 2 * CARD_HORIZONTAL_PADDING;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.container}>
-          <View style={styles.card}>
-            <Text style={styles.chartTitle}>Upcoming Events (Next 7 Days)</Text>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { backgroundColor: theme.colors.background }]}>
+        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Upcoming Events (Next 7 Days)</Text>
             {lineData.labels.length > 0 && (
               <LineChart
                 data={{
@@ -185,20 +187,20 @@ const AnalyticsScreen = () => {
                 height={180}
                 yAxisSuffix=""
                 chartConfig={{
-                  backgroundColor: "#F8F9FA",
-                  backgroundGradientFrom: "#F8F9FA",
-                  backgroundGradientTo: "#F8F9FA",
+                  backgroundColor: theme.colors.background,
+                  backgroundGradientFrom: theme.colors.background,
+                  backgroundGradientTo: theme.colors.background,
                   decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(52, 152, 219, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(44, 62, 80, ${opacity})`,
+                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
+                  labelColor: (opacity = 1) => `${theme.colors.text}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
                   style: { borderRadius: 16 },
                   propsForDots: {
                     r: "5",
                     strokeWidth: "2",
-                    stroke: "#3498DB",
+                    stroke: theme.colors.primary,
                   },
                   propsForBackgroundLines: {
-                    stroke: "#E0E0E0",
+                    stroke: theme.colors.border,
                   },
                 }}
                 bezier
@@ -206,21 +208,21 @@ const AnalyticsScreen = () => {
               />
             )}
           </View>
-          <View style={styles.card}>
-            <Text style={styles.chartTitle}>Event Type Distribution (Next 7 Days)</Text>
+          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Event Type Distribution (Next 7 Days)</Text>
             {pieData.length > 0 && (
               <PieChart
                 data={pieData.map((d) => ({
                   name: d.name,
                   population: d.count,
                   color: d.color,
-                  legendFontColor: d.legendFontColor,
+                  legendFontColor: theme.colors.text,
                   legendFontSize: d.legendFontSize,
                 }))}
                 width={chartWidth}
                 height={180}
                 chartConfig={{
-                  color: (opacity = 1) => `rgba(52, 152, 219, ${opacity})`,
+                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
                 }}
                 accessor="population"
                 backgroundColor="transparent"
@@ -229,8 +231,8 @@ const AnalyticsScreen = () => {
               />
             )}
           </View>
-          <View style={styles.card}>
-            <Text style={styles.chartTitle}>Events Per Month (Last 6 Months)</Text>
+          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Events Per Month (Last 6 Months)</Text>
             {barData.labels.length > 0 && (
               <BarChart
                 data={{
@@ -241,30 +243,30 @@ const AnalyticsScreen = () => {
                 height={180}
                 yAxisLabel=""
                 chartConfig={{
-                  backgroundColor: "#F8F9FA",
-                  backgroundGradientFrom: "#F8F9FA",
-                  backgroundGradientTo: "#F8F9FA",
+                  backgroundColor: theme.colors.background,
+                  backgroundGradientFrom: theme.colors.background,
+                  backgroundGradientTo: theme.colors.background,
                   decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(52, 152, 219, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(44, 62, 80, ${opacity})`,
+                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
+                  labelColor: (opacity = 1) => `${theme.colors.text}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
                   style: { borderRadius: 16 },
                   propsForBackgroundLines: {
-                    stroke: "#E0E0E0",
+                    stroke: theme.colors.border,
                   },
                 }}
                 style={{ marginVertical: 12, borderRadius: 16, width: '100%' }}
               />
             )}
           </View>
-          <View style={styles.card}>
-            <Text style={styles.chartTitle}>Upcoming vs Past Events</Text>
+          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Upcoming vs Past Events</Text>
             {donutData.length > 0 && (
               <PieChart
                 data={donutData}
                 width={chartWidth}
                 height={180}
                 chartConfig={{
-                  color: (opacity = 1) => `rgba(52, 152, 219, ${opacity})`,
+                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
                 }}
                 accessor="population"
                 backgroundColor="transparent"
@@ -274,44 +276,44 @@ const AnalyticsScreen = () => {
               />
             )}
           </View>
-          <View style={styles.card}>
-            <Text style={styles.chartTitle}>Top Event Types</Text>
+          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Top Event Types</Text>
             {topTypes.length > 0 ? (
               <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 }}>
                 {topTypes.map((t, idx) => (
                   <View key={t.icon} style={{ alignItems: 'center' }}>
                     <Text style={{ fontSize: 32 }}>{t.icon}</Text>
-                    <Text style={{ color: '#2C3E50', fontFamily: 'monospace', fontSize: 16 }}>{t.count}</Text>
+                    <Text style={{ color: theme.colors.text, fontFamily: 'monospace', fontSize: 16 }}>{t.count}</Text>
                   </View>
                 ))}
               </View>
             ) : (
-              <Text style={{ color: '#7F8C8D', textAlign: 'center' }}>No data</Text>
+              <Text style={{ color: theme.colors.textSecondary, textAlign: 'center' }}>No data</Text>
             )}
           </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.sectionLabel}>Summary</Text>
-            <View style={styles.statRow}><Text style={styles.statLabel}>Total Events</Text><Text style={styles.statValue}>{stats.total}</Text></View>
-            <View style={styles.statRow}><Text style={styles.statLabel}>Upcoming</Text><Text style={styles.statValue}>{stats.upcoming}</Text></View>
-            <View style={styles.statRow}><Text style={styles.statLabel}>Past</Text><Text style={styles.statValue}>{stats.past}</Text></View>
-            <View style={styles.statRow}><Text style={styles.statLabel}>Busiest Day (Next 7)</Text><Text style={styles.statValue}>{busyDay}</Text></View>
-            <View style={styles.statRow}><Text style={styles.statLabel}>Next Event</Text><Text style={styles.statValue}>{nextEventDate}</Text></View>
+          <View style={[styles.summaryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Text style={[styles.sectionLabel, { color: theme.colors.text }]}>Summary</Text>
+            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Total Events</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{stats.total}</Text></View>
+            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Upcoming</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{stats.upcoming}</Text></View>
+            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Past</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{stats.past}</Text></View>
+            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Busiest Day (Next 7)</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{busyDay}</Text></View>
+            <View style={styles.statRow}><Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Next Event</Text><Text style={[styles.statValue, { color: theme.colors.primary }]}>{nextEventDate}</Text></View>
           </View>
-          <View style={styles.card}>
-            <Text style={styles.chartTitle}>Notes Overview</Text>
+          <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Notes Overview</Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: wp('2%') }}>
               <View style={{ alignItems: 'center', flex: 1 }}>
-                <Ionicons name="document-text-outline" size={32} color="#3498DB" />
-                <Text style={{ color: '#2C3E50', fontFamily: 'monospace', fontSize: 16, marginTop: 4 }}>Total Notes</Text>
-                <Text style={{ color: '#3498DB', fontWeight: 'bold', fontSize: 20 }}>{notesStats.total}</Text>
+                <Ionicons name="document-text-outline" size={32} color={theme.colors.primary} />
+                <Text style={{ color: theme.colors.text, fontFamily: 'monospace', fontSize: 16, marginTop: 4 }}>Total Notes</Text>
+                <Text style={{ color: theme.colors.primary, fontWeight: 'bold', fontSize: 20 }}>{notesStats.total}</Text>
               </View>
               <View style={{ alignItems: 'center', flex: 1 }}>
-                <Ionicons name="stats-chart-outline" size={32} color="#45A29E" />
-                <Text style={{ color: '#2C3E50', fontFamily: 'monospace', fontSize: 16, marginTop: 4 }}>Avg. Length</Text>
-                <Text style={{ color: '#3498DB', fontWeight: 'bold', fontSize: 20 }}>{notesStats.avgLength}</Text>
+                <Ionicons name="stats-chart-outline" size={32} color={theme.colors.primary} />
+                <Text style={{ color: theme.colors.text, fontFamily: 'monospace', fontSize: 16, marginTop: 4 }}>Avg. Length</Text>
+                <Text style={{ color: theme.colors.primary, fontWeight: 'bold', fontSize: 20 }}>{notesStats.avgLength}</Text>
               </View>
             </View>
-            <Text style={[styles.chartTitle, { marginTop: wp('2%') }]}>Notes Per Month (Last 6 Months)</Text>
+            <Text style={[styles.chartTitle, { marginTop: wp('2%'), color: theme.colors.text }]}>Notes Per Month (Last 6 Months)</Text>
             {notesStats.bar.labels.length > 0 && (
               <BarChart
                 data={{ labels: notesStats.bar.labels, datasets: [{ data: notesStats.bar.data }] }}
@@ -319,14 +321,14 @@ const AnalyticsScreen = () => {
                 height={180}
                 yAxisLabel=""
                 chartConfig={{
-                  backgroundColor: "#F8F9FA",
-                  backgroundGradientFrom: "#F8F9FA",
-                  backgroundGradientTo: "#F8F9FA",
+                  backgroundColor: theme.colors.background,
+                  backgroundGradientFrom: theme.colors.background,
+                  backgroundGradientTo: theme.colors.background,
                   decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(52, 152, 219, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(44, 62, 80, ${opacity})`,
+                  color: (opacity = 1) => `${theme.colors.primary}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
+                  labelColor: (opacity = 1) => `${theme.colors.text}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
                   style: { borderRadius: 16 },
-                  propsForBackgroundLines: { stroke: "#E0E0E0" },
+                  propsForBackgroundLines: { stroke: theme.colors.border },
                 }}
                 style={{ marginVertical: 12, borderRadius: 16, width: '100%' }}
               />

@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Sentry from "@sentry/react-native";
 import { requestTrackingPermission } from './util/adPersonalization';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 import HomeScreen from "./screens/HomeScreen";
 import PastScreen from "./screens/PastScreen";
@@ -15,7 +16,7 @@ import NotesScreen from "./screens/NotesScreen";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const APP_BACKGROUND_COLOR = "#F8F9FA";
+// Remove static background color - will use theme instead
 
 Sentry.init({
   dsn: "https://531c4f371af6391fafb7536af1588b12@o4505802780966912.ingest.us.sentry.io/4508982047866880",
@@ -25,12 +26,13 @@ Sentry.init({
 });
 
 function HomeScreenStack() {
+  const { theme } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false, // Removed header
         contentStyle: {
-          backgroundColor: APP_BACKGROUND_COLOR,
+          backgroundColor: theme.colors.background,
         },
       }}
     >
@@ -40,12 +42,13 @@ function HomeScreenStack() {
 }
 
 function PastScreenStack() {
+  const { theme } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false, // Removed header
         contentStyle: {
-          backgroundColor: APP_BACKGROUND_COLOR,
+          backgroundColor: theme.colors.background,
         },
       }}
     >
@@ -55,12 +58,13 @@ function PastScreenStack() {
 }
 
 function SettingsScreenStack() {
+  const { theme } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false, // Removed header
         contentStyle: {
-          backgroundColor: APP_BACKGROUND_COLOR,
+          backgroundColor: theme.colors.background,
         },
       }}
     >
@@ -70,12 +74,13 @@ function SettingsScreenStack() {
 }
 
 function AnalyticsScreenStack() {
+  const { theme } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false, // Removed header
         contentStyle: {
-          backgroundColor: APP_BACKGROUND_COLOR,
+          backgroundColor: theme.colors.background,
         },
       }}
     >
@@ -84,11 +89,9 @@ function AnalyticsScreenStack() {
   );
 }
 
-function App() {
-  useEffect(() => {
-    requestTrackingPermission();
-  }, []);
-
+function ThemedApp() {
+  const { theme } = useTheme();
+  
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -120,8 +123,12 @@ function App() {
               />
             );
           },
-          tabBarActiveTintColor: "#333",
-          tabBarInactiveTintColor: "gray",
+          tabBarActiveTintColor: theme.colors.tabActive,
+          tabBarInactiveTintColor: theme.colors.tabInactive,
+          tabBarStyle: {
+            backgroundColor: theme.colors.tabBar,
+            borderTopColor: theme.colors.tabBarBorder,
+          },
           headerShown: false, // Removed header from tab screens
         })}
       >
@@ -132,6 +139,18 @@ function App() {
         <Tab.Screen name="Settings" component={SettingsScreenStack} />
       </Tab.Navigator>
     </NavigationContainer>
+  );
+}
+
+function App() {
+  useEffect(() => {
+    requestTrackingPermission();
+  }, []);
+
+  return (
+    <ThemeProvider>
+      <ThemedApp />
+    </ThemeProvider>
   );
 }
 

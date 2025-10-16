@@ -8,9 +8,11 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-nat
 import { Analytics } from '../util/analytics';
 import OptimizedBannerAd from '../components/Ads';
 import * as Notifications from 'expo-notifications';
+import { useTheme } from '../context/ThemeContext';
 
 const PastScreen = () => {
   const [pastEvents, setPastEvents] = useState([]);
+  const { theme } = useTheme();
 
   // Load past events from AsyncStorage
   const loadPastEvents = async () => {
@@ -134,12 +136,12 @@ const PastScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
         {pastEvents.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No Past Events</Text>
-            <Text style={styles.emptySubText}>
+          <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background }]}>
+            <Text style={[styles.emptyText, { color: theme.colors.text }]}>No Past Events</Text>
+            <Text style={[styles.emptySubText, { color: theme.colors.textSecondary }]}>
               Events that have already ended will appear here.
             </Text>
           </View>
@@ -154,7 +156,7 @@ const PastScreen = () => {
               // Pass the delete and edit functions to CountdownItem
               return <CountdownItem event={item} index={index} onDelete={deleteCountdown} onEdit={editCountdown} />;
             }}
-            contentContainerStyle={styles.listContainer}
+            contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
           />
         )}
       </SafeAreaView>
