@@ -9,6 +9,7 @@ import { Analytics } from '../util/analytics';
 import OptimizedBannerAd from '../components/Ads';
 import * as Notifications from 'expo-notifications';
 import { useTheme } from '../context/ThemeContext';
+import * as Haptics from 'expo-haptics';
 
 const PastScreen = () => {
   const [pastEvents, setPastEvents] = useState([]);
@@ -115,6 +116,9 @@ const PastScreen = () => {
         
         // Track deletion with item details before removing from storage
         if (eventToDelete) {
+          // Haptic feedback for deletion
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          
           Analytics.trackEvent && Analytics.trackEvent('delete_countdown', {
             id,
             name: eventToDelete.name,

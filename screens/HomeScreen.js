@@ -20,6 +20,7 @@ import { Picker } from '@react-native-picker/picker';
 import moment from "moment";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import * as Notifications from 'expo-notifications';
+import * as Haptics from 'expo-haptics';
 import { Analytics } from '../util/analytics';
 import OptimizedBannerAd from '../components/Ads';
 import { Ionicons } from '@expo/vector-icons';
@@ -280,6 +281,9 @@ const HomeScreen = () => {
   };
 
   const handleOpenModal = () => {
+    // Light haptic feedback for opening modal
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
     setModalVisible(true);
     setSelectedHour(9);
     setSelectedMinute(0);
@@ -327,6 +331,10 @@ const HomeScreen = () => {
     setSelectedHour(9);
     setSelectedMinute(0);
     setModalVisible(false);
+    
+    // Haptic feedback for successful creation
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    
     Analytics.trackEvent && Analytics.trackEvent('add_countdown', {
       name: newName,
       date: combinedDateTime.toISOString(),
@@ -368,6 +376,9 @@ const HomeScreen = () => {
         )
       );
 
+      // Haptic feedback for successful edit
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
       Analytics.trackEvent && Analytics.trackEvent('edit_countdown', {
         id: updatedEvent.id,
         name: updatedEvent.name,
@@ -388,6 +399,9 @@ const HomeScreen = () => {
       
       // Track deletion with item details before removing from state
       if (countdownToDelete) {
+        // Haptic feedback for deletion
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        
         Analytics.trackEvent && Analytics.trackEvent('delete_countdown', {
           id,
           name: countdownToDelete.name,

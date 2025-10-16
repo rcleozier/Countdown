@@ -18,6 +18,7 @@ import {
 import appConfig from '../app.json';
 import { Analytics } from '../util/analytics';
 import { useTheme } from '../context/ThemeContext';
+import * as Haptics from 'expo-haptics';
 
 const SettingsScreen = () => {
   const [eventCount, setEventCount] = useState(0);
@@ -58,6 +59,10 @@ const SettingsScreen = () => {
     try {
       await AsyncStorage.removeItem("countdowns");
       setEventCount(0);
+      
+      // Haptic feedback for clearing all events
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      
       Analytics.trackEvent && Analytics.trackEvent('clear_all_events', { timestamp: new Date().toISOString() });
     } catch (error) {
       console.error("Error clearing events", error);
@@ -167,7 +172,11 @@ const SettingsScreen = () => {
             <Text style={[styles.themeLabel, { color: theme.colors.text }]}>Dark Theme</Text>
             <Switch
               value={isDark}
-              onValueChange={toggleTheme}
+              onValueChange={() => {
+                // Light haptic feedback for theme toggle
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                toggleTheme();
+              }}
               trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
               thumbColor={isDark ? theme.colors.surface : theme.colors.textLight}
             />

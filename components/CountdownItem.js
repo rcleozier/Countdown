@@ -13,6 +13,7 @@ import { Calendar } from "react-native-calendars";
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import * as Haptics from 'expo-haptics';
 
 const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
@@ -129,6 +130,9 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   ];
 
   const handleOpenEditModal = () => {
+    // Light haptic feedback for opening edit modal
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
     setEditName(event.name);
     setEditIcon(event.icon);
     setSelectedDate(new Date(event.date));
@@ -238,7 +242,11 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   elevation: 2
                 }
               ]}
-              onPress={() => setDeleteModalVisible(true)}
+              onPress={() => {
+                // Medium haptic feedback for delete action
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                setDeleteModalVisible(true);
+              }}
             >
               <Ionicons name="trash" size={wp('2.5%')} color={theme.colors.error} />
             </TouchableOpacity>

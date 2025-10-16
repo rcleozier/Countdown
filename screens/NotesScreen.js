@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Analytics } from '../util/analytics';
 import OptimizedBannerAd from '../components/Ads';
 import { useTheme } from '../context/ThemeContext';
+import * as Haptics from 'expo-haptics';
 
 const NOTES_KEY = "notes";
 
@@ -45,6 +46,10 @@ const NotesScreen = () => {
     saveNotes(newNotes);
     setNoteText("");
     setModalVisible(false);
+    
+    // Haptic feedback for successful note creation
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    
     Analytics.trackEvent && Analytics.trackEvent('add_note', newNote);
   };
 
@@ -55,6 +60,10 @@ const NotesScreen = () => {
         const noteToDelete = notes[idx];
         const newNotes = notes.filter((_, i) => i !== idx);
         saveNotes(newNotes);
+        
+        // Haptic feedback for note deletion
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        
         Analytics.trackEvent && Analytics.trackEvent('delete_note', noteToDelete);
       }}
     ]);
@@ -127,6 +136,9 @@ const NotesScreen = () => {
         <TouchableOpacity
           style={[styles.addNoteButton, { backgroundColor: theme.colors.button }]}
           onPress={() => {
+            // Light haptic feedback for opening modal
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            
             setEditingIndex(null);
             setNoteText("");
             setModalVisible(true);
