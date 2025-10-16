@@ -219,7 +219,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 elevation: 2
               }
             ]}>
-              <Text style={[styles.icon, { fontSize: 24 }]}>{event.icon}</Text>
+              <Text style={[styles.icon, { fontSize: wp('6%') }]}>{event.icon}</Text>
             </View>
             <View style={styles.textContainer}>
               <Text style={[
@@ -227,7 +227,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 { 
                   color: theme.colors.text,
                   fontWeight: '700',
-                  fontSize: 18,
+                  fontSize: wp('4.5%'),
                   textShadowColor: theme.name === 'dark' ? theme.colors.shadow : 'transparent',
                   textShadowOffset: { width: 0, height: 1 },
                   textShadowRadius: 2
@@ -239,7 +239,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   { 
                     color: theme.colors.error,
                     fontWeight: '600',
-                    fontSize: 16
+                    fontSize: wp('3.5%')
                   }
                 ]}>Expired</Text>
               ) : (
@@ -248,7 +248,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   { 
                     color: theme.colors.primary,
                     fontWeight: '600',
-                    fontSize: 16,
+                    fontSize: wp('4%'),
                     textShadowColor: theme.colors.primary,
                     textShadowOffset: { width: 0, height: 1 },
                     textShadowRadius: 2
@@ -262,7 +262,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 { 
                   color: theme.colors.textSecondary,
                   fontWeight: '500',
-                  fontSize: 14,
+                  fontSize: wp('3%'),
                   opacity: 0.8
                 }
               ]}>
@@ -295,7 +295,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 ]}
                 onPress={handleOpenEditModal}
               >
-                <Ionicons name="pencil" size={16} color={theme.colors.primary} />
+                <Ionicons name="pencil" size={wp('4%')} color={theme.colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
@@ -313,7 +313,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 ]}
                 onPress={() => setDeleteModalVisible(true)}
               >
-                <Ionicons name="trash" size={16} color={theme.colors.error} />
+                <Ionicons name="trash" size={wp('4%')} color={theme.colors.error} />
               </TouchableOpacity>
             </View>
           </View>
@@ -347,7 +347,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           { 
             color: theme.colors.textSecondary,
             fontWeight: '500',
-            fontSize: 12
+            fontSize: wp('2.5%')
           }
         ]}>
           {progress === 0
@@ -610,10 +610,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: wp("4%"),
-    paddingHorizontal: wp("4%"),
+    paddingVertical: wp("3%"),
+    paddingHorizontal: wp("3%"),
     backgroundColor: "#FFFFFF",
-    borderRadius: wp("3%"),
+    borderRadius: wp("2.5%"),
     borderWidth: 1,
     borderColor: "#E0E0E0",
   },
@@ -626,11 +626,11 @@ const styles = StyleSheet.create({
     fontSize: wp("8%"),
   },
   iconContainer: {
-    width: 48,
-    height: 48,
+    width: wp('10%'),
+    height: wp('10%'),
     alignItems: "center",
     justifyContent: "center",
-    marginRight: wp("3%"),
+    marginRight: wp("2.5%"),
   },
   textContainer: {
     justifyContent: "center",
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: wp('1.5%'),
     justifyContent: "flex-end",
   },
   countdownText: {
@@ -683,14 +683,14 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
   },
   iconButton: {
-    padding: 8,
-    borderRadius: 8,
+    padding: wp('1.5%'),
+    borderRadius: wp('1.5%'),
     alignItems: "center",
     justifyContent: "center",
-    width: 36,
-    height: 36,
-    minWidth: 36,
-    minHeight: 36,
+    width: wp('8%'),
+    height: wp('8%'),
+    minWidth: wp('8%'),
+    minHeight: wp('8%'),
   },
   modalOverlay: {
     flex: 1,
