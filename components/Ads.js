@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { AD_UNIT_IDS, AD_REQUEST_OPTIONS, AD_REFRESH_INTERVAL, handleAdError, getDynamicAdRequestOptions } from '../util/adConfig';
 import { useTheme } from '../context/ThemeContext';
+import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 
 const TEST_BANNER_ID = 'ca-app-pub-3940256099942544/6300978111';
 const isDev = __DEV__;
@@ -18,14 +19,14 @@ const OptimizedBannerAd = ({ style, containerStyle }) => {
   const maxRetries = 5; // Increased retry attempts
   const { theme } = useTheme();
 
-  // Load international-optimized ad request options
+  // Load optimized ad request options
   useEffect(() => {
     const loadAdOptions = async () => {
       try {
         const options = await getDynamicAdRequestOptions();
         setAdRequestOptions(options);
       } catch (error) {
-        console.error('Error loading international ad options:', error);
+        console.error('Error loading ad options:', error);
         // Fallback to static options
         setAdRequestOptions(AD_REQUEST_OPTIONS);
       }
@@ -51,7 +52,6 @@ const OptimizedBannerAd = ({ style, containerStyle }) => {
         setHasFailed(false);
       }, retryDelay);
     } else {
-      console.log('Max retry attempts reached, giving up on ad load');
       setIsLoading(false);
       setHasFailed(true);
     }
@@ -91,9 +91,9 @@ const OptimizedBannerAd = ({ style, containerStyle }) => {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
-    padding: 8,
-    marginVertical: 8,
+    borderRadius: wp('3%'),
+    padding: wp('2%'),
+    marginVertical: wp('2%'),
     alignItems: 'center',
   },
   banner: {

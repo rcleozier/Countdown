@@ -573,17 +573,17 @@ const HomeScreen = () => {
                   <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                     <Picker
                       selectedValue={selectedHour}
-                      style={{ width: 100 }}
+                      style={{ width: wp('25%') }}
                       onValueChange={(itemValue) => setSelectedHour(itemValue)}
                     >
                       {[...Array(24).keys()].map((h) => (
                         <Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
                       ))}
                     </Picker>
-                    <Text style={{ fontSize: 24, marginHorizontal: 8 }}>:</Text>
+                    <Text style={{ fontSize: wp('6%'), marginHorizontal: wp('2%') }}>:</Text>
                     <Picker
                       selectedValue={selectedMinute}
-                      style={{ width: 100 }}
+                      style={{ width: wp('25%') }}
                       onValueChange={(itemValue) => setSelectedMinute(itemValue)}
                     >
                       {[...Array(60).keys()].map((m) => (

@@ -1,7 +1,6 @@
 import { Platform } from "react-native";
 import * as Sentry from "@sentry/react-native";
 import { getAdRequestOptions } from "./adPersonalization";
-import { getOptimizedInternationalAdRequest, detectUserCountry } from "./internationalAdConfig";
 
 // Ad Unit IDs
 export const AD_UNIT_IDS = {
@@ -29,10 +28,10 @@ export const handleAdError = (error, adType) => {
   });
 };
 
-// Optimized ad request options for international traffic
+// Optimized ad request options with good keywords
 export const AD_REQUEST_OPTIONS = {
   keywords: [
-    // Universal keywords that work globally
+    // Core app keywords
     "countdown",
     "timer",
     "event",
@@ -63,7 +62,7 @@ export const AD_REQUEST_OPTIONS = {
     "work",
     "business",
     "entertainment",
-    // International-friendly keywords
+    // Technology keywords
     "mobile app",
     "smartphone",
     "digital",
@@ -88,42 +87,25 @@ export const AD_REQUEST_OPTIONS = {
   requestNonPersonalizedAdsOnly: false,
   maxAdContentRating: "G",
   tagForChildDirectedTreatment: false,
-  tagForUnderAgeOfConsent: false,
-  // Enhanced targeting for international markets
-  gender: "all",
-  location: "all",
-  // Content filtering for global compatibility
-  contentFiltering: {
-    excludeCategories: ["adult", "violence", "profanity"],
-    includeCategories: ["general", "business", "technology", "lifestyle"]
-  }
+  tagForUnderAgeOfConsent: false
 };
 
-// Get dynamic ad request options optimized for international traffic
+// Get dynamic ad request options with good keywords
 export const getDynamicAdRequestOptions = async () => {
   try {
-    // Get country-specific configuration
-    const countryCode = detectUserCountry();
-    const internationalConfig = getOptimizedInternationalAdRequest(countryCode);
-    
-    // Merge with personalization options
+    // Get personalized options
     const personalizedOptions = await getAdRequestOptions();
     
-    // Combine both configurations for maximum optimization
+    // Combine with static optimized options
     return {
-      ...internationalConfig,
+      ...AD_REQUEST_OPTIONS,
       ...personalizedOptions,
-      // Ensure international optimizations take priority
-      keywords: internationalConfig.keywords,
-      targeting: {
-        ...internationalConfig.targeting,
-        ...personalizedOptions.targeting
-      }
+      // Use optimized keywords
+      keywords: AD_REQUEST_OPTIONS.keywords
     };
   } catch (error) {
     console.error("Error getting dynamic ad options:", error);
-    // Fallback to international-optimized static options
-    const countryCode = detectUserCountry();
-    return getOptimizedInternationalAdRequest(countryCode);
+    // Fallback to static optimized options
+    return AD_REQUEST_OPTIONS;
   }
 };

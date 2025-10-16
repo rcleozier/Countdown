@@ -205,7 +205,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           styles.container, 
           { 
             backgroundColor: theme.colors.card,
-            borderRadius: 12
+            borderRadius: wp('3%')
           }
         ]}>
           {/* Top right buttons */}
@@ -259,7 +259,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 backgroundColor: theme.colors.surface,
                 borderColor: theme.colors.border,
                 borderWidth: 1,
-                borderRadius: 12,
+                borderRadius: wp('3%'),
                 shadowColor: theme.colors.shadow,
                 shadowOffset: { width: 0, height: 1 },
                 shadowOpacity: 0.1,
@@ -338,7 +338,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             { 
               width: `${Math.round(progress * 100)}%`, 
               backgroundColor: theme.colors.progressFill,
-              borderRadius: 7,
+              borderRadius: wp('1.75%'),
               shadowColor: theme.colors.progressFill,
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.3,
@@ -541,17 +541,17 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
               <Picker
                 selectedValue={selectedHour}
-                style={{ width: 100 }}
+                style={{ width: wp('25%') }}
                 onValueChange={(itemValue) => setSelectedHour(itemValue)}
               >
                 {[...Array(24).keys()].map((h) => (
                   <Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
                 ))}
               </Picker>
-              <Text style={{ fontSize: 24, marginHorizontal: 8 }}>:</Text>
+              <Text style={{ fontSize: wp('6%'), marginHorizontal: wp('2%') }}>:</Text>
               <Picker
                 selectedValue={selectedMinute}
-                style={{ width: 100 }}
+                style={{ width: wp('25%') }}
                 onValueChange={(itemValue) => setSelectedMinute(itemValue)}
               >
                 {[...Array(60).keys()].map((m) => (
@@ -783,7 +783,7 @@ const styles = StyleSheet.create({
   progressBarBackground: {
     height: 8,
     backgroundColor: '#E0E0E0',
-    borderRadius: 4,
+    borderRadius: wp('1%'),
     marginHorizontal: wp('4%'),
     marginTop: 6,
     marginBottom: 2,
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: 8,
     backgroundColor: '#3498DB',
-    borderRadius: 4,
+    borderRadius: wp('1%'),
   },
   progressText: {
     fontSize: wp('2.7%'),

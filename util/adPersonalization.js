@@ -4,40 +4,29 @@ import * as Tracking from "expo-tracking-transparency";
 
 const TRACKING_PERMISSION_KEY = "@ad_tracking_permission";
 const DEFAULT_KEYWORDS = [
-  // Universal app categories that work globally
-  "mobile app",
-  "smartphone app",
-  "digital tool",
-  "productivity app",
-  "utility app",
-  "lifestyle app",
-  "personal app",
-  "business app",
-  "work app",
-  "organization app",
-  "planning app",
-  "time management",
-  "calendar app",
-  "reminder app",
-  "event app",
-  "countdown app",
-  "timer app",
-  "schedule app",
-  "appointment app",
-  "meeting app",
-  "birthday app",
-  "anniversary app",
-  "holiday app",
-  "vacation app",
-  "deadline app",
-  "goal app",
-  "milestone app",
-  "celebration app",
-  "party app",
-  "wedding app",
-  "graduation app",
-  "retirement app",
+  // Core app keywords
+  "countdown",
+  "timer",
+  "event",
+  "reminder",
+  "calendar",
+  "schedule",
+  "appointment",
+  "meeting",
+  "birthday",
+  "anniversary",
+  "holiday",
+  "vacation",
+  "deadline",
+  "goal",
+  "milestone",
+  "celebration",
+  "party",
+  "wedding",
+  "graduation",
+  "retirement",
   "productivity",
+  "time management",
   "organization",
   "planning",
   "lifestyle",
@@ -46,7 +35,11 @@ const DEFAULT_KEYWORDS = [
   "work",
   "business",
   "entertainment",
-  // International-friendly tech terms
+  // Technology keywords
+  "mobile app",
+  "smartphone",
+  "digital",
+  "online",
   "technology",
   "software",
   "application",
@@ -120,23 +113,18 @@ export const requestTrackingPermission = async () => {
   }
 };
 
-// Get optimized ad request options for international traffic
+// Get optimized ad request options with good keywords
 export const getAdRequestOptions = async () => {
   const hasTrackingPermission = await getTrackingPermissionStatus();
 
   return {
     keywords: DEFAULT_KEYWORDS,
     requestNonPersonalizedAdsOnly: !hasTrackingPermission,
-    // Enhanced targeting for international markets
-    gender: "all",
-    location: "all",
     maxAdContentRating: "G",
     tagForChildDirectedTreatment: false,
     tagForUnderAgeOfConsent: false,
-    // Additional targeting options for better international fill rates
+    // Basic targeting for better ad relevance
     ...(hasTrackingPermission && {
-      // Advanced targeting for users with tracking permission
-      ageGroup: "all",
       interests: [
         "technology",
         "productivity",
@@ -147,7 +135,6 @@ export const getAdRequestOptions = async () => {
         "planning",
         "time management"
       ],
-      // Content categories that work well internationally
       contentCategories: [
         "general",
         "business",
@@ -156,28 +143,13 @@ export const getAdRequestOptions = async () => {
         "productivity",
         "utilities"
       ],
-      // Exclude categories that might have lower international fill rates
       excludeCategories: [
         "adult",
         "violence",
         "profanity",
         "gambling"
       ]
-    }),
-    // Global compatibility settings
-    language: "all",
-    region: "all",
-    // Enhanced ad request for international markets
-    adRequestOptions: {
-      // Request higher value ad formats
-      preferredAdFormats: ["banner", "interstitial", "rewarded"],
-      // Optimize for international advertisers
-      targetingOptions: {
-        includeInternational: true,
-        includeLocal: true,
-        includeGlobal: true
-      }
-    }
+    })
   };
 };
 
