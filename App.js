@@ -12,7 +12,7 @@ import HomeScreen from "./screens/HomeScreen";
 import PastScreen from "./screens/PastScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import AnalyticsScreen from "./screens/AnalyticsScreen";
-import NotesScreen from "./screens/NotesScreen";
+import CalendarScreen from "./screens/CalendarScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -111,8 +111,8 @@ function ThemedApp() {
             } else if (route.name === "Past") {
               // Hourglass for past events
               iconName = focused ? "hourglass-sharp" : "hourglass-outline";
-            } else if (route.name === "Notes") {
-              iconName = focused ? "document-text" : "document-text-outline";
+            } else if (route.name === "Calendar") {
+              iconName = focused ? "calendar" : "calendar-outline";
             } else if (route.name === "Analytics") {
               // Analytics icon for insights
               iconName = focused ? "analytics-sharp" : "analytics-outline";
@@ -140,7 +140,7 @@ function ThemedApp() {
       >
         <Tab.Screen name="Home" component={HomeScreenStack} />
         <Tab.Screen name="Past" component={PastScreenStack} />
-        <Tab.Screen name="Notes" component={NotesScreen} />
+        <Tab.Screen name="Calendar" component={CalendarScreen} />
         <Tab.Screen name="Analytics" component={AnalyticsScreen} />
         <Tab.Screen name="Settings" component={SettingsScreenStack} />
       </Tab.Navigator>
