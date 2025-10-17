@@ -277,25 +277,25 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   }
                 })()}
               </Text>
-              {/* Inline actions row to avoid overflow */}
-              <View style={styles.actionsRow}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={handleOpenEditModal}
-                >
-                  <Ionicons name="pencil" size={wp('3%')} color="#6C757D" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    setDeleteModalVisible(true);
-                  }}
-                >
-                  <Ionicons name="trash" size={wp('3%')} color="#DC3545" />
-                </TouchableOpacity>
-              </View>
             </View>
+          </View>
+          {/* Top-right actions within layout (no absolute positioning) */}
+          <View style={styles.actionsTopRight}>
+            <TouchableOpacity
+              style={styles.actionButtonSmall}
+              onPress={handleOpenEditModal}
+            >
+              <Ionicons name="pencil" size={wp('2.4%')} color="#6C757D" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButtonSmall}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                setDeleteModalVisible(true);
+              }}
+            >
+              <Ionicons name="trash" size={wp('2.4%')} color="#DC3545" />
+            </TouchableOpacity>
           </View>
         </View>
         {/* Progress Bar */}
@@ -616,7 +616,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
-    paddingRight: 0,
+    paddingRight: wp('2%'),
   },
   icon: {
     fontSize: wp("8%"),
@@ -710,6 +710,12 @@ const styles = StyleSheet.create({
     gap: wp('2%'),
     marginTop: wp('2%'),
   },
+  actionsTopRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: wp('1%'),
+    marginLeft: wp('2%'),
+  },
   actionButton: {
     backgroundColor: '#F8F9FA',
     borderWidth: 1,
@@ -717,6 +723,14 @@ const styles = StyleSheet.create({
     borderRadius: wp('2%'),
     paddingVertical: wp('1.5%'),
     paddingHorizontal: wp('2.5%'),
+  },
+  actionButtonSmall: {
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    borderRadius: wp('1.5%'),
+    paddingVertical: wp('1.2%'),
+    paddingHorizontal: wp('2%'),
   },
   modalOverlay: {
     flex: 1,
