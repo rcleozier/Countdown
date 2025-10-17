@@ -63,9 +63,10 @@ const PastScreen = () => {
           await Notifications.cancelScheduledNotificationAsync(existingEvent.notificationId).catch(() => {});
         }
 
-        // Schedule new notification if the event is now in the future
+        // Schedule new notification only if the event is in the future
         let notificationId = null;
-        if (new Date(updatedEvent.date) > new Date()) {
+        const eventDate = new Date(updatedEvent.date);
+        if (eventDate.getTime() > Date.now()) {
           const { status } = await Notifications.requestPermissionsAsync();
           if (status === 'granted') {
             notificationId = await Notifications.scheduleNotificationAsync({
@@ -74,7 +75,7 @@ const PastScreen = () => {
                 body: `"${updatedEvent.name}" is happening now!`,
                 sound: true,
               },
-              trigger: { date: new Date(updatedEvent.date) },
+              trigger: { date: eventDate },
             });
           }
         }

@@ -289,6 +289,33 @@ const HomeScreen = () => {
     setSelectedMinute(0);
   };
 
+  // Schedules a notification only if the event time is in the future
+  const scheduleNotificationIfFuture = async (eventName, isoDate) => {
+    try {
+      const eventDate = new Date(isoDate);
+      const now = new Date();
+      if (eventDate.getTime() <= now.getTime()) {
+        // Don't schedule if the time is in the past or now
+        return null;
+      }
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') return null;
+      const id = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Countdown Reminder',
+          body: `"${eventName}" is happening now!`,
+          sound: true,
+          data: { eventId: eventName },
+        },
+        trigger: { date: eventDate },
+      });
+      return id;
+    } catch (e) {
+      console.warn('Could not schedule notification:', e);
+      return null;
+    }
+  };
+
   const handleAddCountdown = async () => {
     if (!newName) return;
     const combinedDateTime = new Date(selectedDate);
@@ -300,35 +327,11 @@ const HomeScreen = () => {
       Alert.alert("Invalid Date/Time", "Please select a date and time in the future.");
       return;
     }
-    let notificationId = null;
-    try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status === 'granted') {
-        notificationId = await Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'Countdown Reminder',
-            body: `"${newName}" is happening now!`,
-            sound: true,
-            data: { eventId: newName },
-          },
-          trigger: { date: combinedDateTime },
-        });
-        console.log('Notification scheduled successfully for:', newName, 'at', combinedDateTime);
-      } else {
-        console.warn('Notification permission denied');
-        Alert.alert(
-          'Notifications Disabled', 
-          'You can enable notifications in Settings to get reminders when your events arrive.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (e) {
-      console.warn('Could not schedule notification:', e);
-      Alert.alert(
-        'Notification Error', 
-        'Could not schedule notification. Please check your notification settings.',
-        [{ text: 'OK' }]
-      );
+    const notificationId = await scheduleNotificationIfFuture(newName, combinedDateTime.toISOString());
+    if (!notificationId) {
+      console.log('Notification not scheduled (permission denied or past date).');
+    } else {
+      console.log('Notification scheduled successfully for:', newName, 'at', combinedDateTime);
     }
     const newCountdown = {
       id: generateGUID(),
@@ -374,18 +377,7 @@ const HomeScreen = () => {
       }
 
       // Schedule new notification
-      let notificationId = null;
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status === 'granted') {
-        notificationId = await Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'Countdown Reminder',
-            body: `"${updatedEvent.name}" is happening now!`,
-            sound: true,
-          },
-          trigger: { date: new Date(updatedEvent.date) },
-        });
-      }
+      const notificationId = await scheduleNotificationIfFuture(updatedEvent.name, updatedEvent.date);
 
       // Update the countdown with new notification ID
       const finalUpdatedEvent = {

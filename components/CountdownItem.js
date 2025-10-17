@@ -69,6 +69,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     return Math.min(Math.max(elapsed / total, 0), 1);
   };
   const progress = getProgress();
+  const isPastEvent = moment(event.date).isBefore(moment());
 
   const eventIcons = [
     "🎂", // Birthday
@@ -281,12 +282,14 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           </View>
           {/* Top-right actions within layout (no absolute positioning) */}
           <View style={styles.actionsTopRight}>
-            <TouchableOpacity
-              style={styles.actionButtonSmall}
-              onPress={handleOpenEditModal}
-            >
-              <Ionicons name="pencil" size={wp('2.4%')} color="#6C757D" />
-            </TouchableOpacity>
+            {!isPastEvent && (
+              <TouchableOpacity
+                style={styles.actionButtonSmall}
+                onPress={handleOpenEditModal}
+              >
+                <Ionicons name="pencil" size={wp('2.4%')} color="#6C757D" />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.actionButtonSmall}
               onPress={() => {
