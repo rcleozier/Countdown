@@ -212,12 +212,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           <View style={styles.topRightButtons}>
             <TouchableOpacity
               style={[
-                styles.smallIconButton, 
+                styles.iconButton, 
                 { 
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.primary,
-                  borderWidth: 1,
-                  shadowColor: theme.colors.primary,
+                  backgroundColor: '#F5F5F5',
+                  shadowColor: '#000',
                   shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: 0.1,
                   shadowRadius: 2,
@@ -226,16 +224,14 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               ]}
               onPress={handleOpenEditModal}
             >
-              <Ionicons name="pencil" size={wp('2.5%')} color={theme.colors.primary} />
+              <Ionicons name="pencil" size={wp('3%')} color="#4285F4" />
             </TouchableOpacity>
             <TouchableOpacity
               style={[
-                styles.smallIconButton, 
+                styles.iconButton, 
                 { 
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.error,
-                  borderWidth: 1,
-                  shadowColor: theme.colors.error,
+                  backgroundColor: '#F5F5F5',
+                  shadowColor: '#000',
                   shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: 0.1,
                   shadowRadius: 2,
@@ -248,7 +244,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 setDeleteModalVisible(true);
               }}
             >
-              <Ionicons name="trash" size={wp('2.5%')} color={theme.colors.error} />
+              <Ionicons name="trash" size={wp('3%')} color="#EA4335" />
             </TouchableOpacity>
           </View>
           
@@ -722,14 +718,14 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
   },
   iconButton: {
-    padding: wp('1.5%'),
-    borderRadius: wp('1.5%'),
+    padding: wp('2%'),
+    borderRadius: wp('2%'),
     alignItems: "center",
     justifyContent: "center",
-    width: wp('8%'),
-    height: wp('8%'),
-    minWidth: wp('8%'),
-    minHeight: wp('8%'),
+    width: wp('10%'),
+    height: wp('10%'),
+    minWidth: wp('10%'),
+    minHeight: wp('10%'),
   },
   modalOverlay: {
     flex: 1,

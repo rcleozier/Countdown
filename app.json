@@ -36,7 +36,9 @@
       "package": "com.chronox.app",
       "versionCode": 1,
       "permissions": [
-        "com.google.android.gms.permission.AD_ID"
+        "com.google.android.gms.permission.AD_ID",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE"
       ]
     },
     "description": "Chrono | Remember your important events",
@@ -46,6 +48,14 @@
       }
     },
     "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icons/icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default"
+        }
+      ],
       [
         "expo-tracking-transparency",
         {

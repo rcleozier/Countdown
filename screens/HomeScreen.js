@@ -309,12 +309,26 @@ const HomeScreen = () => {
             title: 'Countdown Reminder',
             body: `"${newName}" is happening now!`,
             sound: true,
+            data: { eventId: newName },
           },
           trigger: { date: combinedDateTime },
         });
+        console.log('Notification scheduled successfully for:', newName, 'at', combinedDateTime);
+      } else {
+        console.warn('Notification permission denied');
+        Alert.alert(
+          'Notifications Disabled', 
+          'You can enable notifications in Settings to get reminders when your events arrive.',
+          [{ text: 'OK' }]
+        );
       }
     } catch (e) {
       console.warn('Could not schedule notification:', e);
+      Alert.alert(
+        'Notification Error', 
+        'Could not schedule notification. Please check your notification settings.',
+        [{ text: 'OK' }]
+      );
     }
     const newCountdown = {
       id: generateGUID(),
@@ -399,11 +413,16 @@ const HomeScreen = () => {
     }
   };
 
-  const deleteCountdown = (id) => {
+  const deleteCountdown = async (id) => {
     setCountdowns((prev) => {
       const countdownToDelete = prev.find((item) => item.id === id);
       if (countdownToDelete && countdownToDelete.notificationId) {
-        Notifications.cancelScheduledNotificationAsync(countdownToDelete.notificationId).catch(() => {});
+        try {
+          Notifications.cancelScheduledNotificationAsync(countdownToDelete.notificationId);
+          console.log('Notification cancelled for:', countdownToDelete.name);
+        } catch (error) {
+          console.warn('Could not cancel notification:', error);
+        }
       }
       
       // Track deletion with item details before removing from state
@@ -427,7 +446,55 @@ const HomeScreen = () => {
   useEffect(() => {
     Analytics.initialize();
     Analytics.trackScreenView('Home');
+    
+    // Setup notification handler
+    const setupNotifications = async () => {
+      try {
+        // Configure notification behavior
+        await Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: true,
+            shouldSetBadge: false,
+          }),
+        });
+        
+        // Check if this is a new user and seed data
+        const stored = await AsyncStorage.getItem("countdowns");
+        if (!stored) {
+          await seedTestDataForNewUser();
+        }
+      } catch (error) {
+        console.error('Error setting up notifications:', error);
+      }
+    };
+    
+    setupNotifications();
   }, []);
+
+  // Test notification function (for debugging)
+  const testNotification = async () => {
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === 'granted') {
+        const testId = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'Test Notification',
+            body: 'This is a test notification to verify they are working!',
+            sound: true,
+          },
+          trigger: { seconds: 2 }, // Show in 2 seconds
+        });
+        console.log('Test notification scheduled:', testId);
+        Alert.alert('Test Sent', 'Test notification will appear in 2 seconds');
+      } else {
+        Alert.alert('Permission Denied', 'Please enable notifications in Settings');
+      }
+    } catch (error) {
+      console.error('Test notification failed:', error);
+      Alert.alert('Test Failed', 'Could not send test notification');
+    }
+  };
 
   const renderItem = ({ item, index }) => {
     const showAd = (index + 1) % 5 === 0;
