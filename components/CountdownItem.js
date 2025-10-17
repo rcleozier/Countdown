@@ -200,7 +200,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           shadowRadius: 8,
           elevation: 4
         }
-      ]}>
+        ]}>
         <View style={[
           styles.container, 
           { 
@@ -208,45 +208,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             borderRadius: wp('3%')
           }
         ]}>
-          {/* Top right buttons */}
-          <View style={styles.topRightButtons}>
-            <TouchableOpacity
-              style={[
-                styles.iconButton, 
-                { 
-                  backgroundColor: '#F5F5F5',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 2,
-                  elevation: 2
-                }
-              ]}
-              onPress={handleOpenEditModal}
-            >
-              <Ionicons name="pencil" size={wp('3%')} color="#4285F4" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.iconButton, 
-                { 
-                  backgroundColor: '#F5F5F5',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 2,
-                  elevation: 2
-                }
-              ]}
-              onPress={() => {
-                // Medium haptic feedback for delete action
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                setDeleteModalVisible(true);
-              }}
-            >
-              <Ionicons name="trash" size={wp('3%')} color="#EA4335" />
-            </TouchableOpacity>
-          </View>
           
           <View style={styles.leftSection}>
             <View style={[
@@ -316,6 +277,24 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   }
                 })()}
               </Text>
+              {/* Inline actions row to avoid overflow */}
+              <View style={styles.actionsRow}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={handleOpenEditModal}
+                >
+                  <Ionicons name="pencil" size={wp('3%')} color="#6C757D" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    setDeleteModalVisible(true);
+                  }}
+                >
+                  <Ionicons name="trash" size={wp('3%')} color="#DC3545" />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -637,7 +616,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
-    paddingRight: wp('15%'), // Add padding to avoid overlap with buttons
+    paddingRight: 0,
   },
   icon: {
     fontSize: wp("8%"),
@@ -684,12 +663,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   topRightButtons: {
-    position: "absolute",
-    top: wp('2%'),
-    right: wp('2%'),
-    flexDirection: "row",
-    gap: wp('1%'),
-    zIndex: 10,
+    display: 'none',
   },
   smallIconButton: {
     padding: wp('1%'),
@@ -718,14 +692,31 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
   },
   iconButton: {
-    padding: wp('2%'),
-    borderRadius: wp('2%'),
+    padding: wp('0.3%'),
+    borderRadius: wp('0.8%'),
     alignItems: "center",
     justifyContent: "center",
-    width: wp('10%'),
-    height: wp('10%'),
-    minWidth: wp('10%'),
-    minHeight: wp('10%'),
+    width: wp('3%'),
+    height: wp('3%'),
+    minWidth: wp('3%'),
+    minHeight: wp('3%'),
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: wp('2%'),
+    marginTop: wp('2%'),
+  },
+  actionButton: {
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    borderRadius: wp('2%'),
+    paddingVertical: wp('1.5%'),
+    paddingHorizontal: wp('2.5%'),
   },
   modalOverlay: {
     flex: 1,
