@@ -21,33 +21,10 @@ import { useTheme } from '../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 
 const SettingsScreen = () => {
-  const [eventCount, setEventCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [appInfoTapCount, setAppInfoTapCount] = useState(0);
   const appInfo = appConfig.expo;
   const { theme, isDark, toggleTheme } = useTheme();
-
-  // Function to load events from AsyncStorage
-  const loadEvents = async () => {
-    try {
-      const storedCountdowns = await AsyncStorage.getItem("countdowns");
-      if (storedCountdowns) {
-        const events = JSON.parse(storedCountdowns);
-        setEventCount(events.length);
-      } else {
-        setEventCount(0);
-      }
-    } catch (error) {
-      console.error("Error loading countdowns", error);
-    }
-  };
-
-  // Refresh data every time the screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      loadEvents();
-    }, [])
-  );
 
   useEffect(() => {
     Analytics.initialize();
@@ -58,7 +35,6 @@ const SettingsScreen = () => {
   const clearEvents = async () => {
     try {
       await AsyncStorage.removeItem("countdowns");
-      setEventCount(0);
       
       // Haptic feedback for clearing all events
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -151,7 +127,6 @@ const SettingsScreen = () => {
       // Save to storage
       await AsyncStorage.setItem("countdowns", JSON.stringify([...upcoming, ...past]));
       await AsyncStorage.setItem("notes", JSON.stringify(notes));
-      setEventCount(upcoming.length + past.length);
       Alert.alert("Seeded!", "App data has been reset and seeded with test data.");
     } catch (error) {
       Alert.alert("Error", "Failed to seed test data.");
@@ -183,11 +158,6 @@ const SettingsScreen = () => {
               thumbColor={isDark ? theme.colors.surface : theme.colors.textLight}
             />
           </View>
-        </View>
-        <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-          <Text style={[styles.cardTitle, { color: theme.colors.primary }]}>Event Stats</Text>
-          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Total Events</Text>
-          <Text style={[styles.statValue, { color: theme.colors.primary }]}>{eventCount}</Text>
         </View>
         <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
           <Text style={[styles.cardTitle, { color: theme.colors.primary }]}>Actions</Text>

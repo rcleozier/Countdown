@@ -14,11 +14,14 @@ import { Analytics } from '../util/analytics';
 import { Ionicons } from '@expo/vector-icons';
 import OptimizedBannerAd from '../components/Ads';
 import { useTheme } from '../context/ThemeContext';
+import Svg, { G, Text as SvgText, Path, Circle } from 'react-native-svg';
 
 const AnalyticsScreen = () => {
   const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0 });
   const [nextEvent, setNextEvent] = useState(null);
   const [topIcons, setTopIcons] = useState([]);
+  const [monthlyLabels, setMonthlyLabels] = useState([]);
+  const [monthlyCounts, setMonthlyCounts] = useState([]);
   const { theme } = useTheme();
 
   const loadAnalytics = async () => {
@@ -52,6 +55,21 @@ const AnalyticsScreen = () => {
           .sort((a, b) => b.count - a.count)
           .slice(0, 5);
         setTopIcons(topIconsArray);
+
+        // Monthly buckets (next 6 months including current)
+        const start = moment().startOf('month');
+        const labels = [];
+        const buckets = Array(6).fill(0);
+        for (let i = 0; i < 6; i++) labels.push(start.clone().add(i, 'months').format('MMM'));
+        allEvents.forEach((e) => {
+          const m = moment(e.date);
+          if (m.isSameOrAfter(start) && m.isBefore(start.clone().add(6, 'months'))) {
+            const idx = m.diff(start, 'months');
+            if (idx >= 0 && idx < 6) buckets[idx] += 1;
+          }
+        });
+        setMonthlyLabels(labels);
+        setMonthlyCounts(buckets);
       }
     } catch (error) {
       console.error("Error loading analytics:", error);
@@ -68,6 +86,117 @@ const AnalyticsScreen = () => {
       loadAnalytics();
     }, [])
   );
+
+  const LineChart = ({ labels, values }) => {
+    const maxVal = Math.max(...values, 1);
+    const chartH = 60; // viewBox units
+    const chartW = 100;
+    const padding = 10;
+    const usableW = chartW - padding * 2;
+    const stepX = usableW / Math.max(labels.length - 1, 1);
+    const baseY = chartH - padding;
+    const toY = (v) => baseY - ((chartH - padding * 2) * v) / maxVal;
+    
+    // Generate Y-axis tick marks and labels
+    const yTicks = [];
+    const numTicks = 5;
+    for (let i = 0; i <= numTicks; i++) {
+      const value = Math.round((maxVal * i) / numTicks);
+      const y = baseY - ((chartH - padding * 2) * i) / numTicks;
+      yTicks.push({ value, y });
+    }
+    
+    // Build path
+    let d = '';
+    values.forEach((v, i) => {
+      const x = padding + i * stepX;
+      const y = toY(v);
+      d += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
+    });
+    return (
+      <Svg viewBox={`0 0 ${chartW} ${chartH}`} width="100%" height={wp('40%')}>
+        {/* Y-axis grid lines and labels */}
+        {yTicks.map((tick, i) => (
+          <G key={i}>
+            <Path 
+              d={`M ${padding} ${tick.y} H ${chartW - padding}`} 
+              stroke={theme.colors.border} 
+              strokeWidth={0.3} 
+              opacity={0.5}
+            />
+            <SvgText 
+              x={padding - 2} 
+              y={tick.y + 1} 
+              fill={theme.colors.textSecondary} 
+              fontSize={2.5} 
+              textAnchor="end"
+            >
+              {tick.value}
+            </SvgText>
+          </G>
+        ))}
+        
+        {/* X-axis */}
+        <Path d={`M ${padding} ${baseY} H ${chartW - padding}`} stroke={theme.colors.border} strokeWidth={0.6} />
+        
+        {/* Line */}
+        <Path d={d} stroke={theme.colors.primary} strokeWidth={1.5} fill="none" />
+        
+        {/* Points + labels */}
+        {values.map((v, i) => {
+          const x = padding + i * stepX;
+          const y = toY(v);
+          return (
+            <G key={i}>
+              <Circle cx={x} cy={y} r={1.6} fill={theme.colors.primary} />
+              <SvgText x={x} y={chartH - 2} fill={theme.colors.textSecondary} fontSize={3} textAnchor="middle">
+                {labels[i]}
+              </SvgText>
+            </G>
+          );
+        })}
+      </Svg>
+    );
+  };
+
+  const PieChart = ({ data }) => {
+    const total = data.reduce((s, d) => s + d.value, 0) || 1;
+    let cumulative = 0;
+    const radius = 45; // viewBox units
+    const center = 50;
+
+    const colors = [
+      theme.colors.primary,
+      '#4CAF50',
+      '#FF9800',
+      '#9C27B0',
+      '#03A9F4',
+    ];
+
+    const arcs = data.map((d, i) => {
+      const startAngle = (cumulative / total) * 2 * Math.PI;
+      const slice = (d.value / total) * 2 * Math.PI;
+      const endAngle = startAngle + slice;
+      cumulative += d.value;
+
+      const x1 = center + radius * Math.sin(startAngle);
+      const y1 = center - radius * Math.cos(startAngle);
+      const x2 = center + radius * Math.sin(endAngle);
+      const y2 = center - radius * Math.cos(endAngle);
+      const largeArcFlag = slice > Math.PI ? 1 : 0;
+      const path = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+      return { path, color: colors[i % colors.length] };
+    });
+
+    return (
+      <Svg viewBox="0 0 100 100" width="100%" height={wp('45%')}>
+        {arcs.map((a, idx) => (
+          <Path key={idx} d={a.path} fill={a.color} />
+        ))}
+        <Circle cx={50} cy={50} r={0.5} fill={theme.colors.text} />
+      </Svg>
+    );
+  };
 
   const StatCard = ({ title, value, icon, color }) => (
     <View style={[styles.statCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
@@ -109,6 +238,14 @@ const AnalyticsScreen = () => {
             </View>
           </View>
 
+          {/* Line chart near the top */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Upcoming by Month</Text>
+            <View style={[styles.chartCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+              <LineChart labels={monthlyLabels} values={monthlyCounts} />
+            </View>
+          </View>
+
           {/* Next Event */}
           {nextEvent && (
             <View style={styles.section}>
@@ -127,17 +264,21 @@ const AnalyticsScreen = () => {
             </View>
           )}
 
-          {/* Top Icons */}
+          {/* Top Icons - Pie Chart */}
           {topIcons.length > 0 && (
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Most Used Icons</Text>
-              <View style={[styles.iconsCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                {topIcons.map((item, index) => (
-                  <View key={index} style={styles.iconRow}>
-                    <Text style={styles.iconEmoji}>{item.icon}</Text>
-                    <Text style={[styles.iconCount, { color: theme.colors.text }]}>{item.count}</Text>
-                  </View>
-                ))}
+              <View style={[styles.chartCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                <PieChart data={topIcons.map(t => ({ label: t.icon, value: t.count }))} />
+                {/* Simple legend */}
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}>
+                  {topIcons.map((t, i) => (
+                    <View key={i} style={{ alignItems: 'center', marginVertical: wp('1%'), width: '18%' }}>
+                      <Text style={{ fontSize: wp('6%') }}>{t.icon}</Text>
+                      <Text style={{ color: theme.colors.textSecondary, fontSize: wp('3%') }}>{t.count}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             </View>
           )}
