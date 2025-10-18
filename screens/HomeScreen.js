@@ -294,11 +294,14 @@ const HomeScreen = () => {
   };
 
   // Schedules a notification only if the event time is in the future
-  const scheduleNotificationIfFuture = async (eventName, isoDate) => {
+  // Accepts a Date object and enforces a small safety buffer to avoid immediate triggers
+  const scheduleNotificationIfFuture = async (eventName, eventDateInput) => {
     try {
-      const eventDate = new Date(isoDate);
+      const eventDate = eventDateInput instanceof Date ? new Date(eventDateInput) : new Date(eventDateInput);
       const now = new Date();
-      if (eventDate.getTime() <= now.getTime()) {
+      // Add a 5s buffer to avoid platform scheduling edge-cases (rounding/clock skew)
+      const minTriggerTime = new Date(now.getTime() + 5000);
+      if (eventDate.getTime() <= minTriggerTime.getTime()) {
         // Don't schedule if the time is in the past or now
         return null;
       }
@@ -331,7 +334,7 @@ const HomeScreen = () => {
       Alert.alert("Invalid Date/Time", "Please select a date and time in the future.");
       return;
     }
-    const notificationId = await scheduleNotificationIfFuture(newName, combinedDateTime.toISOString());
+    const notificationId = await scheduleNotificationIfFuture(newName, combinedDateTime);
     if (!notificationId) {
       console.log('Notification not scheduled (permission denied or past date).');
     } else {
@@ -381,7 +384,7 @@ const HomeScreen = () => {
       }
 
       // Schedule new notification
-      const notificationId = await scheduleNotificationIfFuture(updatedEvent.name, updatedEvent.date);
+      const notificationId = await scheduleNotificationIfFuture(updatedEvent.name, new Date(updatedEvent.date));
 
       // Update the countdown with new notification ID
       const finalUpdatedEvent = {
