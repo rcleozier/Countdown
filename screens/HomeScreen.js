@@ -36,6 +36,7 @@ const generateGUID = () =>
 
 const HomeScreen = () => {
   const [countdowns, setCountdowns] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
@@ -123,6 +124,7 @@ const HomeScreen = () => {
   // ----- Load / Save Data -----
   const loadCountdowns = async () => {
     try {
+      setIsLoading(true);
       const storedCountdowns = await AsyncStorage.getItem("countdowns");
       const hasLaunchedBefore = await AsyncStorage.getItem("hasLaunchedBefore");
       
@@ -137,6 +139,8 @@ const HomeScreen = () => {
       }
     } catch (error) {
       console.error("Error loading countdowns", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -501,7 +505,11 @@ const HomeScreen = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
 
-      {upcomingEvents.length === 0 ? (
+      {isLoading ? (
+        <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+          <Text style={[styles.loadingText, { color: theme.colors.text }]}>Loading...</Text>
+        </View>
+      ) : upcomingEvents.length === 0 ? (
         <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background }]}>
           <View style={styles.emptyIconContainer}>
             <Ionicons name="calendar-outline" size={60} color={theme.colors.primary} />
@@ -824,6 +832,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontFamily: "monospace",
     marginLeft: wp("2%"),
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: wp("6%"),
+    paddingVertical: wp("8%"),
+  },
+  loadingText: {
+    fontSize: wp("4%"),
+    fontWeight: "600",
+    color: "#2C3E50",
+    fontFamily: "monospace",
   },
   floatingButton: {
     position: "absolute",

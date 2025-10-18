@@ -89,20 +89,20 @@ const AnalyticsScreen = () => {
 
   const LineChart = ({ labels, values }) => {
     const maxVal = Math.max(...values, 1);
-    const chartH = 60; // viewBox units
+    const chartH = 70; // Increased from 60 to 70 for more height
     const chartW = 100;
-    const padding = 10;
+    const padding = 2; // Reduced from 10 to 2 for more width
     const usableW = chartW - padding * 2;
     const stepX = usableW / Math.max(labels.length - 1, 1);
-    const baseY = chartH - padding;
-    const toY = (v) => baseY - ((chartH - padding * 2) * v) / maxVal;
+    const baseY = chartH - 8; // Increased bottom padding from 2 to 8
+    const toY = (v) => baseY - ((chartH - 8 - 2) * v) / maxVal; // Adjusted for new padding
     
     // Generate Y-axis tick marks and labels
     const yTicks = [];
     const numTicks = 5;
     for (let i = 0; i <= numTicks; i++) {
       const value = Math.round((maxVal * i) / numTicks);
-      const y = baseY - ((chartH - padding * 2) * i) / numTicks;
+      const y = baseY - ((chartH - 8 - 2) * i) / numTicks; // Adjusted for new padding
       yTicks.push({ value, y });
     }
     
@@ -114,7 +114,7 @@ const AnalyticsScreen = () => {
       d += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
     });
     return (
-      <Svg viewBox={`0 0 ${chartW} ${chartH}`} width="100%" height={wp('40%')}>
+      <Svg viewBox={`0 0 ${chartW} ${chartH}`} width="100%" height={wp('45%')}>
         {/* Y-axis grid lines and labels */}
         {yTicks.map((tick, i) => (
           <G key={i}>
@@ -125,7 +125,7 @@ const AnalyticsScreen = () => {
               opacity={0.5}
             />
             <SvgText 
-              x={padding - 2} 
+              x={padding - 1} 
               y={tick.y + 1} 
               fill={theme.colors.textSecondary} 
               fontSize={2.5} 
@@ -149,7 +149,7 @@ const AnalyticsScreen = () => {
           return (
             <G key={i}>
               <Circle cx={x} cy={y} r={1.6} fill={theme.colors.primary} />
-              <SvgText x={x} y={chartH - 2} fill={theme.colors.textSecondary} fontSize={3} textAnchor="middle">
+              <SvgText x={x} y={chartH - 1} fill={theme.colors.textSecondary} fontSize={3} textAnchor="middle">
                 {labels[i]}
               </SvgText>
             </G>
