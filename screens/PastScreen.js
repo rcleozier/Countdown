@@ -49,7 +49,7 @@ const PastScreen = () => {
     Analytics.trackScreenView('Past');
   }, []);
 
-  // Edit function
+  // Edit function (no scheduling on Past screen)
   const editCountdown = async (updatedEvent) => {
     try {
       // Load the full "countdowns" array from AsyncStorage
@@ -63,27 +63,11 @@ const PastScreen = () => {
           await Notifications.cancelScheduledNotificationAsync(existingEvent.notificationId).catch(() => {});
         }
 
-        // Schedule new notification only if the event is in the future
-        let notificationId = null;
-        const eventDate = new Date(updatedEvent.date);
-        if (eventDate.getTime() > Date.now()) {
-          const { status } = await Notifications.requestPermissionsAsync();
-          if (status === 'granted') {
-            notificationId = await Notifications.scheduleNotificationAsync({
-              content: {
-                title: 'Countdown Reminder',
-                body: `"${updatedEvent.name}" is happening now!`,
-                sound: true,
-              },
-              trigger: { date: eventDate },
-            });
-          }
-        }
-
         // Update the event
         const finalUpdatedEvent = {
           ...updatedEvent,
-          notificationId,
+          // Past screen should never create a new schedule
+          notificationId: null,
         };
 
         allEvents = allEvents.map(item => 

@@ -307,6 +307,7 @@ const HomeScreen = () => {
       }
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== 'granted') return null;
+      const diffSeconds = Math.ceil((eventDate.getTime() - now.getTime()) / 1000);
       const id = await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Countdown Reminder',
@@ -314,7 +315,8 @@ const HomeScreen = () => {
           sound: true,
           data: { eventId: eventName },
         },
-        trigger: { date: eventDate },
+        // Use a relative trigger in seconds to avoid timezone/date parsing issues that can cause immediate delivery
+        trigger: { seconds: diffSeconds },
       });
       return id;
     } catch (e) {
