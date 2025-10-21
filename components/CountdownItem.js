@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
+  ScrollView,
 } from "react-native";
 import moment from "moment";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
@@ -565,23 +566,25 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
         <View style={styles.iconModalContainer}>
           <View style={styles.iconModalContent}>
             <Text style={styles.modalTitle}>Select Icon</Text>
-            <View style={styles.iconList}>
-              {eventIcons.map((icon, index) => (
-                <TouchableOpacity
-                  key={`${icon}-${index}`}
-                  onPress={() => {
-                    setEditIcon(icon);
-                    setIconPickerVisible(false);
-                  }}
-                  style={styles.iconItem}
-                >
-                  <Text style={styles.iconText}>{icon}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <ScrollView style={{ maxHeight: wp('100%') }}>
+              <View style={styles.iconList}>
+                {eventIcons.map((icon, index) => (
+                  <TouchableOpacity
+                    key={`${icon}-${index}`}
+                    onPress={() => {
+                      setEditIcon(icon);
+                      setIconPickerVisible(false);
+                    }}
+                    style={styles.iconItem}
+                  >
+                    <Text style={styles.iconText}>{icon}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
             <TouchableOpacity
               onPress={() => setIconPickerVisible(false)}
-              style={[styles.modalButton, { backgroundColor: "#444", alignSelf: 'center', paddingHorizontal: wp('8%') }]}
+              style={[styles.modalButton, { backgroundColor: "#444", alignSelf: 'center', paddingHorizontal: wp('8%'), marginTop: wp('2%') }]}
             >
               <Text style={styles.modalButtonText}>Cancel</Text>
             </TouchableOpacity>

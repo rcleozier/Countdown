@@ -308,6 +308,13 @@ const HomeScreen = () => {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== 'granted') return null;
       const diffSeconds = Math.ceil((eventDate.getTime() - now.getTime()) / 1000);
+      
+      console.log(`Scheduling notification for "${eventName}":`, {
+        eventDate: eventDate.toISOString(),
+        now: now.toISOString(),
+        diffSeconds,
+      });
+      
       const id = await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Countdown Reminder',
@@ -315,8 +322,11 @@ const HomeScreen = () => {
           sound: true,
           data: { eventId: eventName },
         },
-        // Use a relative trigger in seconds to avoid timezone/date parsing issues that can cause immediate delivery
-        trigger: { seconds: diffSeconds },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: diffSeconds,
+          repeats: false,
+        },
       });
       return id;
     } catch (e) {

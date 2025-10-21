@@ -159,18 +159,6 @@ const AnalyticsScreen = () => {
               >
                 {labels[i]}
               </SvgText>
-              {/* Value on top of bar */}
-              {v > 0 && (
-                <SvgText 
-                  x={x + barWidth / 2} 
-                  y={y - 1} 
-                  fill={theme.colors.text} 
-                  fontSize={2.5} 
-                  textAnchor="middle"
-                >
-                  {v}
-                </SvgText>
-              )}
             </G>
           );
         })}
@@ -178,44 +166,6 @@ const AnalyticsScreen = () => {
     );
   };
 
-  const PieChart = ({ data }) => {
-    const total = data.reduce((s, d) => s + d.value, 0) || 1;
-    let cumulative = 0;
-    const radius = 45; // viewBox units
-    const center = 50;
-
-    const colors = [
-      theme.colors.primary,
-      '#4CAF50',
-      '#FF9800',
-      '#9C27B0',
-      '#03A9F4',
-    ];
-
-    const arcs = data.map((d, i) => {
-      const startAngle = (cumulative / total) * 2 * Math.PI;
-      const slice = (d.value / total) * 2 * Math.PI;
-      const endAngle = startAngle + slice;
-      cumulative += d.value;
-
-      const x1 = center + radius * Math.sin(startAngle);
-      const y1 = center - radius * Math.cos(startAngle);
-      const x2 = center + radius * Math.sin(endAngle);
-      const y2 = center - radius * Math.cos(endAngle);
-      const largeArcFlag = slice > Math.PI ? 1 : 0;
-      const path = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
-      return { path, color: colors[i % colors.length] };
-    });
-
-    return (
-      <Svg viewBox="0 0 100 100" width="100%" height={wp('45%')}>
-        {arcs.map((a, idx) => (
-          <Path key={idx} d={a.path} fill={a.color} />
-        ))}
-        <Circle cx={50} cy={50} r={0.5} fill={theme.colors.text} />
-      </Svg>
-    );
-  };
 
   const StatCard = ({ title, value, icon, color }) => (
     <View style={[styles.statCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
@@ -234,7 +184,6 @@ const AnalyticsScreen = () => {
           
           {/* Overview Stats */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Overview</Text>
             <View style={styles.statsGrid}>
               <StatCard 
                 title="Total Events" 
@@ -278,25 +227,6 @@ const AnalyticsScreen = () => {
                       {moment(nextEvent.date).format("MMM D, YYYY [at] h:mm A")}
                     </Text>
                   </View>
-                </View>
-              </View>
-            </View>
-          )}
-
-          {/* Top Icons - Pie Chart */}
-          {topIcons.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Most Used Icons</Text>
-              <View style={[styles.chartCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                <PieChart data={topIcons.map(t => ({ label: t.icon, value: t.count }))} />
-                {/* Simple legend */}
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-                  {topIcons.map((t, i) => (
-                    <View key={i} style={{ alignItems: 'center', marginVertical: wp('1%'), width: '18%' }}>
-                      <Text style={{ fontSize: wp('6%') }}>{t.icon}</Text>
-                      <Text style={{ color: theme.colors.textSecondary, fontSize: wp('3%') }}>{t.count}</Text>
-                    </View>
-                  ))}
                 </View>
               </View>
             </View>
