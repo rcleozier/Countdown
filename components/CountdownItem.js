@@ -420,12 +420,11 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             {/* Icon */}
             <Text style={styles.iconLabel}>Icon</Text>
             <TouchableOpacity
-              style={styles.iconButton}
+              style={[styles.iconButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
               onPress={() => setIconPickerVisible(true)}
             >
-              <Text style={styles.iconButtonText}>
-                {editIcon ? `Icon: ${editIcon}` : "Select Icon"}
-              </Text>
+              <Text style={{ fontSize: wp('5%'), marginRight: wp('2%') }}>{editIcon}</Text>
+              <Text style={styles.iconButtonText}>Tap to change</Text>
             </TouchableOpacity>
 
             {/* Action Buttons */}
@@ -458,34 +457,35 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           <View style={styles.calendarModalContent}>
             <Text style={styles.modalTitle}>Select a Date</Text>
             <Calendar
+              key={theme.name}
               style={styles.calendar}
               onDayPress={handleDayPress}
               minDate={moment().format("YYYY-MM-DD")}
               markedDates={{
                 [moment(selectedDate).format("YYYY-MM-DD")]: {
                   selected: true,
-                  selectedColor: "#3498DB",
+                  selectedColor: theme.colors.primary,
                 },
                 ...(tempSelectedDate && {
                   [tempSelectedDate]: {
                     selected: true,
-                    selectedColor: "#66FCF1",
+                    selectedColor: theme.colors.success,
                   },
                 }),
               }}
               theme={{
-                backgroundColor: "#FFFFFF",
-                calendarBackground: "#F8F9FA",
-                textSectionTitleColor: "#3498DB",
-                dayTextColor: "#2C3E50",
-                todayTextColor: "#3498DB",
-                monthTextColor: "#3498DB",
-                arrowColor: "#3498DB",
-                selectedDayBackgroundColor: "#3498DB",
-                selectedDayTextColor: "#FFFFFF",
-                textDisabledColor: "#BDC3C7",
-                dotColor: "#3498DB",
-                selectedDotColor: "#FFFFFF",
+                backgroundColor: theme.colors.background,
+                calendarBackground: theme.colors.card,
+                textSectionTitleColor: theme.colors.textSecondary,
+                dayTextColor: theme.colors.text,
+                todayTextColor: theme.colors.primary,
+                monthTextColor: theme.colors.text,
+                arrowColor: theme.colors.primary,
+                selectedDayBackgroundColor: theme.colors.primary,
+                selectedDayTextColor: theme.colors.buttonText,
+                textDisabledColor: theme.colors.border,
+                dotColor: theme.colors.primary,
+                selectedDotColor: theme.colors.buttonText,
               }}
             />
             <View style={styles.calendarButtonContainer}>

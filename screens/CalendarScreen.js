@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Modal, ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Calendar } from "react-native-calendars";
@@ -21,6 +21,17 @@ const CalendarScreen = () => {
     Analytics.trackScreenView("Calendar");
     loadEvents();
   }, []);
+
+  // Rebuild marked dates when theme changes so dotColor updates immediately
+  useEffect(() => {
+    if (!events || events.length === 0) return;
+    const marks = {};
+    events.forEach((e) => {
+      const key = moment(e.date).format("YYYY-MM-DD");
+      marks[key] = { ...(marks[key] || {}), marked: true, dotColor: theme.colors.primary };
+    });
+    setMarkedDates(marks);
+  }, [theme, events]);
 
   const loadEvents = async () => {
     try {
@@ -53,6 +64,7 @@ const CalendarScreen = () => {
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <OptimizedBannerAd />
         <Calendar
+          key={theme.name}
           style={styles.calendar}
           onDayPress={onDayPress}
           markedDates={markedDates}

@@ -14,7 +14,7 @@ import { Analytics } from '../util/analytics';
 import { Ionicons } from '@expo/vector-icons';
 import OptimizedBannerAd from '../components/Ads';
 import { useTheme } from '../context/ThemeContext';
-import Svg, { G, Text as SvgText, Path, Circle } from 'react-native-svg';
+import Svg, { G, Text as SvgText, Path, Circle, Rect } from 'react-native-svg';
 
 const AnalyticsScreen = () => {
   const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0 });
@@ -87,45 +87,41 @@ const AnalyticsScreen = () => {
     }, [])
   );
 
-  const LineChart = ({ labels, values }) => {
+  const BarChart = ({ labels, values }) => {
     const maxVal = Math.max(...values, 1);
-    const chartH = 70; // Increased from 60 to 70 for more height
+    const chartH = 70;
     const chartW = 100;
-    const padding = 2; // Reduced from 10 to 2 for more width
-    const usableW = chartW - padding * 2;
-    const stepX = usableW / Math.max(labels.length - 1, 1);
-    const baseY = chartH - 8; // Increased bottom padding from 2 to 8
-    const toY = (v) => baseY - ((chartH - 8 - 2) * v) / maxVal; // Adjusted for new padding
+    const leftPadding = 6; // More space for Y-axis labels
+    const rightPadding = 2;
+    const usableW = chartW - leftPadding - rightPadding;
+    const barWidth = usableW / labels.length * 0.7; // 70% of available space per bar
+    const gap = usableW / labels.length * 0.3; // 30% gap
+    const baseY = chartH - 8;
+    const chartTop = 4;
+    const chartHeight = baseY - chartTop;
     
     // Generate Y-axis tick marks and labels
     const yTicks = [];
     const numTicks = 5;
     for (let i = 0; i <= numTicks; i++) {
       const value = Math.round((maxVal * i) / numTicks);
-      const y = baseY - ((chartH - 8 - 2) * i) / numTicks; // Adjusted for new padding
+      const y = baseY - (chartHeight * i) / numTicks;
       yTicks.push({ value, y });
     }
     
-    // Build path
-    let d = '';
-    values.forEach((v, i) => {
-      const x = padding + i * stepX;
-      const y = toY(v);
-      d += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
-    });
     return (
       <Svg viewBox={`0 0 ${chartW} ${chartH}`} width="100%" height={wp('45%')}>
         {/* Y-axis grid lines and labels */}
         {yTicks.map((tick, i) => (
           <G key={i}>
             <Path 
-              d={`M ${padding} ${tick.y} H ${chartW - padding}`} 
+              d={`M ${leftPadding} ${tick.y} H ${chartW - rightPadding}`} 
               stroke={theme.colors.border} 
               strokeWidth={0.3} 
               opacity={0.5}
             />
             <SvgText 
-              x={padding - 1} 
+              x={leftPadding - 1} 
               y={tick.y + 1} 
               fill={theme.colors.textSecondary} 
               fontSize={2.5} 
@@ -137,21 +133,44 @@ const AnalyticsScreen = () => {
         ))}
         
         {/* X-axis */}
-        <Path d={`M ${padding} ${baseY} H ${chartW - padding}`} stroke={theme.colors.border} strokeWidth={0.6} />
+        <Path d={`M ${leftPadding} ${baseY} H ${chartW - rightPadding}`} stroke={theme.colors.border} strokeWidth={0.6} />
         
-        {/* Line */}
-        <Path d={d} stroke={theme.colors.primary} strokeWidth={1.5} fill="none" />
-        
-        {/* Points + labels */}
+        {/* Bars + labels */}
         {values.map((v, i) => {
-          const x = padding + i * stepX;
-          const y = toY(v);
+          const barHeight = (v / maxVal) * chartHeight;
+          const x = leftPadding + (usableW / labels.length) * i + gap / 2;
+          const y = baseY - barHeight;
           return (
             <G key={i}>
-              <Circle cx={x} cy={y} r={1.6} fill={theme.colors.primary} />
-              <SvgText x={x} y={chartH - 1} fill={theme.colors.textSecondary} fontSize={3} textAnchor="middle">
+              <Rect 
+                x={x} 
+                y={y} 
+                width={barWidth} 
+                height={barHeight} 
+                fill={theme.colors.primary}
+                opacity={0.8}
+              />
+              <SvgText 
+                x={x + barWidth / 2} 
+                y={chartH - 1} 
+                fill={theme.colors.textSecondary} 
+                fontSize={3} 
+                textAnchor="middle"
+              >
                 {labels[i]}
               </SvgText>
+              {/* Value on top of bar */}
+              {v > 0 && (
+                <SvgText 
+                  x={x + barWidth / 2} 
+                  y={y - 1} 
+                  fill={theme.colors.text} 
+                  fontSize={2.5} 
+                  textAnchor="middle"
+                >
+                  {v}
+                </SvgText>
+              )}
             </G>
           );
         })}
@@ -238,11 +257,11 @@ const AnalyticsScreen = () => {
             </View>
           </View>
 
-          {/* Line chart near the top */}
+          {/* Bar chart near the top */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Upcoming by Month</Text>
             <View style={[styles.chartCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-              <LineChart labels={monthlyLabels} values={monthlyCounts} />
+              <BarChart labels={monthlyLabels} values={monthlyCounts} />
             </View>
           </View>
 
@@ -336,6 +355,11 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: wp('6%'),
     fontWeight: '700',
+  },
+  chartCard: {
+    padding: wp('4%'),
+    borderRadius: wp('3%'),
+    borderWidth: 1,
   },
   nextEventCard: {
     padding: wp('4%'),

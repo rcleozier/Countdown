@@ -587,22 +587,23 @@ const HomeScreen = () => {
                 <View style={[styles.calendarModalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
                   <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select a Date</Text>
                   <Calendar
+                    key={theme.name}
                     style={styles.calendar}
                     onDayPress={handleDayPress}
                     minDate={moment().format("YYYY-MM-DD")}
                     theme={{
-                      backgroundColor: "#FFFFFF",
-                      calendarBackground: "#F8F9FA",
-                      textSectionTitleColor: "#3498DB",
-                      dayTextColor: "#2C3E50",
-                      todayTextColor: "#3498DB",
-                      monthTextColor: "#3498DB",
-                      arrowColor: "#3498DB",
-                      selectedDayBackgroundColor: "#3498DB",
-                      selectedDayTextColor: "#FFFFFF",
-                      textDisabledColor: "#BDC3C7",
-                      dotColor: "#3498DB",
-                      selectedDotColor: "#FFFFFF",
+                      backgroundColor: theme.colors.background,
+                      calendarBackground: theme.colors.card,
+                      textSectionTitleColor: theme.colors.textSecondary,
+                      dayTextColor: theme.colors.text,
+                      todayTextColor: theme.colors.primary,
+                      monthTextColor: theme.colors.text,
+                      arrowColor: theme.colors.primary,
+                      selectedDayBackgroundColor: theme.colors.primary,
+                      selectedDayTextColor: theme.colors.buttonText,
+                      textDisabledColor: theme.colors.border,
+                      dotColor: theme.colors.primary,
+                      selectedDotColor: theme.colors.buttonText,
                       "stylesheet.calendar.header": {
                         week: {
                           marginTop: 6,
