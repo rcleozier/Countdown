@@ -309,12 +309,6 @@ const HomeScreen = () => {
       if (status !== 'granted') return null;
       const diffSeconds = Math.ceil((eventDate.getTime() - now.getTime()) / 1000);
       
-      console.log(`Scheduling notification for "${eventName}":`, {
-        eventDate: eventDate.toISOString(),
-        now: now.toISOString(),
-        diffSeconds,
-      });
-      
       const id = await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Countdown Reminder',
@@ -347,11 +341,6 @@ const HomeScreen = () => {
       return;
     }
     const notificationId = await scheduleNotificationIfFuture(newName, combinedDateTime);
-    if (!notificationId) {
-      console.log('Notification not scheduled (permission denied or past date).');
-    } else {
-      console.log('Notification scheduled successfully for:', newName, 'at', combinedDateTime);
-    }
     const newCountdown = {
       id: generateGUID(),
       name: newName,
