@@ -247,9 +247,9 @@ const AnalyticsScreen = () => {
                       {moment(nextEvent.date).format("MMM D, YYYY [at] h:mm A")}
                     </Text>
                   </View>
-                </View>
-              </View>
-            </View>
+          </View>
+          </View>
+          </View>
           )}
 
           {/* Ad */}

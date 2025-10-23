@@ -594,9 +594,24 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                  setIconPickerVisible(false);
                  setTimeout(() => setEditModalVisible(true), 300);
                }}
-               style={[styles.modalButton, { backgroundColor: "#444", alignSelf: 'center', paddingHorizontal: wp('8%'), marginTop: wp('2%') }]}
+               style={{
+                 backgroundColor: "#444",
+                 alignSelf: 'center',
+                 paddingHorizontal: wp('8%'),
+                 paddingVertical: wp('4%'),
+                 marginTop: wp('2%'),
+                 borderRadius: wp('2%'),
+                 alignItems: 'center',
+               }}
              >
-               <Text style={[styles.modalButtonText, { color: "#FFFFFF" }]}>Cancel</Text>
+               <Text style={{
+                 color: "#FFFFFF",
+                 fontSize: 18,
+                 fontWeight: "700",
+                 letterSpacing: 0.5,
+               }}>
+                 Cancel
+               </Text>
              </TouchableOpacity>
           </View>
         </View>

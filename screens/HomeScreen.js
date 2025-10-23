@@ -518,7 +518,7 @@ const HomeScreen = () => {
         <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background }]}>
           <View style={styles.emptyIconContainer}>
             <Ionicons name="calendar-outline" size={60} color={theme.colors.primary} />
-          </View>
+      </View>
           <Text style={[styles.emptyText, { color: theme.colors.text }]}>Ready to start counting?</Text>
           <TouchableOpacity 
             style={[styles.emptyActionButton, { backgroundColor: theme.colors.button }]}
@@ -530,9 +530,9 @@ const HomeScreen = () => {
         </View>
       ) : (
         <>
-          <FlatList
-            data={upcomingEvents}
-            keyExtractor={(item) => item.id}
+        <FlatList
+          data={upcomingEvents}
+          keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
           />
@@ -713,26 +713,41 @@ const HomeScreen = () => {
                 <View style={[styles.iconModalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
                   <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Icon</Text>
                   <ScrollView style={{ maxHeight: wp('100%') }}>
-                    <View style={styles.iconList}>
-                      {eventIcons.map((icon, index) => (
-                        <TouchableOpacity
-                          key={`${icon}-${index}`}
-                          onPress={() => {
-                            setNewIcon(icon);
-                            setIconPickerVisible(false);
-                          }}
-                          style={styles.iconItem}
-                        >
-                          <Text style={styles.iconText}>{icon}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
+                  <View style={styles.iconList}>
+                    {eventIcons.map((icon, index) => (
+                      <TouchableOpacity
+                        key={`${icon}-${index}`}
+                        onPress={() => {
+                          setNewIcon(icon);
+                          setIconPickerVisible(false);
+                        }}
+                        style={styles.iconItem}
+                      >
+                        <Text style={styles.iconText}>{icon}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                   </ScrollView>
                   <TouchableOpacity
                     onPress={() => setIconPickerVisible(false)}
-                    style={[styles.button, { backgroundColor: theme.colors.border, marginTop: wp('2%') }]}
+                    style={{
+                      backgroundColor: "#444",
+                      marginTop: wp('2%'),
+                      paddingVertical: wp('4%'),
+                      paddingHorizontal: wp('8%'),
+                      borderRadius: wp('2%'),
+                      alignItems: 'center',
+                      alignSelf: 'center',
+                    }}
                   >
-                    <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
+                    <Text style={{
+                      color: "#FFFFFF",
+                      fontSize: 18,
+                      fontWeight: "700",
+                      letterSpacing: 0.5,
+                    }}>
+                      Cancel
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
