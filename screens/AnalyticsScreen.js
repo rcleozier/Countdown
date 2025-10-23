@@ -22,6 +22,8 @@ const AnalyticsScreen = () => {
   const [topIcons, setTopIcons] = useState([]);
   const [monthlyLabels, setMonthlyLabels] = useState([]);
   const [monthlyCounts, setMonthlyCounts] = useState([]);
+  const [dayOfWeekLabels, setDayOfWeekLabels] = useState([]);
+  const [dayOfWeekCounts, setDayOfWeekCounts] = useState([]);
   const { theme } = useTheme();
 
   const loadAnalytics = async () => {
@@ -70,6 +72,16 @@ const AnalyticsScreen = () => {
         });
         setMonthlyLabels(labels);
         setMonthlyCounts(buckets);
+
+        // Events by day of week
+        const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayCounts = Array(7).fill(0);
+        allEvents.forEach((e) => {
+          const dayIndex = moment(e.date).day(); // 0 = Sunday, 6 = Saturday
+          dayCounts[dayIndex] += 1;
+        });
+        setDayOfWeekLabels(dayLabels);
+        setDayOfWeekCounts(dayCounts);
       }
     } catch (error) {
       console.error("Error loading analytics:", error);
@@ -206,11 +218,19 @@ const AnalyticsScreen = () => {
             </View>
           </View>
 
-          {/* Bar chart near the top */}
+          {/* Bar chart - Upcoming by Month */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Upcoming by Month</Text>
             <View style={[styles.chartCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
               <BarChart labels={monthlyLabels} values={monthlyCounts} />
+            </View>
+          </View>
+
+          {/* Bar chart - Events by Day of Week */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Events by Day of Week</Text>
+            <View style={[styles.chartCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+              <BarChart labels={dayOfWeekLabels} values={dayOfWeekCounts} />
             </View>
           </View>
 
