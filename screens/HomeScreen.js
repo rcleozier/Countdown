@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   Alert,
   Dimensions,
+  ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -711,23 +712,25 @@ const HomeScreen = () => {
               <View style={[styles.iconModalContainer, { backgroundColor: theme.colors.modalOverlay }]}>
                 <View style={[styles.iconModalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
                   <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Icon</Text>
-                  <View style={styles.iconList}>
-                    {eventIcons.map((icon, index) => (
-                      <TouchableOpacity
-                        key={`${icon}-${index}`}
-                        onPress={() => {
-                          setNewIcon(icon);
-                          setIconPickerVisible(false);
-                        }}
-                        style={styles.iconItem}
-                      >
-                        <Text style={styles.iconText}>{icon}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                  <ScrollView style={{ maxHeight: wp('100%') }}>
+                    <View style={styles.iconList}>
+                      {eventIcons.map((icon, index) => (
+                        <TouchableOpacity
+                          key={`${icon}-${index}`}
+                          onPress={() => {
+                            setNewIcon(icon);
+                            setIconPickerVisible(false);
+                          }}
+                          style={styles.iconItem}
+                        >
+                          <Text style={styles.iconText}>{icon}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </ScrollView>
                   <TouchableOpacity
                     onPress={() => setIconPickerVisible(false)}
-                    style={[styles.button, { backgroundColor: theme.colors.border }]}
+                    style={[styles.button, { backgroundColor: theme.colors.border, marginTop: wp('2%') }]}
                   >
                     <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
                   </TouchableOpacity>

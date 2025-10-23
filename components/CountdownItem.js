@@ -20,6 +20,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editModalView, setEditModalView] = useState('main'); // 'main', 'calendar', 'time', 'icon'
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
@@ -140,6 +141,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     setSelectedDate(new Date(event.date));
     setSelectedHour(moment(event.date).hour());
     setSelectedMinute(moment(event.date).minute());
+    setEditModalView('main');
     setEditModalVisible(true);
   };
 
@@ -422,7 +424,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             <Text style={styles.iconLabel}>Icon</Text>
             <TouchableOpacity
               style={[styles.iconButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
-              onPress={() => setIconPickerVisible(true)}
+              onPress={() => setEditModalView('icon')}
             >
               <Text style={{ fontSize: wp('5%'), marginRight: wp('2%') }}>{editIcon}</Text>
               <Text style={styles.iconButtonText}>Tap to change</Text>
@@ -561,7 +563,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
         animationType="fade"
         transparent
         visible={iconPickerVisible}
-        onRequestClose={() => setIconPickerVisible(false)}
+        onRequestClose={() => {
+          setIconPickerVisible(false);
+          setTimeout(() => setEditModalVisible(true), 300);
+        }}
       >
         <View style={styles.iconModalContainer}>
           <View style={styles.iconModalContent}>
@@ -574,6 +579,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     onPress={() => {
                       setEditIcon(icon);
                       setIconPickerVisible(false);
+                      setTimeout(() => setEditModalVisible(true), 300);
                     }}
                     style={styles.iconItem}
                   >
@@ -583,7 +589,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               </View>
             </ScrollView>
             <TouchableOpacity
-              onPress={() => setIconPickerVisible(false)}
+              onPress={() => {
+                setIconPickerVisible(false);
+                setTimeout(() => setEditModalVisible(true), 300);
+              }}
               style={[styles.modalButton, { backgroundColor: "#444", alignSelf: 'center', paddingHorizontal: wp('8%'), marginTop: wp('2%') }]}
             >
               <Text style={styles.modalButtonText}>Cancel</Text>
@@ -696,19 +705,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: wp("2%"),
     fontFamily: "monospace",
-  },
-  iconButton: {
-    padding: wp('0.3%'),
-    borderRadius: wp('0.8%'),
-    alignItems: "center",
-    justifyContent: "center",
-    width: wp('3%'),
-    height: wp('3%'),
-    minWidth: wp('3%'),
-    minHeight: wp('3%'),
-    backgroundColor: '#F8F9FA',
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
   },
   actionsRow: {
     flexDirection: 'row',
