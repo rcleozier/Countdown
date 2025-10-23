@@ -20,7 +20,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editModalView, setEditModalView] = useState('main'); // 'main', 'calendar', 'time', 'icon'
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
@@ -141,7 +140,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     setSelectedDate(new Date(event.date));
     setSelectedHour(moment(event.date).hour());
     setSelectedMinute(moment(event.date).minute());
-    setEditModalView('main');
     setEditModalVisible(true);
   };
 
@@ -424,7 +422,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             <Text style={styles.iconLabel}>Icon</Text>
             <TouchableOpacity
               style={[styles.iconButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
-              onPress={() => setEditModalView('icon')}
+              onPress={() => {
+                setEditModalVisible(false);
+                setTimeout(() => setIconPickerVisible(true), 300);
+              }}
             >
               <Text style={{ fontSize: wp('5%'), marginRight: wp('2%') }}>{editIcon}</Text>
               <Text style={styles.iconButtonText}>Tap to change</Text>
@@ -588,15 +589,15 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 ))}
               </View>
             </ScrollView>
-            <TouchableOpacity
-              onPress={() => {
-                setIconPickerVisible(false);
-                setTimeout(() => setEditModalVisible(true), 300);
-              }}
-              style={[styles.modalButton, { backgroundColor: "#444", alignSelf: 'center', paddingHorizontal: wp('8%'), marginTop: wp('2%') }]}
-            >
-              <Text style={styles.modalButtonText}>Cancel</Text>
-            </TouchableOpacity>
+             <TouchableOpacity
+               onPress={() => {
+                 setIconPickerVisible(false);
+                 setTimeout(() => setEditModalVisible(true), 300);
+               }}
+               style={[styles.modalButton, { backgroundColor: "#444", alignSelf: 'center', paddingHorizontal: wp('8%'), marginTop: wp('2%') }]}
+             >
+               <Text style={[styles.modalButtonText, { color: "#FFFFFF" }]}>Cancel</Text>
+             </TouchableOpacity>
           </View>
         </View>
       </Modal>
