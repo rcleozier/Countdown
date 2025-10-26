@@ -399,7 +399,8 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               style={styles.iconButton}
               onPress={() => {
                 setTempSelectedDate(moment(selectedDate).format("YYYY-MM-DD"));
-                setCalendarModalVisible(true);
+                setEditModalVisible(false);
+                setTimeout(() => setCalendarModalVisible(true), 300);
               }}
             >
               <Text style={styles.iconButtonText}>
@@ -411,7 +412,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             <Text style={styles.iconLabel}>Time</Text>
             <TouchableOpacity
               style={styles.iconButton}
-              onPress={() => setTimePickerVisible(true)}
+              onPress={() => {
+                setEditModalVisible(false);
+                setTimeout(() => setTimePickerVisible(true), 300);
+              }}
             >
               <Text style={styles.iconButtonText}>
                 {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
@@ -455,7 +459,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
         animationType="fade"
         transparent
         visible={calendarModalVisible}
-        onRequestClose={() => setCalendarModalVisible(false)}
+        onRequestClose={() => {
+          setCalendarModalVisible(false);
+          setTimeout(() => setEditModalVisible(true), 300);
+        }}
       >
         <View style={styles.calendarModalOverlay}>
           <View style={styles.calendarModalContent}>
@@ -495,13 +502,20 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             <View style={styles.calendarButtonContainer}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: "#444" }]}
-                onPress={() => setCalendarModalVisible(false)}
+                onPress={() => {
+                  setCalendarModalVisible(false);
+                  setTimeout(() => setEditModalVisible(true), 300);
+                }}
               >
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
-                onPress={handleConfirmDate}
+                onPress={() => {
+                  handleConfirmDate();
+                  setCalendarModalVisible(false);
+                  setTimeout(() => setEditModalVisible(true), 300);
+                }}
               >
                 <Text style={styles.modalButtonText}>Confirm</Text>
               </TouchableOpacity>
@@ -515,7 +529,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
         animationType="fade"
         transparent
         visible={timePickerVisible}
-        onRequestClose={() => setTimePickerVisible(false)}
+        onRequestClose={() => {
+          setTimePickerVisible(false);
+          setTimeout(() => setEditModalVisible(true), 300);
+        }}
       >
         <View style={styles.timePickerOverlay}>
           <View style={styles.timePickerContent}>
@@ -544,13 +561,19 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             <View style={styles.timePickerButtonContainer}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: "#444" }]}
-                onPress={() => setTimePickerVisible(false)}
+                onPress={() => {
+                  setTimePickerVisible(false);
+                  setTimeout(() => setEditModalVisible(true), 300);
+                }}
               >
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
-                onPress={() => setTimePickerVisible(false)}
+                onPress={() => {
+                  setTimePickerVisible(false);
+                  setTimeout(() => setEditModalVisible(true), 300);
+                }}
               >
                 <Text style={styles.modalButtonText}>Confirm</Text>
               </TouchableOpacity>
