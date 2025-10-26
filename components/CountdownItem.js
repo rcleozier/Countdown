@@ -15,6 +15,7 @@ import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
+import eventIcons from '../util/eventIcons';
 
 const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
@@ -72,64 +73,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const progress = getProgress();
   const isPastEvent = moment(event.date).isBefore(moment());
 
-  const eventIcons = [
-    "🎂", // Birthday
-    "🗓️", // Appointment
-    "🏖️", // Vacation
-    "✈️", // Flight
-    "🏫", // School
-    "🏢", // Work
-    "💍", // Wedding
-    "👶", // Baby
-    "🏠", // Move
-    "🏥", // Doctor
-    "🏆", // Competition
-    "🎓", // Graduation
-    "🎉", // Party
-    "🏃‍♂️", // Race
-    "🏟️", // Concert
-    "🏀", // Basketball
-    "⚽️", // Soccer
-    "🏈", // Football
-    "🏐", // Volleyball
-    "🏸", // Badminton
-    "🏊‍♂️", // Swim
-    "🚴‍♂️", // Bike
-    "🏃‍♀️", // Run
-    "🧘‍♂️", // Yoga
-    "🏕️", // Camping
-    "🏰", // Trip
-    "🏡", // Home
-    "🏠", // Housewarming
-    "🏢", // Office
-    "🏫", // Exam
-    "🏆", // Award
-    "🎬", // Movie
-    "🎤", // Show
-    "🎵", // Festival
-    "🎮", // Game
-    "🏅", // Achievement
-    "🏋️‍♂️", // Workout
-    "🧳", // Travel
-    "🕒", // Meeting
-    "💼", // Interview
-    "🚗", // Car
-    "🛒", // Shopping
-    "💡", // Idea
-    "📅", // Event
-    "🏥", // Checkup
-    "🏜️", // Adventure
-    "🏙️", // City
-    "🧑‍🤝‍🧑", // Friends
-    "👨‍👩‍👧‍👦", // Family
-    "🧑‍🎓", // Study
-    "🧑‍💻", // Project
-    "🧑‍🍳", // Cook
-    "🧑‍🔬", // Science
-    "🧑‍🎤", // Music
-    "🧑‍🚀", // Space
-    "🧑‍✈️", // Flight
-  ];
+  // Icons are centralized in util/eventIcons to ensure add and edit use the same set
 
   const handleOpenEditModal = () => {
     // Light haptic feedback for opening edit modal

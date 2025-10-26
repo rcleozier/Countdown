@@ -27,6 +27,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { ReviewManager } from '../util/reviewManager';
+import eventIcons from '../util/eventIcons';
 
 const generateGUID = () =>
   "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -50,77 +51,7 @@ const HomeScreen = () => {
   const [newIcon, setNewIcon] = useState("💻");
   const { theme } = useTheme();
 
-  const eventIcons = [
-    // Sports & Activities
-    "⚾", // Baseball
-    "🏀", // Basketball
-    "🏈", // Football
-    "⚽", // Soccer
-    "🏐", // Volleyball
-    "🏸", // Badminton
-    "🏊‍♂️", // Swimming
-    "🚴‍♂️", // Cycling
-    "🏃‍♂️", // Running
-    "🏋️‍♂️", // Weightlifting
-    
-    // Life Events & Milestones
-    "🎂", // Birthday
-    "🎓", // Graduation
-    "💍", // Wedding
-    "👶", // Baby
-    "🏆", // Achievement
-    "🎉", // Celebration
-    "🎊", // Party
-    "🏅", // Award
-    "🎖️", // Medal
-    
-    // Work & Education
-    "💼", // Work
-    "🏢", // Office
-    "🏫", // School
-    "📚", // Study
-    "🎓", // Graduation
-    "💡", // Idea
-    "📝", // Exam
-    "🎯", // Goal
-    "📈", // Promotion
-    "💻", // Project
-    
-    // Health & Medical
-    "🏥", // Doctor
-    "💊", // Medicine
-    "🩺", // Checkup
-    "🏃‍♀️", // Fitness
-    "🧘‍♂️", // Wellness
-    "💪", // Health
-    "🦷", // Dental
-    "👁️", // Eye exam
-    "🧠", // Mental health
-    
-    // Travel & Adventure
-    "✈️", // Flight
-    "🏖️", // Vacation
-    "🏕️", // Camping
-    "🏰", // Trip
-    "🧳", // Travel
-    "🚗", // Road trip
-    "🚢", // Cruise
-    "🏔️", // Hiking
-    "🌍", // World travel
-    "🗺️", // Adventure
-    
-    // Home & Family
-    "🏠", // Home
-    "🏡", // House
-    "👨‍👩‍👧‍👦", // Family
-    "👫", // Couple
-    "👶", // Baby
-    "🎈", // Baby shower
-    "🏠", // Moving
-    "🔑", // New home
-    "🎊", // Housewarming
-    "📅", // Calendar
-  ];
+  // Icons are centralized in util/eventIcons to ensure add and edit use the same set
 
   // ----- Load / Save Data -----
   const loadCountdowns = async () => {
