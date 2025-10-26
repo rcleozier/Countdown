@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -25,6 +26,7 @@ const SettingsScreen = () => {
   const [appInfoTapCount, setAppInfoTapCount] = useState(0);
   const appInfo = appConfig.expo;
   const { theme, isDark, toggleTheme } = useTheme();
+  const navigation = useNavigation();
 
   useEffect(() => {
     Analytics.initialize();
@@ -46,6 +48,13 @@ const SettingsScreen = () => {
     setModalVisible(false);
   };
 
+
+  // Navigate to notes screen
+  const handleNotesPress = () => {
+    // Light haptic feedback for navigation
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate('NotesScreen');
+  };
 
   // Easter egg: Seed data after 7 taps
   const handleAppInfoTap = async () => {
@@ -144,6 +153,12 @@ const SettingsScreen = () => {
           </TouchableOpacity>
         </View>
         <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+          <TouchableOpacity activeOpacity={0.7} onPress={handleNotesPress}>
+            <Text style={[styles.cardTitle, { color: theme.colors.primary }]}>Notes</Text>
+            <Text style={[styles.cardDescription, { color: theme.colors.textSecondary }]}>View and manage your notes</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
           <Text style={[styles.cardTitle, { color: theme.colors.primary }]}>Appearance</Text>
           <View style={styles.themeToggleContainer}>
             <Text style={[styles.themeLabel, { color: theme.colors.text }]}>Dark Theme</Text>
@@ -232,6 +247,11 @@ const styles = StyleSheet.create({
     color: '#3498DB',
     fontWeight: 'bold',
     marginBottom: wp('2%'),
+    fontFamily: 'monospace',
+  },
+  cardDescription: {
+    fontSize: wp('3%'),
+    color: '#7F8C8D',
     fontFamily: 'monospace',
   },
   appName: {

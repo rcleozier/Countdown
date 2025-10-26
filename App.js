@@ -13,6 +13,7 @@ import PastScreen from "./screens/PastScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import AnalyticsScreen from "./screens/AnalyticsScreen";
 import CalendarScreen from "./screens/CalendarScreen";
+import NotesScreen from "./screens/NotesScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -70,6 +71,7 @@ function SettingsScreenStack() {
       }}
     >
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+      <Stack.Screen name="NotesScreen" component={NotesScreen} />
     </Stack.Navigator>
   );
 }
