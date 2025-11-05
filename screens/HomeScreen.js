@@ -22,11 +22,13 @@ import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import * as Notifications from 'expo-notifications';
 import * as Haptics from 'expo-haptics';
 import { Analytics } from '../util/analytics';
-import OptimizedBannerAd from '../components/Ads';
 import { Ionicons } from '@expo/vector-icons';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { ReviewManager } from '../util/reviewManager';
+import { ENABLE_ADS } from '../util/config';
+import { AD_UNIT_IDS } from '../util/adConfig';
 import eventIcons from '../util/eventIcons';
 
 const generateGUID = () =>
@@ -49,6 +51,7 @@ const HomeScreen = () => {
   const [selectedMinute, setSelectedMinute] = useState(0);
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("💻");
+  const [confettiKey, setConfettiKey] = useState(0);
   const { theme } = useTheme();
 
   // Icons are centralized in util/eventIcons to ensure add and edit use the same set
@@ -291,6 +294,8 @@ const HomeScreen = () => {
     
     // Haptic feedback for successful creation
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // Fire confetti by remounting the cannon
+    setConfettiKey((k) => k + 1);
     
     Analytics.trackEvent && Analytics.trackEvent('add_countdown', {
       name: newName,
@@ -402,6 +407,41 @@ const HomeScreen = () => {
     };
     
     setupNotifications();
+    
+    // Random interstitial: load after 10s on screen mount
+    let interstitialTimeout;
+    if (ENABLE_ADS) {
+      interstitialTimeout = setTimeout(() => {
+        // 30% chance to show an interstitial
+        const shouldShow = Math.random() < 0.3;
+        if (!shouldShow) return;
+        try {
+          // Dynamically require to avoid native module when not available
+          // eslint-disable-next-line global-require
+          const { InterstitialAd, AdEventType, TestIds } = require('react-native-google-mobile-ads');
+          const unitId = __DEV__ ? TestIds.INTERSTITIAL : AD_UNIT_IDS.interstitial;
+          const interstitial = InterstitialAd.createForAdRequest(unitId);
+          const onLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+            interstitial.show().catch(() => {});
+          });
+          const onClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+            onLoaded();
+            onClosed();
+          });
+          const onError = interstitial.addAdEventListener(AdEventType.ERROR, () => {
+            onLoaded();
+            onClosed();
+          });
+          interstitial.load();
+        } catch (e) {
+          // Ignore if module not available in current runtime
+        }
+      }, 10000);
+    }
+    
+    return () => {
+      if (interstitialTimeout) clearTimeout(interstitialTimeout);
+    };
   }, []);
 
   // Test notification function (for debugging)
@@ -429,12 +469,8 @@ const HomeScreen = () => {
   };
 
   const renderItem = ({ item, index }) => {
-    const showAd = (index + 1) % 5 === 0;
     return (
-      <>
-        <CountdownItem event={item} index={index} onDelete={deleteCountdown} onEdit={editCountdown} />
-        {showAd && <OptimizedBannerAd />}
-      </>
+      <CountdownItem event={item} index={index} onDelete={deleteCountdown} onEdit={editCountdown} />
     );
   };
 
@@ -702,6 +738,16 @@ const HomeScreen = () => {
           </View>
         </View>
       </Modal>
+      {/* Confetti overlay (re-mounts per key to replay) */}
+      {confettiKey > 0 && (
+        <ConfettiCannon
+          key={confettiKey}
+          count={120}
+          origin={{ x: Dimensions.get('window').width / 2, y: -10 }}
+          fadeOut
+          fallSpeed={2500}
+        />
+      )}
     </SafeAreaView>
   );
 };
