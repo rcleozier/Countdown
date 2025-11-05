@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { ENABLE_ADS } from '../util/config';
 import { AD_UNIT_IDS, AD_REQUEST_OPTIONS, AD_REFRESH_INTERVAL, handleAdError, getDynamicAdRequestOptions } from '../util/adConfig';
 import { useTheme } from '../context/ThemeContext';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
@@ -72,6 +72,15 @@ const OptimizedBannerAd = ({ style, containerStyle }) => {
     console.log('Ad closed');
   };
 
+  if (!ENABLE_ADS) {
+    return null;
+  }
+
+  // Dynamically require the native module only when ads are enabled
+  // This avoids referencing the native module in Expo Go or dev builds
+  // eslint-disable-next-line global-require
+  const { BannerAd, BannerAdSize } = require('react-native-google-mobile-ads');
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.adContainer }, containerStyle]}>
       <BannerAd
@@ -103,6 +112,9 @@ const styles = StyleSheet.create({
 
 // Fallback ad component with different size for better fill rates
 export const FallbackBannerAd = ({ style, containerStyle }) => {
+  if (!ENABLE_ADS) {
+    return null;
+  }
   const [adKey, setAdKey] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 2;
@@ -120,13 +132,16 @@ export const FallbackBannerAd = ({ style, containerStyle }) => {
     }
   };
 
+  // eslint-disable-next-line global-require
+  const { BannerAd, BannerAdSize } = require('react-native-google-mobile-ads');
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.adContainer }, containerStyle]}>
       <BannerAd
         key={adKey}
         unitId={bannerId}
         size={BannerAdSize.BANNER} // Use standard banner size as fallback
-        requestOptions={adRequestOptions}
+        requestOptions={AD_REQUEST_OPTIONS}
         style={[styles.banner, style]}
         onAdLoaded={() => console.log('Fallback ad loaded')}
         onAdFailedToLoad={handleAdFailedToLoad}
