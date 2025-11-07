@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const REVIEW_REQUEST_KEY = 'last_review_request';
 const MIN_EVENTS_FOR_REVIEW = 3;
-const MIN_DAYS_BETWEEN_REVIEWS = 30;
+const MIN_DAYS_BETWEEN_REVIEWS = 15;
 
 export const ReviewManager = {
   async shouldRequestReview() {

@@ -300,7 +300,6 @@ const HomeScreen = () => {
     Analytics.trackEvent && Analytics.trackEvent('add_countdown', {
       name: newName,
       date: combinedDateTime.toISOString(),
-      icon: newIcon,
     });
 
     // Request review if appropriate
@@ -343,7 +342,6 @@ const HomeScreen = () => {
         id: updatedEvent.id,
         name: updatedEvent.name,
         date: updatedEvent.date,
-        icon: updatedEvent.icon,
       });
     } catch (e) {
       console.warn('Could not update notification:', e);
@@ -371,7 +369,6 @@ const HomeScreen = () => {
           id,
           name: countdownToDelete.name,
           date: countdownToDelete.date,
-          icon: countdownToDelete.icon,
         });
       }
       
