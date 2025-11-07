@@ -418,8 +418,8 @@ const HomeScreen = () => {
         try {
           // Dynamically require to avoid native module when not available
           // eslint-disable-next-line global-require
-          const { InterstitialAd, AdEventType, TestIds } = require('react-native-google-mobile-ads');
-          const unitId = __DEV__ ? TestIds.INTERSTITIAL : AD_UNIT_IDS.interstitial;
+          const { InterstitialAd, AdEventType } = require('react-native-google-mobile-ads');
+          const unitId = AD_UNIT_IDS.interstitial;
           const interstitial = InterstitialAd.createForAdRequest(unitId);
           const onLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
             interstitial.show().catch(() => {});

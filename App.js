@@ -7,6 +7,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Sentry from "@sentry/react-native";
 import { requestTrackingPermission } from './util/adPersonalization';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { Analytics } from './util/analytics';
 
 import HomeScreen from "./screens/HomeScreen";
 import PastScreen from "./screens/PastScreen";
@@ -154,6 +155,7 @@ function ThemedApp() {
 function App() {
   useEffect(() => {
     requestTrackingPermission();
+    Analytics.initialize();
   }, []);
 
   return (
