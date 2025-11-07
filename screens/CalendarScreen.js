@@ -5,7 +5,6 @@ import { Calendar } from "react-native-calendars";
 import moment from "moment";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { useTheme } from "../context/ThemeContext";
-import OptimizedBannerAd from "../components/Ads";
 import { Analytics } from "../util/analytics";
 
 const CalendarScreen = () => {
@@ -62,7 +61,7 @@ const CalendarScreen = () => {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        <OptimizedBannerAd />
+        {/* Ad removed from Calendar screen as requested */}
         <Calendar
           key={theme.name}
           style={styles.calendar}
