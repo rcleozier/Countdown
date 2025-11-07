@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { ENABLE_ADS } from '../util/config';
+import { ENABLE_ADS, USE_TEST_ADS } from '../util/config';
 import { AD_UNIT_IDS } from '../util/adConfig';
 import { useTheme } from '../context/ThemeContext';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 
 const TEST_BANNER_ID = 'ca-app-pub-3940256099942544/6300978111';
-const isDev = __DEV__;
-const useTestAd = isDev;
-const bannerId = useTestAd ? TEST_BANNER_ID : AD_UNIT_IDS.banner;
+const bannerId = USE_TEST_ADS ? TEST_BANNER_ID : AD_UNIT_IDS.banner;
 
 const OptimizedBannerAd = ({ style, containerStyle }) => {
   const { theme } = useTheme();

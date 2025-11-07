@@ -27,7 +27,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { ReviewManager } from '../util/reviewManager';
-import { ENABLE_ADS } from '../util/config';
+import { ENABLE_ADS, USE_TEST_ADS } from '../util/config';
 import { AD_UNIT_IDS } from '../util/adConfig';
 import eventIcons from '../util/eventIcons';
 
@@ -418,8 +418,8 @@ const HomeScreen = () => {
         try {
           // Dynamically require to avoid native module when not available
           // eslint-disable-next-line global-require
-          const { InterstitialAd, AdEventType } = require('react-native-google-mobile-ads');
-          const unitId = AD_UNIT_IDS.interstitial;
+          const { InterstitialAd, AdEventType, TestIds } = require('react-native-google-mobile-ads');
+          const unitId = USE_TEST_ADS ? TestIds.INTERSTITIAL : AD_UNIT_IDS.interstitial;
           const interstitial = InterstitialAd.createForAdRequest(unitId);
           const onLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
             interstitial.show().catch(() => {});
