@@ -11,7 +11,7 @@ import {
   Pressable,
 } from "react-native";
 import moment from "moment";
-import { widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { Calendar } from "react-native-calendars";
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,6 +42,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [selectedDate, setSelectedDate] = useState(new Date(event.date));
   const [selectedHour, setSelectedHour] = useState(moment(event.date).hour());
   const [selectedMinute, setSelectedMinute] = useState(moment(event.date).minute());
+  const [inputFocused, setInputFocused] = useState({});
+  
+  // Modal animation ref
+  const modalScale = useRef(new Animated.Value(0.95)).current;
 
   // Calculate time left down to seconds, or return null if expired
   function getTimeLeft(date) {
@@ -76,6 +80,21 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       useNativeDriver: false,
     }).start();
   }, [progress]);
+
+  // Modal animation
+  useEffect(() => {
+    if (editModalVisible) {
+      Animated.spring(modalScale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }).start();
+    } else {
+      modalScale.setValue(0.95);
+    }
+  }, [editModalVisible]);
 
   // Progress calculation
   const getProgress = () => {
@@ -412,81 +431,167 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
 
       {/* Edit Modal */}
       <Modal
+        animationType="fade"
         transparent
-        animationType="slide"
         visible={editModalVisible}
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.editModalContent}>
-            <Text style={styles.modalTitle}>Edit Countdown</Text>
-            
-            <TextInput
-              placeholder="Countdown Name"
-              placeholderTextColor="#888"
-              value={editName}
-              onChangeText={setEditName}
-              style={styles.input}
-            />
-
-            {/* Date */}
-            <Text style={styles.iconLabel}>Date</Text>
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => {
-                setTempSelectedDate(moment(selectedDate).format("YYYY-MM-DD"));
-                setEditModalVisible(false);
-                setTimeout(() => setCalendarModalVisible(true), 300);
-              }}
+        <View style={[
+          styles.modalOverlay,
+          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+        ]}>
+          <Animated.View style={[
+            styles.editModalContent,
+            {
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+              transform: [{ scale: modalScale }],
+            }
+          ]}>
+            <ScrollView 
+              style={styles.modalFormScroll}
+              contentContainerStyle={styles.modalFormContent}
+              showsVerticalScrollIndicator={false}
             >
-              <Text style={styles.iconButtonText}>
-                {moment(selectedDate).format("ddd, D MMM YYYY")}
-              </Text>
-            </TouchableOpacity>
+              <Text style={[
+                styles.modalTitle,
+                { color: isDark ? '#F5F5F5' : '#111111' }
+              ]}>Edit Countdown</Text>
+              
+              {/* Countdown Name Input */}
+              <TextInput
+                placeholder="Countdown Name"
+                placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+                value={editName}
+                onChangeText={setEditName}
+                onFocus={() => setInputFocused({ name: true })}
+                onBlur={() => setInputFocused({ name: false })}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                    borderColor: inputFocused.name 
+                      ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                      : (isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB'),
+                    color: isDark ? '#F5F5F5' : '#111111',
+                  }
+                ]}
+              />
 
-            {/* Time */}
-            <Text style={styles.iconLabel}>Time</Text>
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => {
-                setEditModalVisible(false);
-                setTimeout(() => setTimePickerVisible(true), 300);
-              }}
-            >
-              <Text style={styles.iconButtonText}>
-                {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
-              </Text>
-            </TouchableOpacity>
+              {/* Date Label + Button */}
+              <Text style={[
+                styles.iconLabel,
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
+              ]}>Date</Text>
+              <TouchableOpacity
+                style={[
+                  styles.iconButton,
+                  {
+                    backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                  }
+                ]}
+                onPress={() => {
+                  setTempSelectedDate(moment(selectedDate).format("YYYY-MM-DD"));
+                  setEditModalVisible(false);
+                  setTimeout(() => setCalendarModalVisible(true), 300);
+                }}
+              >
+                <Text style={[
+                  styles.iconButtonText,
+                  { color: isDark ? '#F5F5F5' : '#111111' }
+                ]}>
+                  {moment(selectedDate).format("ddd, D MMM YYYY")}
+                </Text>
+              </TouchableOpacity>
 
-            {/* Icon */}
-            <Text style={styles.iconLabel}>Icon</Text>
-            <TouchableOpacity
-              style={[styles.iconButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
-              onPress={() => {
-                setEditModalVisible(false);
-                setTimeout(() => setIconPickerVisible(true), 300);
-              }}
-            >
-              <Text style={{ fontSize: wp('5%'), marginRight: wp('2%') }}>{editIcon}</Text>
-              <Text style={styles.iconButtonText}>Tap to change</Text>
-            </TouchableOpacity>
+              {/* Time Label + Button */}
+              <Text style={[
+                styles.iconLabel,
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
+              ]}>Time</Text>
+              <TouchableOpacity
+                style={[
+                  styles.iconButton,
+                  {
+                    backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                  }
+                ]}
+                onPress={() => {
+                  setEditModalVisible(false);
+                  setTimeout(() => setTimePickerVisible(true), 300);
+                }}
+              >
+                <Text style={[
+                  styles.iconButtonText,
+                  { color: isDark ? '#F5F5F5' : '#111111' }
+                ]}>
+                  {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Icon Label + Button */}
+              <Text style={[
+                styles.iconLabel,
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
+              ]}>Icon</Text>
+              <TouchableOpacity
+                style={[
+                  styles.iconButton,
+                  {
+                    backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                  }
+                ]}
+                onPress={() => {
+                  setEditModalVisible(false);
+                  setTimeout(() => setIconPickerVisible(true), 300);
+                }}
+              >
+                <Text style={[
+                  styles.iconButtonText,
+                  { color: isDark ? '#F5F5F5' : '#111111' }
+                ]}>
+                  {editIcon ? `Icon: ${editIcon}` : "Select Icon"}
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
 
             {/* Action Buttons */}
-            <View style={styles.modalButtonContainer}>
+            <View style={styles.buttonContainer}>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#444" }]}
                 onPress={() => setEditModalVisible(false)}
+                style={[
+                  styles.button,
+                  {
+                    backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                  }
+                ]}
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={[
+                  styles.buttonText,
+                  { color: isDark ? '#E5E7EB' : '#111111' }
+                ]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
                 onPress={handleSaveEdit}
+                style={[
+                  styles.button,
+                  {
+                    backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                    shadowColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 4,
+                  }
+                ]}
               >
-                <Text style={styles.modalButtonText}>Save</Text>
+                <Text style={styles.buttonTextSave}>Save</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </Animated.View>
         </View>
       </Modal>
 
@@ -752,9 +857,9 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.9)",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: wp("5%"),
   },
   modalContent: {
     width: "80%",
@@ -767,12 +872,11 @@ const styles = StyleSheet.create({
     borderColor: "#E0E0E0",
   },
   modalTitle: {
-    fontSize: wp("4.5%"),
-    fontWeight: "bold",
-    marginBottom: wp("2.5%"),
-    color: "#2C3E50",
-    fontFamily: "monospace",
-    textAlign: "center",
+    fontSize: wp('4.25%'), // Even smaller
+    fontWeight: '600', // Semibold
+    fontFamily: 'System',
+    marginBottom: wp('2%'), // Even more reduced
+    textAlign: 'center',
   },
   modalMessage: {
     fontSize: wp("3.75%"),
@@ -810,50 +914,86 @@ const styles = StyleSheet.create({
     fontFamily: "System",
   },
   editModalContent: {
-    width: "90%",
-    backgroundColor: "#FFFFFF",
-    borderRadius: wp("2.5%"),
-    padding: wp("4%"),
-    alignItems: "center",
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    maxHeight: '80%',
+    width: '100%',
+    maxWidth: wp('90%'),
+    maxHeight: hp('75%'),
+    borderRadius: wp('4%'), // 16px
+    paddingHorizontal: wp('4%'),
+    paddingTop: wp('3.5%'),
+    paddingBottom: wp('2.5%'),
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 8,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  modalFormScroll: {
+    maxHeight: hp('55%'),
+  },
+  modalFormContent: {
+    paddingBottom: wp('1%'),
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E0E0E0",
-    padding: wp("2%"),
-    marginBottom: wp("2.5%"),
-    borderRadius: wp("1%"),
-    color: "#2C3E50",
-    fontFamily: "monospace",
-    fontSize: wp("3%"),
-    backgroundColor: "#FFFFFF",
+    borderRadius: wp('2.5%'), // 10px
+    height: wp('8.5%'), // Even smaller
+    paddingHorizontal: wp('2.5%'), // Slightly less padding
+    marginBottom: wp('1.5%'), // Even more reduced
+    fontSize: wp('3.5%'), // Slightly smaller
+    fontWeight: '600', // Semibold
+    fontFamily: 'System',
     width: '100%',
   },
   iconLabel: {
-    fontSize: wp("2.5%"),
-    color: "#2C3E50",
-    fontFamily: "monospace",
-    marginBottom: wp("1%"),
+    fontSize: wp('3%'), // Smaller
+    fontWeight: '500', // Medium
+    fontFamily: 'System',
+    marginBottom: wp('0.5%'), // Minimal margin
+    marginTop: wp('0%'), // No top margin
     alignSelf: 'flex-start',
   },
   iconButton: {
     borderWidth: 1,
-    borderColor: "#3498DB",
-    paddingVertical: wp("2%"),
-    paddingHorizontal: wp("3%"),
-    borderRadius: wp("1%"),
-    backgroundColor: "#FFFFFF",
-    marginBottom: wp("2.5%"),
+    borderRadius: wp('2.5%'), // 10px
+    height: wp('8.5%'), // Even smaller
+    paddingHorizontal: wp('2.5%'),
+    marginBottom: wp('1.5%'), // Even more reduced
     alignItems: "center",
+    justifyContent: "center",
     width: '100%',
   },
   iconButtonText: {
-    fontSize: wp("3%"),
-    color: "#2C3E50",
-    fontFamily: "monospace",
+    fontSize: wp('3.5%'), // Slightly smaller
+    fontWeight: '600', // Semibold
+    fontFamily: 'System',
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: wp('2.5%'), // 8-10px gap
+    marginTop: wp('2%'), // Better spacing
+    flexShrink: 0, // Prevent shrinking
+  },
+  button: {
+    flex: 1,
+    height: wp('10%'), // Better height
+    borderRadius: wp('3%'), // 10-12px
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: wp('2.5%'),
+    paddingHorizontal: wp('2%'),
+  },
+  buttonText: {
+    fontWeight: "600", // Semibold
+    fontSize: wp('4%'), // 15-16px
+    fontFamily: "System",
+  },
+  buttonTextSave: {
+    color: "#FFFFFF",
+    fontWeight: "600", // Semibold
+    fontSize: wp('4%'), // 15-16px
+    fontFamily: "System",
   },
   calendarModalOverlay: {
     flex: 1,
