@@ -40,6 +40,14 @@ const NotesScreen = () => {
   
   // Modal animation ref
   const modalScale = useRef(new Animated.Value(0.95)).current;
+  
+  // Empty state animation refs
+  const emptyIconScale = useRef(new Animated.Value(0.95)).current;
+  const emptyIconOpacity = useRef(new Animated.Value(0)).current;
+  const emptyTextOpacity = useRef(new Animated.Value(0)).current;
+  const emptySubTextOpacity = useRef(new Animated.Value(0)).current;
+  const emptyButtonScale = useRef(new Animated.Value(1)).current;
+  const emptyButtonOpacity = useRef(new Animated.Value(0)).current;
 
   // Load notes from storage
   const loadNotes = async () => {
@@ -107,6 +115,66 @@ const NotesScreen = () => {
       modalScale.setValue(0.95);
     }
   }, [modalVisible]);
+
+  // Empty state animation
+  useEffect(() => {
+    if (notes.length === 0 && !isLoading) {
+      // Icon animation
+      Animated.parallel([
+        Animated.spring(emptyIconScale, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 7,
+        }),
+        Animated.timing(emptyIconOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      
+      // Text animations (sequential)
+      setTimeout(() => {
+        Animated.timing(emptyTextOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }, 100);
+      
+      setTimeout(() => {
+        Animated.timing(emptySubTextOpacity, {
+          toValue: 0.85, // 85% opacity
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }, 200);
+      
+      setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(emptyButtonOpacity, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.spring(emptyButtonScale, {
+            toValue: 1,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 300);
+    } else {
+      // Reset animations
+      emptyIconScale.setValue(0.95);
+      emptyIconOpacity.setValue(0);
+      emptyTextOpacity.setValue(0);
+      emptySubTextOpacity.setValue(0);
+      emptyButtonOpacity.setValue(0);
+      emptyButtonScale.setValue(1);
+    }
+  }, [notes.length, isLoading]);
 
   useEffect(() => {
     Analytics.initialize();
@@ -456,23 +524,73 @@ const NotesScreen = () => {
           </View>
         ) : notes.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <View style={styles.emptyIconContainer}>
-              <Ionicons name="document-text-outline" size={60} color={isDark ? '#4E9EFF' : '#4A9EFF'} />
-            </View>
-            <Text style={[styles.emptyText, { color: isDark ? '#F5F5F5' : '#111827' }]}>No notes yet</Text>
-            <Text style={[styles.emptySubText, { color: isDark ? '#A1A1A1' : '#6B7280' }]}>
-              Tap the + button to create your first note
-            </Text>
-            <TouchableOpacity 
-              style={[
-                styles.emptyActionButton,
-                { backgroundColor: isDark ? '#3C82F6' : '#4E9EFF' }
-              ]}
+            <Animated.View style={[
+              styles.emptyIconContainer,
+              {
+                backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.08)',
+                transform: [{ scale: emptyIconScale }],
+                opacity: emptyIconOpacity,
+              }
+            ]}>
+              <Ionicons 
+                name="document-text-outline" 
+                size={wp('14%')} // ~52px to match HomeScreen padding
+                color={isDark ? '#4E9EFF' : '#4A9EFF'} 
+              />
+            </Animated.View>
+            <Animated.View style={{ opacity: emptyTextOpacity }}>
+              <Text style={[
+                styles.emptyText,
+                { color: isDark ? '#F3F4F6' : '#111111' }
+              ]}>No notes yet</Text>
+            </Animated.View>
+            <Animated.View style={{ opacity: emptySubTextOpacity }}>
+              <Text style={[styles.emptySubText, { color: isDark ? '#A1A1A1' : '#6B7280' }]}>
+                Tap the + button to create your first note
+              </Text>
+            </Animated.View>
+            <Pressable
+              onPressIn={() => {
+                Animated.parallel([
+                  Animated.spring(emptyButtonScale, {
+                    toValue: 1.02,
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(emptyButtonOpacity, {
+                    toValue: 0.92, // Lighten 8%
+                    duration: 150,
+                    useNativeDriver: true,
+                  }),
+                ]).start();
+              }}
+              onPressOut={() => {
+                Animated.parallel([
+                  Animated.spring(emptyButtonScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(emptyButtonOpacity, {
+                    toValue: 1,
+                    duration: 150,
+                    useNativeDriver: true,
+                  }),
+                ]).start();
+              }}
               onPress={handleOpenModal}
             >
-              <Ionicons name="add" size={20} color="#FFFFFF" />
-              <Text style={styles.emptyActionText}>Create Note</Text>
-            </TouchableOpacity>
+              <Animated.View style={[
+                styles.emptyActionButton,
+                {
+                  backgroundColor: isDark ? '#3C82F6' : '#4E9EFF',
+                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+                  transform: [{ scale: emptyButtonScale }],
+                  opacity: emptyButtonOpacity,
+                }
+              ]}>
+                <Ionicons name="add" size={wp('5%')} color="#FFFFFF" style={{ marginRight: wp('2%') }} />
+                <Text style={styles.emptyActionText}>Create Note</Text>
+              </Animated.View>
+            </Pressable>
           </View>
         ) : (
           <>
@@ -652,34 +770,39 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: wp("6%"),
+    paddingHorizontal: wp("6%"), // 24px
     paddingVertical: wp("8%"),
   },
   emptyIconContainer: {
-    marginBottom: wp("6%"),
-    opacity: 0.7,
+    width: wp('20%'), // ~75px to match HomeScreen
+    height: wp('20%'),
+    borderRadius: wp('10%'), // Circular
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: wp("5%"), // 20-24px spacing
   },
   emptyText: {
-    fontSize: wp("5.5%"),
+    fontSize: wp("4.5%"), // 18px
     fontWeight: "600", // Semibold
-    marginBottom: wp("2%"),
+    marginBottom: wp("2.5%"), // 8-10px bottom margin
     fontFamily: "System",
     textAlign: "center",
   },
   emptySubText: {
-    fontSize: wp("3.5%"),
+    fontSize: wp("3.5%"), // 14px
     textAlign: "center",
-    marginBottom: wp("6%"),
+    marginBottom: wp("4%"), // 16px bottom spacing before button
     fontFamily: "System",
-    lineHeight: wp("5%"),
+    lineHeight: wp("4.5%"),
   },
   emptyActionButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: wp("4%"),
-    paddingHorizontal: wp("8%"),
-    borderRadius: wp("3%"),
-    marginBottom: wp("6%"),
+    justifyContent: "center",
+    height: wp('11%'), // 44-48px
+    paddingVertical: wp("3%"),
+    paddingHorizontal: wp("6%"),
+    borderRadius: wp('3.5%'), // 12-14px
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 8,
@@ -687,10 +810,9 @@ const styles = StyleSheet.create({
   },
   emptyActionText: {
     color: "#FFFFFF",
-    fontSize: wp("3.8%"),
+    fontSize: wp("3.5%"),
     fontWeight: "600", // Semibold
     fontFamily: "System",
-    marginLeft: wp("2%"),
   },
   loadingContainer: {
     flex: 1,

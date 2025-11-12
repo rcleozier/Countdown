@@ -37,69 +37,69 @@ const AnalyticsScreen = () => {
   const loadAnalytics = async () => {
     try {
       const stored = await AsyncStorage.getItem("countdowns");
-      if (stored) {
-        const allEvents = JSON.parse(stored);
-        const now = moment();
-        const upcoming = allEvents.filter((e) => moment(e.date).isAfter(now));
-        const past = allEvents.filter((e) => moment(e.date).isBefore(now));
-        
-        const newStats = {
-          total: allEvents.length,
-          upcoming: upcoming.length,
-          past: past.length,
-        };
-        setStats(newStats);
+      const allEvents = stored ? JSON.parse(stored) : [];
+      const now = moment();
+      const upcoming = allEvents.filter((e) => moment(e.date).isAfter(now));
+      const past = allEvents.filter((e) => moment(e.date).isBefore(now));
+      
+      const newStats = {
+        total: allEvents.length,
+        upcoming: upcoming.length,
+        past: past.length,
+      };
+      setStats(newStats);
 
-        // Animate count-up
-        Animated.parallel([
-          Animated.timing(totalAnim, {
-            toValue: newStats.total,
-            duration: 500,
-            useNativeDriver: false,
-          }),
-          Animated.timing(upcomingAnim, {
-            toValue: newStats.upcoming,
-            duration: 500,
-            useNativeDriver: false,
-          }),
-          Animated.timing(pastAnim, {
-            toValue: newStats.past,
-            duration: 500,
-            useNativeDriver: false,
-          }),
-        ]).start();
+      // Animate count-up
+      Animated.parallel([
+        Animated.timing(totalAnim, {
+          toValue: newStats.total,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+        Animated.timing(upcomingAnim, {
+          toValue: newStats.upcoming,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+        Animated.timing(pastAnim, {
+          toValue: newStats.past,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+      ]).start();
 
-        // Next upcoming event
-        const sortedUpcoming = upcoming.sort((a, b) => moment(a.date).diff(moment(b.date)));
-        if (sortedUpcoming.length > 0) {
-          setNextEvent(sortedUpcoming[0]);
-        }
-
-        // Monthly buckets (next 6 months including current)
-        const start = moment().startOf('month');
-        const labels = [];
-        const buckets = Array(6).fill(0);
-        for (let i = 0; i < 6; i++) labels.push(start.clone().add(i, 'months').format('MMM'));
-        allEvents.forEach((e) => {
-          const m = moment(e.date);
-          if (m.isSameOrAfter(start) && m.isBefore(start.clone().add(6, 'months'))) {
-            const idx = m.diff(start, 'months');
-            if (idx >= 0 && idx < 6) buckets[idx] += 1;
-          }
-        });
-        setMonthlyLabels(labels);
-        setMonthlyCounts(buckets);
-
-        // Events by day of week
-        const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const dayCounts = Array(7).fill(0);
-        allEvents.forEach((e) => {
-          const dayIndex = moment(e.date).day();
-          dayCounts[dayIndex] += 1;
-        });
-        setDayOfWeekLabels(dayLabels);
-        setDayOfWeekCounts(dayCounts);
+      // Next upcoming event
+      const sortedUpcoming = upcoming.sort((a, b) => moment(a.date).diff(moment(b.date)));
+      if (sortedUpcoming.length > 0) {
+        setNextEvent(sortedUpcoming[0]);
+      } else {
+        setNextEvent(null);
       }
+
+      // Monthly buckets (next 6 months including current)
+      const start = moment().startOf('month');
+      const labels = [];
+      const buckets = Array(6).fill(0);
+      for (let i = 0; i < 6; i++) labels.push(start.clone().add(i, 'months').format('MMM'));
+      allEvents.forEach((e) => {
+        const m = moment(e.date);
+        if (m.isSameOrAfter(start) && m.isBefore(start.clone().add(6, 'months'))) {
+          const idx = m.diff(start, 'months');
+          if (idx >= 0 && idx < 6) buckets[idx] += 1;
+        }
+      });
+      setMonthlyLabels(labels);
+      setMonthlyCounts(buckets);
+
+      // Events by day of week
+      const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayCounts = Array(7).fill(0);
+      allEvents.forEach((e) => {
+        const dayIndex = moment(e.date).day();
+        dayCounts[dayIndex] += 1;
+      });
+      setDayOfWeekLabels(dayLabels);
+      setDayOfWeekCounts(dayCounts);
     } catch (error) {
       console.error("Error loading analytics:", error);
     }
