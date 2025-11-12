@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { StatusBar } from "react-native";
+import { StatusBar, View } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Sentry from "@sentry/react-native";
 import { requestTrackingPermission } from './util/adPersonalization';
@@ -109,36 +109,59 @@ function ThemedApp() {
             let iconName;
 
             if (route.name === "Home") {
-              // Using timer icons for countdowns
-              iconName = focused ? "timer-sharp" : "timer-outline";
+              iconName = focused ? "timer" : "timer-outline";
             } else if (route.name === "Past") {
-              // Hourglass for past events
-              iconName = focused ? "hourglass-sharp" : "hourglass-outline";
+              iconName = focused ? "hourglass" : "hourglass-outline";
             } else if (route.name === "Calendar") {
               iconName = focused ? "calendar" : "calendar-outline";
             } else if (route.name === "Analytics") {
-              // Analytics icon for insights
-              iconName = focused ? "analytics-sharp" : "analytics-outline";
+              iconName = focused ? "analytics" : "analytics-outline";
             } else if (route.name === "Settings") {
-              // Settings icon for settings
-              iconName = focused ? "settings-sharp" : "settings-outline";
+              iconName = focused ? "settings" : "settings-outline";
             }
 
             return (
-              <Ionicons
-                name={iconName ?? "alert-circle-outline"}
-                size={size}
-                color={color}
-              />
+              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons
+                  name={iconName ?? "alert-circle-outline"}
+                  size={focused ? 24 : 22}
+                  color={focused ? (isDark ? '#3CC4A2' : theme.colors.primary) : (isDark ? 'rgba(255,255,255,0.5)' : theme.colors.tabInactive)}
+                />
+                {focused && (
+                  <View style={{
+                    position: 'absolute',
+                    bottom: -8,
+                    width: 4,
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: isDark ? '#3CC4A2' : theme.colors.primary,
+                  }} />
+                )}
+              </View>
             );
           },
-          tabBarActiveTintColor: theme.colors.tabActive,
-          tabBarInactiveTintColor: theme.colors.tabInactive,
-          tabBarStyle: {
-            backgroundColor: theme.colors.tabBar,
-            borderTopColor: theme.colors.tabBarBorder,
+          tabBarActiveTintColor: isDark ? '#3CC4A2' : theme.colors.primary,
+          tabBarInactiveTintColor: isDark ? 'rgba(255,255,255,0.5)' : theme.colors.tabInactive,
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: '600',
+            fontFamily: 'System',
+            marginTop: 4,
           },
-          headerShown: false, // Removed header from tab screens
+          tabBarStyle: {
+            backgroundColor: isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.95)',
+            borderTopColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            borderTopWidth: 0.5,
+            height: 60,
+            paddingBottom: 8,
+            paddingTop: 8,
+            elevation: 8,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+          },
+          headerShown: false,
         })}
       >
         <Tab.Screen name="Home" component={HomeScreenStack} />
