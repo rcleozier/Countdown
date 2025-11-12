@@ -1066,23 +1066,28 @@ const HomeScreen = () => {
                   </ScrollView>
                   <TouchableOpacity
                     onPress={() => setIconPickerVisible(false)}
-                    style={[
-                      styles.button,
-                      {
-                        backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                        marginTop: wp('2%'),
-                        alignSelf: 'stretch',
-                      }
-                    ]}
+                    style={{
+                      backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                      height: 48,
+                      borderRadius: wp('3%'),
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingVertical: 12,
+                      paddingHorizontal: 16,
+                      marginTop: wp('2%'),
+                    }}
                   >
-                    <Text style={[
-                      styles.buttonText,
-                      { 
-                        color: isDark ? '#E5E7EB' : '#111111',
-                        fontSize: wp('4%'),
+                    <Text 
+                      allowFontScaling={false}
+                      style={{
+                        color: isDark ? '#FFFFFF' : '#000000',
+                        fontSize: 16,
                         fontWeight: '600',
-                      }
-                    ]}>Cancel</Text>
+                        textAlign: 'center',
+                      }}
+                    >
+                      Cancel
+                    </Text>
                   </TouchableOpacity>
                 </Animated.View>
               </View>
