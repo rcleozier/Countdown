@@ -16,6 +16,7 @@ import { Analytics } from '../util/analytics';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import Svg, { G, Text as SvgText, Path, Rect, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 
 const AnalyticsScreen = () => {
@@ -31,6 +32,7 @@ const AnalyticsScreen = () => {
   const totalAnim = useRef(new Animated.Value(0)).current;
   const upcomingAnim = useRef(new Animated.Value(0)).current;
   const pastAnim = useRef(new Animated.Value(0)).current;
+  const nextEventCardScale = useRef(new Animated.Value(1)).current;
 
   const loadAnalytics = async () => {
     try {
@@ -410,51 +412,86 @@ const AnalyticsScreen = () => {
 
           {/* Next Event */}
           {nextEvent && (
-            <View style={styles.chartSection}>
-              <View style={styles.sectionHeader}>
+            <View style={styles.nextEventSection}>
+              {/* Divider/Gradient fade */}
+              <View style={[
+                styles.sectionDivider,
+                {
+                  backgroundColor: isDark 
+                    ? 'rgba(255,255,255,0.05)' 
+                    : 'rgba(0,0,0,0.05)',
+                }
+              ]} />
+              
+              <View style={styles.nextEventSectionHeader}>
                 <Ionicons 
-                  name="star-outline" 
+                  name="star" 
                   size={wp('4.5%')} 
                   color={accentColor} 
-                  style={styles.sectionIcon}
+                  style={styles.nextEventSectionIcon}
                 />
-                <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                <Text style={[
+                  styles.nextEventSectionTitle,
+                  { color: accentColor }
+                ]}>
                   Next Event
                 </Text>
               </View>
-              <View style={[
-                styles.nextEventCard,
-                {
-                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                }
-              ]}>
-                <View style={styles.nextEventHeader}>
-                  <View style={[
-                    styles.nextEventIconContainer,
-                    {
-                      backgroundColor: isDark 
-                        ? `${accentColor}20` 
-                        : `${accentColor}15`,
-                    }
-                  ]}>
-                    <Text style={styles.nextEventIcon}>{nextEvent.icon}</Text>
-                  </View>
-                  <View style={styles.nextEventInfo}>
-                    <Text style={[
-                      styles.nextEventName,
-                      { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                    ]}>{nextEvent.name}</Text>
-                    <Text style={[
-                      styles.nextEventDate,
-                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+              
+              <Pressable
+                onPressIn={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  Animated.spring(nextEventCardScale, {
+                    toValue: 0.98,
+                    useNativeDriver: true,
+                    tension: 300,
+                    friction: 10,
+                  }).start();
+                }}
+                onPressOut={() => {
+                  Animated.spring(nextEventCardScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    tension: 300,
+                    friction: 10,
+                  }).start();
+                }}
+              >
+                <Animated.View style={[
+                  styles.nextEventCard,
+                  {
+                    backgroundColor: isDark ? '#1C1C1C' : '#FFFFFF',
+                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                    shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                    transform: [{ scale: nextEventCardScale }],
+                  }
+                ]}>
+                  <View style={styles.nextEventHeader}>
+                    <View style={[
+                      styles.nextEventIconContainer,
+                      {
+                        backgroundColor: isDark 
+                          ? 'rgba(255,255,255,0.05)' 
+                          : 'rgba(0,0,0,0.03)',
+                      }
                     ]}>
-                      {moment(nextEvent.date).format("MMM D, YYYY [at] h:mm A")}
-                    </Text>
+                      <Text style={styles.nextEventIcon}>{nextEvent.icon}</Text>
+                    </View>
+                    <View style={styles.nextEventInfo}>
+                      <Text style={[
+                        styles.nextEventName,
+                        { color: isDark ? '#F5F5F5' : '#111111' }
+                      ]}>{nextEvent.name}</Text>
+                      <Text style={[
+                        styles.nextEventDate,
+                        { color: isDark ? '#A1A1A1' : '#6B7280' }
+                      ]}>
+                        {moment(nextEvent.date).format("MMM D, YYYY [at] h:mm A")}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </View>
+                </Animated.View>
+              </Pressable>
             </View>
           )}
         </ScrollView>
@@ -551,23 +588,48 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
+  nextEventSection: {
+    marginTop: wp('2%'),
+    marginBottom: wp('6%'), // 24px breathing room before bottom nav
+  },
+  sectionDivider: {
+    height: 1,
+    marginBottom: wp('4%'),
+    marginHorizontal: wp('1%'),
+  },
+  nextEventSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: wp('3%'),
+    paddingHorizontal: wp('0.5%'),
+  },
+  nextEventSectionIcon: {
+    marginRight: wp('2.5%'), // 8-10px gap
+  },
+  nextEventSectionTitle: {
+    fontSize: wp('4.25%'), // 16-17px
+    fontWeight: '600',
+    fontFamily: 'System',
+    letterSpacing: 0.3,
+  },
   nextEventCard: {
-    padding: wp('4.5%'),
-    borderRadius: wp('3.5%'),
+    padding: wp('4.5%'), // 16-18px
+    borderRadius: wp('3.5%'), // 12-14px
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowRadius: 12,
+    elevation: 4,
+    marginTop: wp('3%'), // ~12px vertical margin
   },
   nextEventHeader: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   nextEventIconContainer: {
-    width: wp('14%'),
-    height: wp('14%'),
-    borderRadius: wp('3.5%'),
+    width: wp('13%'),
+    height: wp('13%'),
+    borderRadius: wp('6.5%'), // Circular
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: wp('4%'),
@@ -579,15 +641,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   nextEventName: {
-    fontSize: wp('4.5%'),
+    fontSize: wp('4.25%'), // 17px
     fontWeight: '600',
     fontFamily: 'System',
-    marginBottom: wp('1%'),
+    marginBottom: wp('1.5%'), // 4-6px spacing
+    lineHeight: wp('5.5%'),
   },
   nextEventDate: {
-    fontSize: wp('3.5%'),
+    fontSize: wp('3.5%'), // 14px
     fontWeight: '500',
     fontFamily: 'System',
+    lineHeight: wp('5%'),
   },
 });
 

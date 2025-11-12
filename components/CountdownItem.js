@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   Modal,
   TextInput,
   ScrollView,
+  Animated,
+  Pressable,
 } from "react-native";
 import moment from "moment";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
@@ -15,6 +17,7 @@ import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import eventIcons from '../util/eventIcons';
 
 const CountdownItem = ({ event, index, onDelete, onEdit }) => {
@@ -24,7 +27,13 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
+  
+  // Animation refs
+  const cardScale = useRef(new Animated.Value(1)).current;
+  const editButtonScale = useRef(new Animated.Value(1)).current;
+  const deleteButtonScale = useRef(new Animated.Value(1)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
   
   // Edit form states
   const [editName, setEditName] = useState(event.name);
@@ -58,6 +67,15 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     }, 1000);
     return () => clearInterval(interval);
   }, [event.date]);
+
+  // Animate progress bar when progress changes
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [progress]);
 
   // Progress calculation
   const getProgress = () => {
@@ -131,158 +149,232 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     setEditModalVisible(false);
   };
 
+  // Accent color
+  const accentColor = isDark ? '#4E9EFF' : '#4A9EFF';
+  
+  // Card press handlers
+  const handleCardPressIn = () => {
+    Animated.spring(cardScale, {
+      toValue: 0.98,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
+  };
+
+  const handleCardPressOut = () => {
+    Animated.spring(cardScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
+  };
+
+  // Action button press handlers
+  const handleEditPressIn = () => {
+    Animated.spring(editButtonScale, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleEditPressOut = () => {
+    Animated.spring(editButtonScale, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleDeletePressIn = () => {
+    Animated.spring(deleteButtonScale, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleDeletePressOut = () => {
+    Animated.spring(deleteButtonScale, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
     <>
-      {/* Main Item Row */}
-      <View style={[
-        styles.gradientBorder, 
-        { 
-          backgroundColor: theme.colors.card, 
-          borderColor: theme.colors.border,
-          borderWidth: 1,
-          shadowColor: theme.colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: theme.name === 'dark' ? 0.3 : 0.1,
-          shadowRadius: 8,
-          elevation: 4
-        }
-        ]}>
-        <View style={[
-          styles.container, 
-          { 
-            backgroundColor: theme.colors.card,
-            borderRadius: wp('3%')
-          }
-        ]}>
-          
-          <View style={styles.leftSection}>
-            <View style={[
-              styles.iconContainer,
-              {
-                backgroundColor: theme.colors.surface,
-                borderColor: theme.colors.border,
-                borderWidth: 1,
-                borderRadius: wp('3%'),
-                shadowColor: theme.colors.shadow,
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 2
-              }
-            ]}>
-              <Text style={[styles.icon, { fontSize: wp('6%') }]}>{event.icon}</Text>
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={[
-                styles.title, 
-                { 
-                  color: theme.colors.text,
-                  fontWeight: '700',
-                  fontSize: wp('4.5%'),
-                  textShadowColor: theme.name === 'dark' ? theme.colors.shadow : 'transparent',
-                  textShadowOffset: { width: 0, height: 1 },
-                  textShadowRadius: 2
-                }
-              ]}>{event.name}</Text>
-              {timeLeft === null ? (
-                <Text style={[
-                  styles.expiredText, 
-                  { 
-                    color: theme.colors.error,
-                    fontWeight: '600',
-                    fontSize: wp('3.5%')
-                  }
-                ]}>Expired</Text>
-              ) : (
-                <Text style={[
-                  styles.countdownText, 
-                  { 
-                    color: theme.colors.primary,
-                    fontWeight: '600',
-                    fontSize: wp('4%')
-                  }
-                ]}>
-                  {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
-                </Text>
-              )}
-              <Text style={[
-                styles.date, 
-                { 
-                  color: theme.colors.textSecondary,
-                  fontWeight: '500',
-                  fontSize: wp('3%'),
-                  opacity: 0.8
-                }
-              ]}>
-                {(() => {
-                  const m = moment(event.date);
-                  if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
-                    return m.format("ddd, D MMM YYYY") + " (All Day)";
-                  } else {
-                    return m.format("ddd, D MMM YYYY [at] hh:mm A");
-                  }
-                })()}
-              </Text>
-            </View>
-          </View>
-          {/* Top-right actions within layout (no absolute positioning) */}
-          <View style={styles.actionsTopRight}>
-            {!isPastEvent && (
-              <TouchableOpacity
-                style={styles.actionButtonSmall}
-                onPress={handleOpenEditModal}
-              >
-                <Ionicons name="pencil" size={wp('2.4%')} color="#6C757D" />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              style={styles.actionButtonSmall}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                setDeleteModalVisible(true);
-              }}
-            >
-              <Ionicons name="trash" size={wp('2.4%')} color="#DC3545" />
-            </TouchableOpacity>
-          </View>
-        </View>
-        {/* Progress Bar */}
-        <View style={[
-          styles.progressBarBackground, 
-          { 
-            backgroundColor: theme.colors.progressBackground,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            borderRadius: 8
+      {/* Main Item Card */}
+      <Pressable
+        onPressIn={handleCardPressIn}
+        onPressOut={handleCardPressOut}
+      >
+        <Animated.View style={[
+          styles.cardWrapper,
+          {
+            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+            borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+            shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+            transform: [{ scale: cardScale }],
           }
         ]}>
           <View style={[
-            styles.progressBarFill, 
-            { 
-              width: `${Math.round(progress * 100)}%`, 
-              backgroundColor: theme.colors.progressFill,
-              borderRadius: wp('1.75%'),
-              shadowColor: theme.colors.progressFill,
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.3,
-              shadowRadius: 2,
-              elevation: 2
+            styles.container,
+            {
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              borderRadius: wp('3.5%'),
             }
-          ]} />
-        </View>
-        <Text style={[
-          styles.progressText, 
-          { 
-            color: theme.colors.textSecondary,
-            fontWeight: '500',
-            fontSize: wp('2.5%')
-          }
-        ]}>
-          {progress === 0
-            ? 'Just started!'
-            : `${Math.round(progress * 100)}% of the way there`}
-        </Text>
-      </View>
+          ]}>
+            <View style={styles.leftSection}>
+              <View style={[
+                styles.iconContainer,
+                {
+                  backgroundColor: isDark 
+                    ? 'rgba(78,158,255,0.15)' 
+                    : 'rgba(78,158,255,0.1)',
+                  borderWidth: 1,
+                  borderColor: isDark 
+                    ? 'rgba(78,158,255,0.2)' 
+                    : 'rgba(78,158,255,0.15)',
+                  borderRadius: wp('3%'),
+                }
+              ]}>
+                <Text style={[styles.icon, { fontSize: wp('6.5%') }]}>{event.icon}</Text>
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={[
+                  styles.title,
+                  {
+                    color: isDark ? '#FFFFFF' : '#1A1A1A',
+                    fontSize: wp('4.25%'), // 17px semibold
+                  }
+                ]}>{event.name}</Text>
+                {timeLeft === null ? (
+                  <Text style={[
+                    styles.expiredText,
+                    {
+                      color: theme.colors.error,
+                      fontSize: wp('3.5%'),
+                    }
+                  ]}>Expired</Text>
+                ) : (
+                  <Text style={[
+                    styles.countdownText,
+                    {
+                      color: accentColor,
+                      fontSize: wp('4%'), // 15-16px
+                    }
+                  ]}>
+                    {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+                  </Text>
+                )}
+                <Text style={[
+                  styles.date,
+                  {
+                    color: isDark ? '#A1A1A1' : '#6B7280',
+                    fontSize: wp('3.5%'), // 13-14px
+                  }
+                ]}>
+                  {(() => {
+                    const m = moment(event.date);
+                    if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
+                      return m.format("ddd, D MMM YYYY") + " (All Day)";
+                    } else {
+                      return m.format("ddd, D MMM YYYY [at] hh:mm A");
+                    }
+                  })()}
+                </Text>
+              </View>
+            </View>
+            {/* Action buttons */}
+            <View style={styles.actionsTopRight}>
+              {!isPastEvent && (
+                <Pressable
+                  onPressIn={handleEditPressIn}
+                  onPressOut={handleEditPressOut}
+                  onPress={handleOpenEditModal}
+                >
+                  <Animated.View style={[
+                    styles.actionButton,
+                    {
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                      transform: [{ scale: editButtonScale }],
+                    }
+                  ]}>
+                    <Ionicons 
+                      name="pencil" 
+                      size={wp('4.5%')} // 16-18px
+                      color={isDark ? '#FFFFFF' : '#6B7280'} 
+                    />
+                  </Animated.View>
+                </Pressable>
+              )}
+              <Pressable
+                onPressIn={handleDeletePressIn}
+                onPressOut={handleDeletePressOut}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  setDeleteModalVisible(true);
+                }}
+              >
+                <Animated.View style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: isDark 
+                      ? 'rgba(231,76,60,0.15)' 
+                      : 'rgba(231,76,60,0.1)',
+                    transform: [{ scale: deleteButtonScale }],
+                  }
+                ]}>
+                  <Ionicons 
+                    name="trash" 
+                    size={wp('4.5%')} // 16-18px
+                    color="#E74C3C" 
+                  />
+                </Animated.View>
+              </Pressable>
+            </View>
+          </View>
+          
+          {/* Progress Bar */}
+          <View style={[
+            styles.progressBarBackground,
+            {
+              backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+              marginHorizontal: wp('4%'),
+              marginTop: wp('3%'),
+              marginBottom: wp('1%'),
+              height: 3, // 3-4px for sleeker profile
+              borderRadius: 1.5,
+              overflow: 'hidden',
+            }
+          ]}>
+            <Animated.View style={[
+              styles.progressBarFill,
+              {
+                height: 3,
+                borderRadius: 1.5,
+                width: progressAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0%', '100%'],
+                }),
+                backgroundColor: accentColor,
+              }
+            ]} />
+          </View>
+          <Text style={[
+            styles.progressText,
+            {
+              color: isDark ? '#A1A1A1' : '#6B7280',
+              fontSize: wp('3%'),
+              marginLeft: wp('4%'),
+              marginBottom: wp('2%'),
+            }
+          ]}>
+            {progress === 0
+              ? 'Just started!'
+              : `${Math.round(progress * 100)}% of the way there`}
+          </Text>
+        </Animated.View>
+      </Pressable>
 
       {/* Confirmation Modal */}
       <Modal
@@ -588,27 +680,22 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
 };
 
 const styles = StyleSheet.create({
-  gradientBorder: {
-    marginBottom: wp("3%"),
-    borderRadius: wp("3%"),
-    shadowColor: "#000",
-    shadowOpacity: 0.07,
-    shadowRadius: wp("2%"),
+  cardWrapper: {
+    marginBottom: wp('4%'), // ~16px spacing between cards (reduced from ~24px)
+    marginHorizontal: wp('4%'),
+    borderRadius: wp('3.5%'),
+    borderWidth: 1,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
-    backgroundColor: "#F4F8FB",
-    marginHorizontal: wp("2%"), // Prevent card from touching screen edges
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
+    overflow: 'hidden',
   },
   container: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: wp("3%"),
-    paddingHorizontal: wp("3%"),
-    backgroundColor: "#FFFFFF",
-    borderRadius: wp("2.5%"),
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
+    padding: wp('4.5%'), // 16-18px internal padding
   },
   leftSection: {
     flexDirection: "row",
@@ -617,105 +704,51 @@ const styles = StyleSheet.create({
     paddingRight: wp('2%'),
   },
   icon: {
-    fontSize: wp("8%"),
+    fontSize: wp("6.5%"),
   },
   iconContainer: {
-    width: wp('10%'),
-    height: wp('10%'),
+    width: wp('12%'),
+    height: wp('12%'),
     alignItems: "center",
     justifyContent: "center",
-    marginRight: wp("2.5%"),
+    marginRight: wp('3.5%'),
   },
   textContainer: {
     justifyContent: "center",
+    flex: 1,
   },
   title: {
-    fontSize: wp("4%"),
-    fontWeight: "700",
-    color: "#2471A3",
-    fontFamily: "monospace",
-    marginBottom: wp("0.5%"),
+    fontWeight: "600", // Semibold
+    fontFamily: "System",
+    marginBottom: wp('0.75%'),
   },
   date: {
-    fontSize: wp("2.7%"),
-    color: "#7F8C8D",
-    fontFamily: "monospace",
-  },
-  divider: {
-    width: 1,
-    height: "80%",
-    backgroundColor: "#E0E0E0",
-    marginHorizontal: wp("3%"),
-    alignSelf: "center",
-  },
-  rightSection: {
-    alignItems: "flex-end",
-    justifyContent: "center",
-    minWidth: wp("8%"),
-    maxWidth: wp("10%"),
-  },
-  buttonRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: wp('1.5%'),
-    justifyContent: "flex-end",
-  },
-  topRightButtons: {
-    display: 'none',
-  },
-  smallIconButton: {
-    padding: wp('1%'),
-    borderRadius: wp('1%'),
-    alignItems: "center",
-    justifyContent: "center",
-    width: wp('6%'),
-    height: wp('6%'),
-    minWidth: wp('6%'),
-    minHeight: wp('6%'),
+    fontWeight: "500",
+    fontFamily: "System",
+    marginTop: wp('0.5%'),
+    lineHeight: wp('4.5%'),
   },
   countdownText: {
-    fontSize: wp("3.5%"),
-    color: "#273746",
-    fontWeight: "bold",
-    marginBottom: wp("1%"),
-    fontFamily: "monospace",
-    letterSpacing: 1,
-    textAlign: "left",
+    fontWeight: "600",
+    fontFamily: "System",
+    marginBottom: wp('0.5%'),
   },
   expiredText: {
-    fontSize: wp("4%"),
-    color: "#E74C3C",
-    fontWeight: "bold",
-    marginBottom: wp("2%"),
-    fontFamily: "monospace",
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: wp('2%'),
-    marginTop: wp('2%'),
+    fontWeight: "600",
+    fontFamily: "System",
+    marginBottom: wp('0.5%'),
   },
   actionsTopRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: wp('1%'),
-    marginLeft: wp('2%'),
+    gap: wp('2%'),
   },
   actionButton: {
-    backgroundColor: '#F8F9FA',
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    borderRadius: wp('2%'),
-    paddingVertical: wp('1.5%'),
-    paddingHorizontal: wp('2.5%'),
-  },
-  actionButtonSmall: {
-    backgroundColor: '#F8F9FA',
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    borderRadius: wp('1.5%'),
-    paddingVertical: wp('1.2%'),
-    paddingHorizontal: wp('2%'),
+    width: wp('8%'), // 32px circular container
+    height: wp('8%'),
+    borderRadius: wp('4%'),
+    alignItems: "center",
+    justifyContent: "center",
   },
   modalOverlay: {
     flex: 1,
@@ -767,25 +800,14 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
   },
   progressBarBackground: {
-    height: 8,
-    backgroundColor: '#E0E0E0',
-    borderRadius: wp('1%'),
-    marginHorizontal: wp('4%'),
-    marginTop: 6,
-    marginBottom: 2,
     overflow: 'hidden',
   },
   progressBarFill: {
-    height: 8,
-    backgroundColor: '#3498DB',
-    borderRadius: wp('1%'),
+    // Height and styling applied inline
   },
   progressText: {
-    fontSize: wp('2.7%'),
-    color: '#7F8C8D',
-    fontFamily: 'monospace',
-    marginLeft: wp('4%'),
-    marginBottom: 6,
+    fontWeight: "500",
+    fontFamily: "System",
   },
   editModalContent: {
     width: "90%",

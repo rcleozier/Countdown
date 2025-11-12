@@ -11,6 +11,7 @@ import {
   Alert,
   Dimensions,
   ScrollView,
+  Pressable,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -501,13 +502,20 @@ const HomeScreen = () => {
             contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
           />
           {/* Floating Button to Add New Event */}
-          <TouchableOpacity
+          <Pressable
             onPress={handleOpenModal}
-            style={[styles.floatingButton, { backgroundColor: theme.colors.button }]}
+            style={({ pressed }) => [
+              styles.floatingButton,
+              {
+                backgroundColor: theme.colors.button,
+                opacity: pressed ? 0.9 : 1,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              }
+            ]}
           >
-            <Ionicons name="add" size={20} color={theme.colors.buttonText} style={{ marginRight: 8 }} />
+            <Ionicons name="add" size={wp('5%')} color={theme.colors.buttonText} style={{ marginRight: wp('2%') }} />
             <Text style={[styles.floatingButtonText, { color: theme.colors.buttonText }]}>Add New Event</Text>
-          </TouchableOpacity>
+          </Pressable>
         </>
       )}
 
@@ -756,9 +764,8 @@ const styles = StyleSheet.create({
   },
 
   listContainer: {
-    paddingHorizontal: wp("4%"),
-    paddingBottom: wp("20%"),
-    paddingTop: wp("8%"),
+    paddingTop: wp('3%'),
+    paddingBottom: wp('6%'), // 24px above nav bar
   },
   emptyContainer: {
     flex: 1,
@@ -847,19 +854,22 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: wp("4%"),
     right: wp("4%"),
-    backgroundColor: "#3498DB",
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: wp("3%"),
-    paddingHorizontal: wp("4%"),
-    borderRadius: wp("2%"),
+    paddingVertical: wp("3.5%"),
+    paddingHorizontal: wp("5%"),
+    borderRadius: wp("3.5%"), // 12-14px rounded corners
     zIndex: 999,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   floatingButtonText: {
     color: "#FFFFFF",
-    fontSize: wp("3%"),
-    fontWeight: "bold",
-    fontFamily: "monospace",
+    fontSize: wp("3.5%"),
+    fontWeight: "600",
+    fontFamily: "System",
   },
   modalContainer: {
     flex: 1,
