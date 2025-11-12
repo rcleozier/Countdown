@@ -34,6 +34,7 @@ const SettingsScreen = () => {
   
   // Animation refs for press feedback
   const clearButtonScale = useRef(new Animated.Value(1)).current;
+  const clearButtonOpacity = useRef(new Animated.Value(1)).current;
   const cardScales = useRef({}).current;
 
   useEffect(() => {
@@ -166,22 +167,36 @@ const SettingsScreen = () => {
 
   // Clear button press handlers
   const handleClearPressIn = () => {
-    Animated.spring(clearButtonScale, {
-      toValue: 0.97,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(clearButtonScale, {
+        toValue: 0.97,
+        useNativeDriver: true,
+      }),
+      Animated.timing(clearButtonOpacity, {
+        toValue: 0.9, // Lighten color 8-10%
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const handleClearPressOut = () => {
-    Animated.spring(clearButtonScale, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(clearButtonScale, {
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+      Animated.timing(clearButtonOpacity, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   // Accent color
   const accentColor = isDark ? '#4E9EFF' : '#4A9EFF';
-  const clearButtonColor = '#E15747';
+  const clearButtonColor = isDark ? '#D64C3C' : '#E15747';
   
   // Background gradient
   const backgroundGradient = isDark 
@@ -205,8 +220,7 @@ const SettingsScreen = () => {
             <Animated.View style={[
               styles.card,
               {
-                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
                 shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
                 transform: [{ scale: getCardScale('appInfo') }],
               }
@@ -217,7 +231,7 @@ const SettingsScreen = () => {
               ]}>App Info</Text>
               <Text style={[
                 styles.cardSubtext,
-                { color: isDark ? '#A1A1A1' : '#9CA3AF' }
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
               ]}>Version {appInfo.version}</Text>
             </Animated.View>
           </Pressable>
@@ -231,8 +245,7 @@ const SettingsScreen = () => {
             <Animated.View style={[
               styles.card,
               {
-                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
                 shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
                 transform: [{ scale: getCardScale('notes') }],
               }
@@ -243,7 +256,7 @@ const SettingsScreen = () => {
               ]}>Notes</Text>
               <Text style={[
                 styles.cardSubtext,
-                { color: isDark ? '#A1A1A1' : '#9CA3AF' }
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
               ]}>View and manage your notes</Text>
             </Animated.View>
           </Pressable>
@@ -252,8 +265,7 @@ const SettingsScreen = () => {
           <View style={[
             styles.card,
             {
-              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-              borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
               shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
             }
           ]}>
@@ -273,11 +285,11 @@ const SettingsScreen = () => {
                   toggleTheme();
                 }}
                 trackColor={{ 
-                  false: isDark ? '#3A3A3A' : '#E5E7EB', 
-                  true: isDark ? '#3A3A3A' : accentColor 
+                  false: '#E5E7EB', 
+                  true: isDark ? '#2E2E2E' : accentColor 
                 }}
-                thumbColor={isDark ? accentColor : '#FFFFFF'}
-                ios_backgroundColor={isDark ? '#3A3A3A' : '#E5E7EB'}
+                thumbColor={isDark ? '#3CC4A2' : '#FFFFFF'}
+                ios_backgroundColor={isDark ? '#2E2E2E' : '#E5E7EB'}
               />
             </View>
           </View>
@@ -286,8 +298,7 @@ const SettingsScreen = () => {
           <View style={[
             styles.card,
             {
-              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-              borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
               shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
             }
           ]}>
@@ -304,8 +315,9 @@ const SettingsScreen = () => {
                 styles.clearButton,
                 {
                   backgroundColor: clearButtonColor,
-                  shadowColor: 'rgba(0,0,0,0.15)',
+                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
                   transform: [{ scale: clearButtonScale }],
+                  opacity: clearButtonOpacity,
                 }
               ]}>
                 <Text style={styles.clearButtonText}>Clear All Events</Text>
@@ -393,16 +405,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: wp('5%'),
-    paddingTop: wp('6%'),
+    paddingHorizontal: wp('5%'), // 20px equal left/right padding
+    paddingTop: wp('4%'), // Slight top padding to prevent crowding
     paddingBottom: wp('8%'),
   },
   card: {
     width: '100%',
     borderRadius: wp('3.5%'), // 12-14px
-    padding: wp('4%'), // 16px
-    marginBottom: wp('6%'), // 24px vertical spacing
-    borderWidth: 1,
+    padding: wp('4.5%'), // 16-18px
+    marginBottom: wp('5%'), // 20-24px uniform vertical spacing
+    borderWidth: 0, // Remove visible borders
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 8,
@@ -410,15 +422,14 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: wp('4.25%'), // 16-17px
-    fontWeight: '600',
+    fontWeight: '600', // Semibold
     fontFamily: 'System',
-    marginBottom: wp('1%'),
+    marginBottom: wp('1.5%'), // 6px spacing between title and subtitle
   },
   cardSubtext: {
     fontSize: wp('3.5%'), // 14px
-    fontWeight: '500',
+    fontWeight: '500', // Medium
     fontFamily: 'System',
-    marginTop: wp('0.5%'),
     lineHeight: wp('5%'),
   },
   themeToggleContainer: {
@@ -436,7 +447,7 @@ const styles = StyleSheet.create({
     marginTop: wp('2%'),
     paddingVertical: wp('3.5%'),
     paddingHorizontal: wp('5%'),
-    borderRadius: wp('2.5%'), // 8-10px
+    borderRadius: wp('3%'), // 10-12px rounded corners
     alignItems: 'center',
     justifyContent: 'center',
     shadowOffset: { width: 0, height: 4 },
@@ -446,8 +457,8 @@ const styles = StyleSheet.create({
   },
   clearButtonText: {
     color: '#FFFFFF',
-    fontSize: wp('3.5%'),
-    fontWeight: '600',
+    fontSize: wp('3.75%'), // 15px semibold
+    fontWeight: '600', // Semibold
     fontFamily: 'System',
   },
   modalOverlay: {

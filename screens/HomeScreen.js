@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   View,
   FlatList,
@@ -12,6 +12,7 @@ import {
   Dimensions,
   ScrollView,
   Pressable,
+  Animated,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -53,7 +54,17 @@ const HomeScreen = () => {
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("💻");
   const [confettiKey, setConfettiKey] = useState(0);
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
+  
+  // Modal animation refs
+  const modalScale = useRef(new Animated.Value(0.95)).current;
+  const [inputFocused, setInputFocused] = useState({});
+  
+  // Button animation refs
+  const cancelButtonScale = useRef(new Animated.Value(1)).current;
+  const cancelButtonOpacity = useRef(new Animated.Value(1)).current;
+  const saveButtonScale = useRef(new Animated.Value(1)).current;
+  const saveButtonOpacity = useRef(new Animated.Value(1)).current;
 
   // Icons are centralized in util/eventIcons to ensure add and edit use the same set
 
@@ -179,6 +190,21 @@ const HomeScreen = () => {
     };
     saveCountdowns();
   }, [countdowns]);
+
+  // Modal animation
+  useEffect(() => {
+    if (modalVisible) {
+      Animated.spring(modalScale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }).start();
+    } else {
+      modalScale.setValue(0.95);
+    }
+  }, [modalVisible]);
 
   // Sort & filter upcoming
   const sortedCountdowns = [...countdowns].sort(
@@ -521,29 +547,67 @@ const HomeScreen = () => {
 
       {/* Modal for creating a new countdown */}
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={[styles.modalContainer, { backgroundColor: theme.colors.modalOverlay }]}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
-            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Create New Countdown</Text>
+        <View style={[
+          styles.modalContainer,
+          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+        ]}>
+          <Animated.View style={[
+            styles.modalContent,
+            {
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+              transform: [{ scale: modalScale }],
+            }
+          ]}>
+            <Text style={[
+              styles.modalTitle,
+              { color: isDark ? '#F5F5F5' : '#111111' }
+            ]}>Create New Countdown</Text>
+            
+            {/* Countdown Name Input */}
             <TextInput
               placeholder="Countdown Name"
-              placeholderTextColor={theme.colors.textLight}
+              placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
               value={newName}
               onChangeText={setNewName}
-              style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.text }]}
+              onFocus={() => setInputFocused({ name: true })}
+              onBlur={() => setInputFocused({ name: false })}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                  borderColor: inputFocused.name 
+                    ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                    : (isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB'),
+                  color: isDark ? '#F5F5F5' : '#111111',
+                }
+              ]}
             />
 
             {/* Date Label + Button */}
-            <Text style={[styles.iconLabel, { color: theme.colors.text }]}>Date</Text>
+            <Text style={[
+              styles.iconLabel,
+              { color: isDark ? '#A1A1A1' : '#6B7280' }
+            ]}>Date</Text>
             <TouchableOpacity
-              style={[styles.iconButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                  borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                }
+              ]}
               onPress={handleOpenCalendar}
             >
-              <Text style={[styles.iconButtonText, { color: theme.colors.text }]}>
+              <Text style={[
+                styles.iconButtonText,
+                { color: isDark ? '#F5F5F5' : '#111111' }
+              ]}>
                 {moment(selectedDate).format("ddd, D MMM YYYY")}
               </Text>
             </TouchableOpacity>
@@ -604,12 +668,24 @@ const HomeScreen = () => {
             </Modal>
 
             {/* Time Label + Button */}
-            <Text style={[styles.iconLabel, { color: theme.colors.text }]}>Time</Text>
+            <Text style={[
+              styles.iconLabel,
+              { color: isDark ? '#A1A1A1' : '#6B7280' }
+            ]}>Time</Text>
             <TouchableOpacity
-              style={[styles.iconButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                  borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                }
+              ]}
               onPress={handleOpenTimePicker}
             >
-              <Text style={[styles.iconButtonText, { color: theme.colors.text }]}>
+              <Text style={[
+                styles.iconButtonText,
+                { color: isDark ? '#F5F5F5' : '#111111' }
+              ]}>
                 {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
               </Text>
             </TouchableOpacity>
@@ -664,12 +740,24 @@ const HomeScreen = () => {
             </Modal>
 
             {/* Icon Label + Button */}
-            <Text style={[styles.iconLabel, { color: theme.colors.text }]}>Icon</Text>
+            <Text style={[
+              styles.iconLabel,
+              { color: isDark ? '#A1A1A1' : '#6B7280' }
+            ]}>Icon</Text>
             <TouchableOpacity
               onPress={() => setIconPickerVisible(true)}
-              style={[styles.iconButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                  borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                }
+              ]}
             >
-              <Text style={[styles.iconButtonText, { color: theme.colors.text }]}>
+              <Text style={[
+                styles.iconButtonText,
+                { color: isDark ? '#F5F5F5' : '#111111' }
+              ]}>
                 {newIcon ? `Icon: ${newIcon}` : "Select Icon"}
               </Text>
             </TouchableOpacity>
@@ -727,20 +815,96 @@ const HomeScreen = () => {
 
             {/* Action Buttons */}
             <View style={styles.buttonContainer}>
-              <TouchableOpacity
+              <Pressable
+                onPressIn={() => {
+                  Animated.parallel([
+                    Animated.spring(cancelButtonScale, {
+                      toValue: 0.97,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(cancelButtonOpacity, {
+                      toValue: 0.95, // Darken background by 5%
+                      duration: 150,
+                      useNativeDriver: true,
+                    }),
+                  ]).start();
+                }}
+                onPressOut={() => {
+                  Animated.parallel([
+                    Animated.spring(cancelButtonScale, {
+                      toValue: 1,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(cancelButtonOpacity, {
+                      toValue: 1,
+                      duration: 150,
+                      useNativeDriver: true,
+                    }),
+                  ]).start();
+                }}
                 onPress={() => setModalVisible(false)}
-                style={[styles.button, { backgroundColor: theme.colors.border }]}
               >
-                <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+                <Animated.View style={[
+                  styles.button,
+                  {
+                    backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                    transform: [{ scale: cancelButtonScale }],
+                    opacity: cancelButtonOpacity,
+                  }
+                ]}>
+                  <Text style={[
+                    styles.buttonText,
+                    { color: isDark ? '#E5E7EB' : '#111111' }
+                  ]}>Cancel</Text>
+                </Animated.View>
+              </Pressable>
+              <Pressable
+                onPressIn={() => {
+                  Animated.parallel([
+                    Animated.spring(saveButtonScale, {
+                      toValue: 0.97,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(saveButtonOpacity, {
+                      toValue: 0.9, // Slightly lighten for glow effect
+                      duration: 150,
+                      useNativeDriver: true,
+                    }),
+                  ]).start();
+                }}
+                onPressOut={() => {
+                  Animated.parallel([
+                    Animated.spring(saveButtonScale, {
+                      toValue: 1,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(saveButtonOpacity, {
+                      toValue: 1,
+                      duration: 150,
+                      useNativeDriver: true,
+                    }),
+                  ]).start();
+                }}
                 onPress={handleAddCountdown}
-                style={[styles.button, { backgroundColor: theme.colors.primary }]}
               >
-                <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>Save Countdown</Text>
-              </TouchableOpacity>
+                <Animated.View style={[
+                  styles.button,
+                  {
+                    backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                    transform: [{ scale: saveButtonScale }],
+                    opacity: saveButtonOpacity,
+                    shadowColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 4,
+                  }
+                ]}>
+                  <Text style={styles.buttonTextSave}>Save Countdown</Text>
+                </Animated.View>
+              </Pressable>
             </View>
-          </View>
+          </Animated.View>
         </View>
       </Modal>
       {/* Confetti overlay (re-mounts per key to replay) */}
@@ -874,56 +1038,56 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.9)",
-    paddingHorizontal: wp("4%"),
+    alignItems: "center",
+    paddingHorizontal: wp("5%"),
   },
   modalContent: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: wp("2%"),
-    padding: wp("4%"),
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
+    width: '100%',
+    maxWidth: wp('90%'),
+    borderRadius: wp('4%'), // 16px
+    padding: wp('6%'), // 24px internal padding
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 8,
   },
   modalTitle: {
-    fontSize: wp("4%"),
-    fontWeight: "bold",
-    marginBottom: wp("2.5%"),
-    textAlign: "center",
-    color: "#2C3E50",
-    fontFamily: "monospace",
+    fontSize: wp('4.75%'), // 18-19px
+    fontWeight: '600', // Semibold
+    fontFamily: 'System',
+    marginBottom: wp('4%'), // 16px bottom margin
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E0E0E0",
-    padding: wp("2%"),
-    marginBottom: wp("2.5%"),
-    borderRadius: wp("1%"),
-    color: "#2C3E50",
-    fontFamily: "monospace",
-    fontSize: wp("3%"),
-    backgroundColor: "#FFFFFF",
+    borderRadius: wp('2.5%'), // 10px
+    height: wp('11%'), // ~44px
+    paddingHorizontal: wp('3%'), // 10-12px
+    marginBottom: wp('4%'), // 16-20px spacing
+    fontSize: wp('3.75%'), // 15px
+    fontWeight: '600', // Semibold
+    fontFamily: 'System',
   },
   iconLabel: {
-    fontSize: wp("2.5%"),
-    color: "#2C3E50",
-    fontFamily: "monospace",
-    marginBottom: wp("1%"),
+    fontSize: wp('3.5%'), // 14px
+    fontWeight: '500', // Medium
+    fontFamily: 'System',
+    marginBottom: wp('1.5%'),
+    marginTop: wp('1%'),
   },
   iconButton: {
     borderWidth: 1,
-    borderColor: "#3498DB",
-    paddingVertical: wp("2%"),
-    paddingHorizontal: wp("3%"),
-    borderRadius: wp("1%"),
-    backgroundColor: "#FFFFFF",
-    marginBottom: wp("2.5%"),
+    borderRadius: wp('2.5%'), // 10px
+    height: wp('11%'), // ~44px
+    paddingHorizontal: wp('3%'),
+    marginBottom: wp('4%'), // 16-20px spacing
     alignItems: "center",
+    justifyContent: "center",
   },
   iconButtonText: {
-    fontSize: wp("3%"),
-    color: "#2C3E50",
-    fontFamily: "monospace",
+    fontSize: wp('3.75%'), // 15px
+    fontWeight: '600', // Semibold
+    fontFamily: 'System',
   },
   iconModalContainer: {
     flex: 1,
@@ -961,19 +1125,26 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    gap: wp('2.5%'), // 8-10px gap
+    marginTop: wp('2%'),
   },
   button: {
     flex: 1,
-    padding: wp("2%"),
-    borderRadius: wp("1%"),
+    height: wp('12%'), // 44-48px
+    borderRadius: wp('3%'), // 10-12px
     alignItems: "center",
-    marginHorizontal: wp("1%"),
+    justifyContent: "center",
   },
   buttonText: {
+    fontWeight: "600", // Semibold
+    fontSize: wp('3.75%'), // 15px
+    fontFamily: "System",
+  },
+  buttonTextSave: {
     color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: wp("3%"),
-    fontFamily: "monospace",
+    fontWeight: "600", // Semibold
+    fontSize: wp('4%'), // 15-16px
+    fontFamily: "System",
   },
   calendarModalOverlay: {
     flex: 1,

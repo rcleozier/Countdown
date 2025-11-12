@@ -193,9 +193,8 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
   },
   listContainer: {
-    paddingBottom: wp("4%"),
-    paddingHorizontal: wp("4%"),
-    paddingTop: wp("8%"),
+    paddingTop: wp('3%'),
+    paddingBottom: wp('6%'), // 24px above nav bar
   },
 
 });

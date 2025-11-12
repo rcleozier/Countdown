@@ -120,27 +120,29 @@ function ThemedApp() {
               iconName = focused ? "settings" : "settings-outline";
             }
 
+            const accentColor = isDark ? '#4E9EFF' : '#4A9EFF';
+            
             return (
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <Ionicons
                   name={iconName ?? "alert-circle-outline"}
                   size={focused ? 24 : 22}
-                  color={focused ? (isDark ? '#3CC4A2' : theme.colors.primary) : (isDark ? 'rgba(255,255,255,0.5)' : theme.colors.tabInactive)}
+                  color={focused ? accentColor : (isDark ? 'rgba(255,255,255,0.5)' : theme.colors.tabInactive)}
                 />
                 {focused && (
                   <View style={{
                     position: 'absolute',
-                    bottom: -8,
-                    width: 4,
-                    height: 4,
-                    borderRadius: 2,
-                    backgroundColor: isDark ? '#3CC4A2' : theme.colors.primary,
+                    bottom: -10,
+                    width: 24,
+                    height: 2,
+                    borderRadius: 1,
+                    backgroundColor: accentColor,
                   }} />
                 )}
               </View>
             );
           },
-          tabBarActiveTintColor: isDark ? '#3CC4A2' : theme.colors.primary,
+          tabBarActiveTintColor: isDark ? '#4E9EFF' : '#4A9EFF',
           tabBarInactiveTintColor: isDark ? 'rgba(255,255,255,0.5)' : theme.colors.tabInactive,
           tabBarLabelStyle: {
             fontSize: 11,
@@ -149,17 +151,19 @@ function ThemedApp() {
             marginTop: 4,
           },
           tabBarStyle: {
-            backgroundColor: isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.95)',
-            borderTopColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            backgroundColor: isDark ? 'rgba(18,18,18,0.85)' : 'rgba(255,255,255,0.85)',
+            borderTopColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
             borderTopWidth: 0.5,
-            height: 60,
-            paddingBottom: 8,
-            paddingTop: 8,
+            height: 52, // Reduced by 8px from 60
+            paddingBottom: 6,
+            paddingTop: 6,
             elevation: 8,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: -2 },
             shadowOpacity: 0.1,
             shadowRadius: 8,
+            // Backdrop blur effect (semi-transparent)
+            backdropFilter: 'blur(10px)', // Note: This may not work on all React Native platforms
           },
           headerShown: false,
         })}
