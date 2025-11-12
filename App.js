@@ -61,7 +61,7 @@ function PastScreenStack() {
 }
 
 function SettingsScreenStack() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
@@ -72,7 +72,24 @@ function SettingsScreenStack() {
       }}
     >
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
-      <Stack.Screen name="NotesScreen" component={NotesScreen} />
+      <Stack.Screen 
+        name="NotesScreen" 
+        component={NotesScreen}
+        options={{
+          headerShown: true,
+          headerTitle: 'Notes',
+          headerStyle: {
+            backgroundColor: isDark ? '#121212' : '#F9FAFB',
+          },
+          headerTintColor: isDark ? '#E5E7EB' : '#111111',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontFamily: 'System',
+            color: isDark ? '#E5E7EB' : '#111111',
+          },
+          headerShadowVisible: false,
+        }}
+      />
     </Stack.Navigator>
   );
 }
@@ -151,19 +168,14 @@ function ThemedApp() {
             marginTop: 4,
           },
           tabBarStyle: {
-            backgroundColor: isDark ? 'rgba(18,18,18,0.85)' : 'rgba(255,255,255,0.85)',
-            borderTopColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-            borderTopWidth: 0.5,
-            height: 52, // Reduced by 8px from 60
-            paddingBottom: 6,
-            paddingTop: 6,
-            elevation: 8,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            // Backdrop blur effect (semi-transparent)
-            backdropFilter: 'blur(10px)', // Note: This may not work on all React Native platforms
+            backgroundColor: isDark ? '#121212' : '#FFFFFF',
+            borderTopColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            borderTopWidth: 1,
+            height: 60,
+            paddingBottom: 8,
+            paddingTop: 8,
+            elevation: 0,
+            shadowOpacity: 0,
           },
           headerShown: false,
         })}

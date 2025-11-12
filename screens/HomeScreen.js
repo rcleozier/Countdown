@@ -59,6 +59,13 @@ const HomeScreen = () => {
   // Modal animation refs
   const modalScale = useRef(new Animated.Value(0.95)).current;
   const [inputFocused, setInputFocused] = useState({});
+  
+  // Empty state animation refs
+  const emptyStateOpacity = useRef(new Animated.Value(0)).current;
+  const iconScale = useRef(new Animated.Value(0.95)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+  const buttonFadeOpacity = useRef(new Animated.Value(0)).current; // For initial fade-in
+  const buttonPressOpacity = useRef(new Animated.Value(1)).current; // For press animation
 
   // Icons are centralized in util/eventIcons to ensure add and edit use the same set
 
@@ -185,6 +192,14 @@ const HomeScreen = () => {
     saveCountdowns();
   }, [countdowns]);
 
+  // Sort & filter upcoming
+  const sortedCountdowns = [...countdowns].sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  );
+  const upcomingEvents = sortedCountdowns.filter(
+    (event) => new Date(event.date) > new Date()
+  );
+
   // Modal animation
   useEffect(() => {
     if (modalVisible) {
@@ -200,13 +215,39 @@ const HomeScreen = () => {
     }
   }, [modalVisible]);
 
-  // Sort & filter upcoming
-  const sortedCountdowns = [...countdowns].sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-  );
-  const upcomingEvents = sortedCountdowns.filter(
-    (event) => new Date(event.date) > new Date()
-  );
+  // Empty state animation
+  useEffect(() => {
+    if (upcomingEvents && upcomingEvents.length === 0 && !isLoading) {
+      // Fade in entire view
+      Animated.timing(emptyStateOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+      
+      // Icon bounce animation
+      Animated.spring(iconScale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }).start();
+      
+      // Button fade-in delayed 100ms
+      setTimeout(() => {
+        Animated.timing(buttonFadeOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }, 100);
+    } else {
+      emptyStateOpacity.setValue(0);
+      iconScale.setValue(0.95);
+      buttonFadeOpacity.setValue(0);
+    }
+  }, [upcomingEvents, isLoading]);
 
   const handleOpenCalendar = () => {
     setTempSelectedDate(null);
@@ -500,19 +541,79 @@ const HomeScreen = () => {
           <Text style={[styles.loadingText, { color: theme.colors.text }]}>Loading...</Text>
         </View>
       ) : upcomingEvents.length === 0 ? (
-        <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background }]}>
-          <View style={styles.emptyIconContainer}>
-            <Ionicons name="calendar-outline" size={60} color={theme.colors.primary} />
-      </View>
-          <Text style={[styles.emptyText, { color: theme.colors.text }]}>Ready to start counting?</Text>
-          <TouchableOpacity 
-            style={[styles.emptyActionButton, { backgroundColor: theme.colors.button }]}
-            onPress={handleOpenModal}
-          >
-            <Ionicons name="add" size={20} color={theme.colors.buttonText} />
-            <Text style={[styles.emptyActionText, { color: theme.colors.buttonText }]}>Create Your First Event</Text>
-          </TouchableOpacity>
-        </View>
+        <LinearGradient
+          colors={isDark ? ['#121212', '#1C1C1C'] : ['#F9FAFB', '#FFFFFF']}
+          style={styles.emptyContainer}
+        >
+          <Animated.View style={{ opacity: emptyStateOpacity, flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            {/* Calendar Icon with circular background */}
+            <Animated.View style={[
+              styles.emptyIconContainer,
+              {
+                backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.08)',
+                transform: [{ scale: iconScale }],
+              }
+            ]}>
+              <Ionicons 
+                name="calendar-outline" 
+                size={wp('14%')} // ~52px for more padding
+                color={isDark ? '#4E9EFF' : '#4A9EFF'} 
+              />
+            </Animated.View>
+            
+            {/* Title Text */}
+            <Text style={[
+              styles.emptyText,
+              { color: isDark ? '#E5E7EB' : '#111111' }
+            ]}>Ready to start counting?</Text>
+            
+            {/* CTA Button */}
+            <Pressable
+              onPressIn={() => {
+                Animated.parallel([
+                  Animated.spring(buttonScale, {
+                    toValue: 1.02,
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(buttonPressOpacity, {
+                    toValue: 0.92, // Lighten 8%
+                    duration: 150,
+                    useNativeDriver: true,
+                  }),
+                ]).start();
+              }}
+              onPressOut={() => {
+                Animated.parallel([
+                  Animated.spring(buttonScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(buttonPressOpacity, {
+                    toValue: 1,
+                    duration: 150,
+                    useNativeDriver: true,
+                  }),
+                ]).start();
+              }}
+              onPress={handleOpenModal}
+            >
+              <Animated.View style={[
+                styles.emptyActionButton,
+                {
+                  backgroundColor: isDark ? '#3C82F6' : '#4E9EFF',
+                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                  transform: [{ scale: buttonScale }],
+                  opacity: buttonFadeOpacity,
+                }
+              ]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', zIndex: 1 }}>
+                  <Ionicons name="add" size={wp('5%')} color="#FFFFFF" style={{ marginRight: wp('2%') }} />
+                  <Text style={styles.emptyActionText}>Create Your First Event</Text>
+                </View>
+              </Animated.View>
+            </Pressable>
+          </Animated.View>
+        </LinearGradient>
       ) : (
         <>
         <FlatList
@@ -877,20 +978,24 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: wp("6%"),
+    paddingHorizontal: wp("6%"), // 24-32px
     paddingVertical: wp("8%"),
   },
   emptyIconContainer: {
-    marginBottom: wp("6%"),
-    opacity: 0.7,
+    width: wp('20%'), // ~75px to accommodate 64-72px icon with padding
+    height: wp('20%'),
+    borderRadius: wp('10%'), // Circular
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: wp("4%"), // 16-20px spacing
   },
   emptyText: {
-    fontSize: wp("5.5%"),
-    fontWeight: "800",
-    color: "#2C3E50",
-    marginBottom: wp("3%"),
-    fontFamily: "monospace",
+    fontSize: wp('4.75%'), // 18-19px
+    fontWeight: '600', // Semibold
+    fontFamily: 'System',
+    marginBottom: wp('3%'), // 10-12px margin below text
     textAlign: "center",
+    lineHeight: wp('6.25%'), // ~130% line-height
   },
   emptySubText: {
     fontSize: wp("3.5%"),
@@ -923,25 +1028,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   emptyActionButton: {
-    backgroundColor: "#3498DB",
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: wp("4%"),
-    paddingHorizontal: wp("8%"),
-    borderRadius: wp("3%"),
-    marginBottom: wp("6%"),
-    shadowColor: "#3498DB",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    justifyContent: "center",
+    height: wp('11%'), // 44-48px
+    paddingVertical: wp("3%"),
+    paddingHorizontal: wp("6%"),
+    borderRadius: wp('3.5%'), // 12-14px
     shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
     elevation: 5,
   },
   emptyActionText: {
     color: "#FFFFFF",
-    fontSize: wp("3.8%"),
-    fontWeight: "bold",
-    fontFamily: "monospace",
-    marginLeft: wp("2%"),
+    fontSize: wp('4%'),
+    fontWeight: "600", // Semibold
+    fontFamily: "System",
   },
   loadingContainer: {
     flex: 1,
