@@ -58,7 +58,12 @@ const HomeScreen = () => {
   
   // Modal animation refs
   const modalScale = useRef(new Animated.Value(0.95)).current;
+  const calendarModalScale = useRef(new Animated.Value(0.95)).current;
   const [inputFocused, setInputFocused] = useState({});
+  
+  // Interstitial ad cooldown (5 minutes)
+  const lastInterstitialTime = useRef(0);
+  const INTERSTITIAL_COOLDOWN = 5 * 60 * 1000; // 5 minutes in milliseconds
   
   // Empty state animation refs
   const emptyStateOpacity = useRef(new Animated.Value(0)).current;
@@ -214,6 +219,21 @@ const HomeScreen = () => {
       modalScale.setValue(0.95);
     }
   }, [modalVisible]);
+
+  // Calendar modal animation
+  useEffect(() => {
+    if (calendarModalVisible) {
+      Animated.spring(calendarModalScale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }).start();
+    } else {
+      calendarModalScale.setValue(0.95);
+    }
+  }, [calendarModalVisible]);
 
   // Empty state animation
   useEffect(() => {
@@ -471,9 +491,16 @@ const HomeScreen = () => {
     let interstitialTimeout;
     if (ENABLE_ADS) {
       interstitialTimeout = setTimeout(() => {
+        const now = Date.now();
+        // Check cooldown period
+        if (now - lastInterstitialTime.current < INTERSTITIAL_COOLDOWN) {
+          return; // Still in cooldown period
+        }
+        
         // 30% chance to show an interstitial
         const shouldShow = Math.random() < 0.3;
         if (!shouldShow) return;
+        
         try {
           // Dynamically require to avoid native module when not available
           // eslint-disable-next-line global-require
@@ -482,6 +509,8 @@ const HomeScreen = () => {
           const interstitial = InterstitialAd.createForAdRequest(unitId);
           const onLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
             interstitial.show().catch(() => {});
+            // Update last shown time when ad is displayed
+            lastInterstitialTime.current = Date.now();
           });
           const onClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
             onLoaded();
@@ -719,51 +748,83 @@ const HomeScreen = () => {
               visible={calendarModalVisible}
               onRequestClose={() => setCalendarModalVisible(false)}
             >
-              <View style={[styles.calendarModalOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
-                <View style={[styles.calendarModalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select a Date</Text>
+              <View style={[
+                styles.modalContainer,
+                { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+              ]}>
+                <Animated.View style={[
+                  styles.calendarModalContent,
+                  {
+                    backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                    shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+                    transform: [{ scale: calendarModalScale }],
+                  }
+                ]}>
+                  <Text style={[
+                    styles.modalTitle,
+                    { color: isDark ? '#F5F5F5' : '#111111' }
+                  ]}>Select a Date</Text>
                   <Calendar
                     key={theme.name}
                     style={styles.calendar}
                     onDayPress={handleDayPress}
                     minDate={moment().format("YYYY-MM-DD")}
                     theme={{
-                      backgroundColor: theme.colors.background,
-                      calendarBackground: theme.colors.card,
-                      textSectionTitleColor: theme.colors.textSecondary,
-                      dayTextColor: theme.colors.text,
-                      todayTextColor: theme.colors.primary,
-                      monthTextColor: theme.colors.text,
-                      arrowColor: theme.colors.primary,
-                      selectedDayBackgroundColor: theme.colors.primary,
-                      selectedDayTextColor: theme.colors.buttonText,
-                      textDisabledColor: theme.colors.border,
-                      dotColor: theme.colors.primary,
-                      selectedDotColor: theme.colors.buttonText,
+                      backgroundColor: 'transparent',
+                      calendarBackground: 'transparent',
+                      textSectionTitleColor: isDark ? '#A1A1A1' : '#6B7280',
+                      dayTextColor: isDark ? '#F5F5F5' : '#111111',
+                      todayTextColor: '#4E9EFF',
+                      monthTextColor: isDark ? '#A1A1A1' : '#6B7280',
+                      arrowColor: '#4E9EFF',
+                      selectedDayBackgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                      selectedDayTextColor: '#FFFFFF',
+                      textDisabledColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                      dotColor: '#4E9EFF',
+                      selectedDotColor: '#FFFFFF',
                       "stylesheet.calendar.header": {
                         week: {
-                          marginTop: 6,
+                          marginTop: wp('2%'),
+                          marginBottom: wp('1%'),
                           flexDirection: "row",
                           justifyContent: "space-between",
                         },
                       },
                     }}
                   />
-                  <View style={styles.calendarButtonContainer}>
+                  <View style={styles.buttonContainer}>
                     <TouchableOpacity
-                      style={[styles.button, { backgroundColor: theme.colors.border }]}
+                      style={[
+                        styles.button,
+                        {
+                          backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                        }
+                      ]}
                       onPress={() => setCalendarModalVisible(false)}
                     >
-                      <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
+                      <Text style={[
+                        styles.buttonText,
+                        { color: isDark ? '#E5E7EB' : '#111111' }
+                      ]}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.button, { backgroundColor: theme.colors.primary }]}
+                      style={[
+                        styles.button,
+                        {
+                          backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                          shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 1,
+                          shadowRadius: 4,
+                          elevation: 3,
+                        }
+                      ]}
                       onPress={handleConfirmDate}
                     >
-                      <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>Confirm</Text>
+                      <Text style={styles.buttonTextSave}>Confirm</Text>
                     </TouchableOpacity>
                   </View>
-                </View>
+                </Animated.View>
               </View>
             </Modal>
 
@@ -1205,27 +1266,22 @@ const styles = StyleSheet.create({
     fontSize: wp('4%'), // 15-16px
     fontFamily: "System",
   },
-  calendarModalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
   calendarModalContent: {
-    width: wp("90%"),
-    backgroundColor: "#FFFFFF",
-    borderRadius: wp("2%"),
-    padding: wp("4%"),
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
+    width: '100%',
+    maxWidth: wp('90%'),
+    borderRadius: wp('4%'), // 16px
+    paddingHorizontal: wp('4%'),
+    paddingTop: wp('3.5%'),
+    paddingBottom: wp('2.5%'),
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 8,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
   },
   calendar: {
-    borderRadius: wp("2%"),
-    marginBottom: wp("4%"),
-  },
-  calendarButtonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    marginBottom: wp('4%'),
   },
   timePickerOverlay: {
     flex: 1,

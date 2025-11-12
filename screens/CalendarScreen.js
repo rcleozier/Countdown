@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Modal, ScrollView, Animated } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Calendar } from "react-native-calendars";
@@ -8,6 +8,7 @@ import { useTheme } from "../context/ThemeContext";
 import { Analytics } from "../util/analytics";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from "@react-navigation/native";
 
 const CalendarScreen = () => {
   const { theme, isDark } = useTheme();
@@ -27,6 +28,13 @@ const CalendarScreen = () => {
     Analytics.trackScreenView("Calendar");
     loadEvents();
   }, []);
+
+  // Reload events when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadEvents();
+    }, [])
+  );
 
   // Rebuild marked dates when theme changes
   useEffect(() => {
