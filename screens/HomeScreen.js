@@ -33,6 +33,83 @@ import { ENABLE_ADS, USE_TEST_ADS } from '../util/config';
 import { AD_UNIT_IDS } from '../util/adConfig';
 import eventIcons from '../util/eventIcons';
 
+const IconItem = ({ icon, isSelected, onPress, isDark }) => {
+  const iconScale = useRef(new Animated.Value(1)).current;
+  const iconOpacity = useRef(new Animated.Value(1)).current;
+
+  return (
+    <Pressable
+      onPressIn={() => {
+        Animated.parallel([
+          Animated.spring(iconScale, {
+            toValue: 1.05,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(iconOpacity, {
+            toValue: 0.9,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }}
+      onPressOut={() => {
+        Animated.parallel([
+          Animated.spring(iconScale, {
+            toValue: 1,
+            useNativeDriver: true,
+          }),
+          Animated.timing(iconOpacity, {
+            toValue: 1,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }}
+      onPress={() => {
+        // Pulse animation for selection
+        Animated.sequence([
+          Animated.timing(iconOpacity, {
+            toValue: 0.8,
+            duration: 75,
+            useNativeDriver: true,
+          }),
+          Animated.timing(iconOpacity, {
+            toValue: 1,
+            duration: 75,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        setTimeout(() => onPress(), 150);
+      }}
+    >
+      <Animated.View style={[
+        styles.iconItem,
+        {
+          backgroundColor: isSelected 
+            ? (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)')
+            : (isDark ? '#2A2A2A' : '#F9FAFB'),
+          borderColor: isSelected
+            ? (isDark ? '#3CC4A2' : '#4E9EFF')
+            : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
+          borderWidth: isSelected ? 2 : 1,
+          shadowColor: isSelected 
+            ? (isDark ? '#3CC4A2' : '#4E9EFF')
+            : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
+          shadowOffset: isSelected ? { width: 0, height: 0 } : { width: 0, height: 2 },
+          shadowOpacity: isSelected ? 0.2 : 1,
+          shadowRadius: isSelected ? 4 : 2,
+          elevation: isSelected ? 4 : 2,
+          transform: [{ scale: iconScale }],
+          opacity: iconOpacity,
+        }
+      ]}>
+        <Text style={styles.iconText}>{icon}</Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 const generateGUID = () =>
   "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -59,6 +136,7 @@ const HomeScreen = () => {
   // Modal animation refs
   const modalScale = useRef(new Animated.Value(0.95)).current;
   const calendarModalScale = useRef(new Animated.Value(0.95)).current;
+  const iconModalScale = useRef(new Animated.Value(0.95)).current;
   const [inputFocused, setInputFocused] = useState({});
   
   // Interstitial ad cooldown (5 minutes)
@@ -234,6 +312,21 @@ const HomeScreen = () => {
       calendarModalScale.setValue(0.95);
     }
   }, [calendarModalVisible]);
+
+  // Icon modal animation
+  useEffect(() => {
+    if (iconPickerVisible) {
+      Animated.spring(iconModalScale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }).start();
+    } else {
+      iconModalScale.setValue(0.95);
+    }
+  }, [iconPickerVisible]);
 
   // Empty state animation
   useEffect(() => {
@@ -930,47 +1023,68 @@ const HomeScreen = () => {
               visible={iconPickerVisible}
               onRequestClose={() => setIconPickerVisible(false)}
             >
-              <View style={[styles.iconModalContainer, { backgroundColor: theme.colors.modalOverlay }]}>
-                <View style={[styles.iconModalContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Icon</Text>
-                  <ScrollView style={{ maxHeight: wp('100%') }}>
-                  <View style={styles.iconList}>
-                    {eventIcons.map((icon, index) => (
-                      <TouchableOpacity
-                        key={`${icon}-${index}`}
-                        onPress={() => {
-                          setNewIcon(icon);
-                          setIconPickerVisible(false);
-                        }}
-                        style={styles.iconItem}
-                      >
-                        <Text style={styles.iconText}>{icon}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+              <View style={[
+                styles.modalContainer,
+                { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+              ]}>
+                <Animated.View style={[
+                  styles.iconModalContent,
+                  {
+                    backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                    shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                    transform: [{ scale: iconModalScale }],
+                  }
+                ]}>
+                  <Text style={[
+                    styles.iconModalTitle,
+                    { color: isDark ? '#F3F4F6' : '#111111' }
+                  ]}>Select Icon</Text>
+                  <View style={[
+                    styles.iconModalDivider,
+                    { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
+                  ]} />
+                  <ScrollView 
+                    style={styles.iconModalScroll}
+                    contentContainerStyle={styles.iconModalScrollContent}
+                    showsVerticalScrollIndicator={false}
+                    bounces={true}
+                  >
+                    <View style={styles.iconList}>
+                      {eventIcons.map((icon, index) => (
+                        <IconItem
+                          key={`${icon}-${index}`}
+                          icon={icon}
+                          isSelected={newIcon === icon}
+                          isDark={isDark}
+                          onPress={() => {
+                            setNewIcon(icon);
+                            setIconPickerVisible(false);
+                          }}
+                        />
+                      ))}
+                    </View>
                   </ScrollView>
                   <TouchableOpacity
                     onPress={() => setIconPickerVisible(false)}
-                    style={{
-                      backgroundColor: "#444",
-                      marginTop: wp('2%'),
-                      paddingVertical: wp('4%'),
-                      paddingHorizontal: wp('8%'),
-                      borderRadius: wp('2%'),
-                      alignItems: 'center',
-                      alignSelf: 'center',
-                    }}
+                    style={[
+                      styles.button,
+                      {
+                        backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                        marginTop: wp('2%'),
+                        alignSelf: 'stretch',
+                      }
+                    ]}
                   >
-                    <Text style={{
-                      color: "#FFFFFF",
-                      fontSize: 18,
-                      fontWeight: "700",
-                      letterSpacing: 0.5,
-                    }}>
-                      Cancel
-                    </Text>
+                    <Text style={[
+                      styles.buttonText,
+                      { 
+                        color: isDark ? '#E5E7EB' : '#111111',
+                        fontSize: wp('4%'),
+                        fontWeight: '600',
+                      }
+                    ]}>Cancel</Text>
                   </TouchableOpacity>
-                </View>
+                </Animated.View>
               </View>
             </Modal>
             </ScrollView>
@@ -1206,38 +1320,51 @@ const styles = StyleSheet.create({
     fontWeight: '600', // Semibold
     fontFamily: 'System',
   },
-  iconModalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.9)",
-  },
   iconModalContent: {
-    margin: wp("4%"),
-    backgroundColor: "#FFFFFF",
-    borderRadius: wp("2%"),
-    padding: wp("4%"),
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
+    width: '100%',
+    maxWidth: wp('90%'),
+    maxHeight: hp('75%'),
+    borderRadius: wp('5%'), // 20px
+    paddingHorizontal: wp('5%'), // 20px sides
+    paddingTop: wp('6%'), // 24px top
+    paddingBottom: wp('6%'), // 24px bottom
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  iconModalTitle: {
+    fontSize: wp('4.5%'), // 18px
+    fontWeight: '600', // Semibold
+    fontFamily: 'System',
+    textAlign: 'center',
+    marginBottom: wp('4%'), // 16px bottom margin
+  },
+  iconModalDivider: {
+    height: 1,
+    marginBottom: wp('3%'), // 12-16px spacing
+  },
+  iconModalScroll: {
+    maxHeight: hp('55%'),
+  },
+  iconModalScrollContent: {
+    paddingBottom: wp('5%'), // 20-24px bottom spacing
   },
   iconList: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "center",
-    marginBottom: wp("2.5%"),
+    justifyContent: "flex-start",
+    gap: wp('2.5%'), // 12-14px gap
   },
   iconItem: {
-    margin: wp("1%"),
-    padding: wp("2%"),
-    borderRadius: wp("1%"),
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
+    width: wp('13%'), // ~49px for 6 columns with proper spacing
+    height: wp('13%'),
+    borderRadius: wp('3%'), // 12px
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF",
   },
   iconText: {
-    fontSize: wp("3%"),
+    fontSize: wp('7%'), // 28-32px (adjusted for smaller cells)
   },
   buttonContainer: {
     flexDirection: "row",
