@@ -1,9 +1,10 @@
 import { Platform, AppState } from "react-native";
 import Aptabase, { trackEvent } from "@aptabase/react-native";
 
-const EVENTS = {
+export const EVENTS = {
   SCREEN_VIEW: "screen_view",
   ADD_COUNTDOWN: "add_countdown",
+  EDIT_COUNTDOWN: "edit_countdown",
   DELETE_COUNTDOWN: "delete_countdown",
   SESSION_START: "session_start",
   SESSION_END: "session_end",

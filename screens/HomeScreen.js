@@ -23,7 +23,7 @@ import moment from "moment";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import * as Notifications from 'expo-notifications';
 import * as Haptics from 'expo-haptics';
-import { Analytics } from '../util/analytics';
+import { Analytics, EVENTS } from '../util/analytics';
 import { Ionicons } from '@expo/vector-icons';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -472,9 +472,11 @@ const HomeScreen = () => {
     // Fire confetti by remounting the cannon
     setConfettiKey((k) => k + 1);
     
-    Analytics.trackEvent && Analytics.trackEvent('add_countdown', {
+    Analytics.trackEvent(EVENTS.ADD_COUNTDOWN, {
       name: newName,
       date: combinedDateTime.toISOString(),
+      icon: newIcon,
+      timestamp: new Date().toISOString(),
     });
 
     // Request review if appropriate
@@ -513,10 +515,12 @@ const HomeScreen = () => {
       // Haptic feedback for successful edit
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
-      Analytics.trackEvent && Analytics.trackEvent('edit_countdown', {
+      Analytics.trackEvent(EVENTS.EDIT_COUNTDOWN, {
         id: updatedEvent.id,
         name: updatedEvent.name,
         date: updatedEvent.date,
+        icon: updatedEvent.icon,
+        timestamp: new Date().toISOString(),
       });
     } catch (e) {
       console.warn('Could not update notification:', e);
@@ -540,10 +544,12 @@ const HomeScreen = () => {
         // Haptic feedback for deletion
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         
-        Analytics.trackEvent && Analytics.trackEvent('delete_countdown', {
+        Analytics.trackEvent(EVENTS.DELETE_COUNTDOWN, {
           id,
           name: countdownToDelete.name,
           date: countdownToDelete.date,
+          icon: countdownToDelete.icon,
+          timestamp: new Date().toISOString(),
         });
       }
       
