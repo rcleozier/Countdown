@@ -78,12 +78,19 @@ function SettingsScreenStack() {
         options={{
           headerShown: true,
           headerTitle: 'Notes',
+          headerBackTitle: 'Settings',
+          headerBackTitleVisible: true,
           headerStyle: {
             backgroundColor: isDark ? '#121212' : '#F9FAFB',
           },
           headerTintColor: isDark ? '#E5E7EB' : '#111111',
           headerTitleStyle: {
             fontWeight: '600',
+            fontFamily: 'System',
+            color: isDark ? '#E5E7EB' : '#111111',
+          },
+          headerBackTitleStyle: {
+            fontWeight: '400',
             fontFamily: 'System',
             color: isDark ? '#E5E7EB' : '#111111',
           },
@@ -140,33 +147,18 @@ function ThemedApp() {
             const accentColor = isDark ? '#4E9EFF' : '#4A9EFF';
             
             return (
-              <View style={{ alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons
                   name={iconName ?? "alert-circle-outline"}
                   size={focused ? 24 : 22}
                   color={focused ? accentColor : (isDark ? 'rgba(255,255,255,0.5)' : theme.colors.tabInactive)}
                 />
-                {focused && (
-                  <View style={{
-                    position: 'absolute',
-                    bottom: -10,
-                    width: 24,
-                    height: 2,
-                    borderRadius: 1,
-                    backgroundColor: accentColor,
-                  }} />
-                )}
               </View>
             );
           },
           tabBarActiveTintColor: isDark ? '#4E9EFF' : '#4A9EFF',
           tabBarInactiveTintColor: isDark ? 'rgba(255,255,255,0.5)' : theme.colors.tabInactive,
-          tabBarLabelStyle: {
-            fontSize: 11,
-            fontWeight: '600',
-            fontFamily: 'System',
-            marginTop: 4,
-          },
+          tabBarShowLabel: false,
           tabBarStyle: {
             backgroundColor: isDark ? '#121212' : '#FFFFFF',
             borderTopColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',

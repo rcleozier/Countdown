@@ -14,6 +14,8 @@ export const eventIcons = [
   "🥳", // Congratulations
   "💒", // Wedding chapel / Ceremony
   "🎁", // Gift / Surprise
+  "🎆", // Fireworks / New Year
+  "🎵", // Music / Concert
 
   // Work, School & Deadlines
   "💼", // Work
@@ -38,6 +40,7 @@ export const eventIcons = [
   "👁️", // Eye exam
   "🧠", // Mental health
   "⚕️", // Medical
+  "🧘", // Meditation / Wellness
 
   // Fitness & Sports
   "🏃‍♂️", // Running

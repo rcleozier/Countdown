@@ -20,6 +20,88 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import eventIcons from '../util/eventIcons';
 
+// IconItem component for icon picker modal
+const IconItem = ({ icon, isSelected, onPress, isDark }) => {
+  const iconScale = useRef(new Animated.Value(1)).current;
+  const iconOpacity = useRef(new Animated.Value(1)).current;
+
+  return (
+    <Pressable
+      onPressIn={() => {
+        Animated.parallel([
+          Animated.spring(iconScale, {
+            toValue: 1.05,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(iconOpacity, {
+            toValue: 0.9,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }}
+      onPressOut={() => {
+        Animated.parallel([
+          Animated.spring(iconScale, {
+            toValue: 1,
+            useNativeDriver: true,
+          }),
+          Animated.timing(iconOpacity, {
+            toValue: 1,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }}
+      onPress={() => {
+        // Pulse animation for selection
+        Animated.sequence([
+          Animated.timing(iconOpacity, {
+            toValue: 0.8,
+            duration: 75,
+            useNativeDriver: true,
+          }),
+          Animated.timing(iconOpacity, {
+            toValue: 1,
+            duration: 75,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        setTimeout(() => onPress(), 150);
+      }}
+    >
+      <Animated.View style={[
+        {
+          width: wp('13%'),
+          height: wp('13%'),
+          borderRadius: wp('3%'),
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: isSelected 
+            ? (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)')
+            : (isDark ? '#2A2A2A' : '#F9FAFB'),
+          borderColor: isSelected
+            ? (isDark ? '#3CC4A2' : '#4E9EFF')
+            : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
+          borderWidth: isSelected ? 2 : 1,
+          shadowColor: isSelected 
+            ? (isDark ? '#3CC4A2' : '#4E9EFF')
+            : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
+          shadowOffset: isSelected ? { width: 0, height: 0 } : { width: 0, height: 2 },
+          shadowOpacity: isSelected ? 0.2 : 1,
+          shadowRadius: isSelected ? 4 : 2,
+          elevation: isSelected ? 4 : 2,
+          transform: [{ scale: iconScale }],
+          opacity: iconOpacity,
+        }
+      ]}>
+        <Text style={{ fontSize: wp('7%') }}>{icon}</Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -44,8 +126,9 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [selectedMinute, setSelectedMinute] = useState(moment(event.date).minute());
   const [inputFocused, setInputFocused] = useState({});
   
-  // Modal animation ref
+  // Modal animation refs
   const modalScale = useRef(new Animated.Value(0.95)).current;
+  const iconModalScale = useRef(new Animated.Value(0.95)).current;
 
   // Calculate time left down to seconds, or return null if expired
   function getTimeLeft(date) {
@@ -95,6 +178,21 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       modalScale.setValue(0.95);
     }
   }, [editModalVisible]);
+
+  // Icon modal animation
+  useEffect(() => {
+    if (iconPickerVisible) {
+      Animated.spring(iconModalScale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }).start();
+    } else {
+      iconModalScale.setValue(0.95);
+    }
+  }, [iconPickerVisible]);
 
   // Progress calculation
   const getProgress = () => {
@@ -733,51 +831,101 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           setTimeout(() => setEditModalVisible(true), 300);
         }}
       >
-        <View style={styles.iconModalContainer}>
-          <View style={styles.iconModalContent}>
-            <Text style={styles.modalTitle}>Select Icon</Text>
-            <ScrollView style={{ maxHeight: wp('100%') }}>
-              <View style={styles.iconList}>
+        <View style={[
+          styles.modalOverlay,
+          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+        ]}>
+          <Animated.View style={[
+            {
+              width: '100%',
+              maxWidth: wp('90%'),
+              maxHeight: hp('75%'),
+              borderRadius: wp('5%'),
+              paddingHorizontal: wp('5%'),
+              paddingTop: wp('6%'),
+              paddingBottom: wp('6%'),
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 1,
+              shadowRadius: 16,
+              elevation: 8,
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+              transform: [{ scale: iconModalScale }],
+            }
+          ]}>
+            <Text style={[
+              {
+                fontSize: wp('4.5%'),
+                fontWeight: '600',
+                fontFamily: 'System',
+                textAlign: 'center',
+                marginBottom: wp('4%'),
+                color: isDark ? '#F3F4F6' : '#111111',
+              }
+            ]}>Select Icon</Text>
+            <View style={[
+              {
+                height: 1,
+                marginBottom: wp('3%'),
+                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+              }
+            ]} />
+            <ScrollView 
+              style={{ maxHeight: hp('55%') }}
+              contentContainerStyle={{ paddingBottom: wp('5%') }}
+              showsVerticalScrollIndicator={false}
+              bounces={true}
+            >
+              <View style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                justifyContent: "flex-start",
+                gap: wp('2.5%'),
+              }}>
                 {eventIcons.map((icon, index) => (
-                  <TouchableOpacity
+                  <IconItem
                     key={`${icon}-${index}`}
+                    icon={icon}
+                    isSelected={editIcon === icon}
+                    isDark={isDark}
                     onPress={() => {
                       setEditIcon(icon);
                       setIconPickerVisible(false);
                       setTimeout(() => setEditModalVisible(true), 300);
                     }}
-                    style={styles.iconItem}
-                  >
-                    <Text style={styles.iconText}>{icon}</Text>
-                  </TouchableOpacity>
+                  />
                 ))}
               </View>
             </ScrollView>
-             <TouchableOpacity
-               onPress={() => {
-                 setIconPickerVisible(false);
-                 setTimeout(() => setEditModalVisible(true), 300);
-               }}
-               style={{
-                 backgroundColor: "#444",
-                 alignSelf: 'center',
-                 paddingHorizontal: wp('8%'),
-                 paddingVertical: wp('4%'),
-                 marginTop: wp('2%'),
-                 borderRadius: wp('2%'),
-                 alignItems: 'center',
-               }}
-             >
-               <Text style={{
-                 color: "#FFFFFF",
-                 fontSize: 18,
-                 fontWeight: "700",
-                 letterSpacing: 0.5,
-               }}>
-                 Cancel
-               </Text>
-             </TouchableOpacity>
-          </View>
+            <TouchableOpacity
+              onPress={() => {
+                setIconPickerVisible(false);
+                setTimeout(() => setEditModalVisible(true), 300);
+              }}
+              style={{
+                backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                height: 48,
+                borderRadius: wp('3%'),
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                marginTop: wp('2%'),
+              }}
+            >
+              <Text 
+                allowFontScaling={false}
+                style={{
+                  color: isDark ? '#FFFFFF' : '#000000',
+                  fontSize: 16,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                }}
+              >
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
       </Modal>
     </>
