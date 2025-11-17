@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ENABLE_ADS, USE_TEST_ADS } from '../util/config';
-import { AD_UNIT_IDS } from '../util/adConfig';
+import { AD_UNIT_IDS, getAdRequestOptions } from '../util/adConfig';
 import { useTheme } from '../context/ThemeContext';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 
@@ -10,6 +10,22 @@ const bannerId = USE_TEST_ADS ? TEST_BANNER_ID : AD_UNIT_IDS.banner;
 
 const OptimizedBannerAd = ({ style, containerStyle }) => {
   const { theme } = useTheme();
+  const [requestOptions, setRequestOptions] = useState(null);
+
+  useEffect(() => {
+    // Load ad request options for maximum revenue
+    getAdRequestOptions().then(options => {
+      setRequestOptions(options);
+    }).catch(() => {
+      // Fallback to default (personalized enabled)
+      setRequestOptions({
+        requestNonPersonalizedAdsOnly: false,
+        maxAdContentRating: "G",
+        tagForChildDirectedTreatment: false,
+        tagForUnderAgeOfConsent: false,
+      });
+    });
+  }, []);
 
   if (!ENABLE_ADS) {
     return null;
@@ -27,6 +43,7 @@ const OptimizedBannerAd = ({ style, containerStyle }) => {
         unitId={bannerId}
         // Use a widely supported size to maximize fill
         size={BannerAdSize.BANNER}
+        requestOptions={requestOptions}
         style={[styles.banner, style]}
       />
     </View>

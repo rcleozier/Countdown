@@ -1,6 +1,5 @@
 import { Platform } from "react-native";
 import * as Sentry from "@sentry/react-native";
-import { getAdRequestOptions } from "./adPersonalization";
 
 // Ad Unit IDs
 export const AD_UNIT_IDS = {
@@ -28,84 +27,31 @@ export const handleAdError = (error, adType) => {
   });
 };
 
-// Optimized ad request options with good keywords
-export const AD_REQUEST_OPTIONS = {
-  keywords: [
-    // Core app keywords
-    "countdown",
-    "timer",
-    "event",
-    "reminder",
-    "calendar",
-    "schedule",
-    "appointment",
-    "meeting",
-    "birthday",
-    "anniversary",
-    "holiday",
-    "vacation",
-    "deadline",
-    "goal",
-    "milestone",
-    "celebration",
-    "party",
-    "wedding",
-    "graduation",
-    "retirement",
-    "productivity",
-    "time management",
-    "organization",
-    "planning",
-    "lifestyle",
-    "personal",
-    "family",
-    "work",
-    "business",
-    "entertainment",
-    // Technology keywords
-    "mobile app",
-    "smartphone",
-    "digital",
-    "online",
-    "technology",
-    "software",
-    "application",
-    "utility",
-    "tool",
-    "service",
-    "platform",
-    "solution",
-    "innovation",
-    "modern",
-    "convenient",
-    "efficient",
-    "user-friendly",
-    "helpful",
-    "practical",
-    "useful"
-  ],
-  requestNonPersonalizedAdsOnly: false,
-  maxAdContentRating: "G",
-  tagForChildDirectedTreatment: false,
-  tagForUnderAgeOfConsent: false
-};
-
-// Get dynamic ad request options with good keywords
-export const getDynamicAdRequestOptions = async () => {
+// Optimized ad request options for maximum revenue
+// Note: Keywords are deprecated in AdMob and can reduce match rates
+// Personalized ads (when tracking is allowed) typically earn 2-3x more revenue
+export const getAdRequestOptions = async () => {
   try {
-    // Get personalized options
-    const personalizedOptions = await getAdRequestOptions();
+    const { getAdRequestOptions: getPersonalizedOptions } = await import('./adPersonalization');
+    const personalizedOptions = await getPersonalizedOptions();
     
-    // Combine with static optimized options
+    // Return optimized options for maximum revenue
     return {
-      ...AD_REQUEST_OPTIONS,
-      ...personalizedOptions,
-      // Use optimized keywords
-      keywords: AD_REQUEST_OPTIONS.keywords
+      requestNonPersonalizedAdsOnly: personalizedOptions.requestNonPersonalizedAdsOnly,
+      maxAdContentRating: "G",
+      tagForChildDirectedTreatment: false,
+      tagForUnderAgeOfConsent: false,
+      // Note: keywords, interests, contentCategories are deprecated/not supported
+      // AdMob's automatic optimization works best without these
     };
   } catch (error) {
-    console.error("Error getting dynamic ad options:", error);
-    // Fallback to static optimized options
-    return AD_REQUEST_OPTIONS;
+    console.error("Error getting ad request options:", error);
+    // Fallback to default (personalized ads enabled)
+    return {
+      requestNonPersonalizedAdsOnly: false,
+      maxAdContentRating: "G",
+      tagForChildDirectedTreatment: false,
+      tagForUnderAgeOfConsent: false,
+    };
   }
 };

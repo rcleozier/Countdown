@@ -3,65 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Tracking from "expo-tracking-transparency";
 
 const TRACKING_PERMISSION_KEY = "@ad_tracking_permission";
-const DEFAULT_KEYWORDS = [
-  // Core app keywords
-  "countdown",
-  "timer",
-  "event",
-  "reminder",
-  "calendar",
-  "schedule",
-  "appointment",
-  "meeting",
-  "birthday",
-  "anniversary",
-  "holiday",
-  "vacation",
-  "deadline",
-  "goal",
-  "milestone",
-  "celebration",
-  "party",
-  "wedding",
-  "graduation",
-  "retirement",
-  "productivity",
-  "time management",
-  "organization",
-  "planning",
-  "lifestyle",
-  "personal",
-  "family",
-  "work",
-  "business",
-  "entertainment",
-  // Technology keywords
-  "mobile app",
-  "smartphone",
-  "digital",
-  "online",
-  "technology",
-  "software",
-  "application",
-  "platform",
-  "solution",
-  "innovation",
-  "modern",
-  "convenient",
-  "efficient",
-  "user-friendly",
-  "helpful",
-  "practical",
-  "useful",
-  "digital",
-  "online",
-  "mobile",
-  "smartphone",
-  "device",
-  "gadget",
-  "tool",
-  "service"
-];
 
 // Get the user's tracking permission status
 export const getTrackingPermissionStatus = async () => {
@@ -113,43 +54,22 @@ export const requestTrackingPermission = async () => {
   }
 };
 
-// Get optimized ad request options with good keywords
+// Get optimized ad request options for maximum revenue
+// Personalized ads (when tracking allowed) earn 2-3x more than non-personalized
 export const getAdRequestOptions = async () => {
   const hasTrackingPermission = await getTrackingPermissionStatus();
 
+  // For maximum revenue:
+  // - Enable personalized ads when tracking is allowed (earns 2-3x more)
+  // - Don't use keywords (deprecated, reduces match rates)
+  // - Let AdMob's automatic optimization handle targeting
   return {
-    keywords: DEFAULT_KEYWORDS,
     requestNonPersonalizedAdsOnly: !hasTrackingPermission,
     maxAdContentRating: "G",
     tagForChildDirectedTreatment: false,
     tagForUnderAgeOfConsent: false,
-    // Basic targeting for better ad relevance
-    ...(hasTrackingPermission && {
-      interests: [
-        "technology",
-        "productivity",
-        "lifestyle",
-        "business",
-        "personal development",
-        "organization",
-        "planning",
-        "time management"
-      ],
-      contentCategories: [
-        "general",
-        "business",
-        "technology",
-        "lifestyle",
-        "productivity",
-        "utilities"
-      ],
-      excludeCategories: [
-        "adult",
-        "violence",
-        "profanity",
-        "gambling"
-      ]
-    })
+    // Note: keywords, interests, contentCategories are deprecated/not supported in AdMob SDK
+    // AdMob's machine learning automatically optimizes ad selection for maximum revenue
   };
 };
 

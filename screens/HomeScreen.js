@@ -589,7 +589,7 @@ const HomeScreen = () => {
     // Random interstitial: load after 10s on screen mount
     let interstitialTimeout;
     if (ENABLE_ADS) {
-      interstitialTimeout = setTimeout(() => {
+      interstitialTimeout = setTimeout(async () => {
         const now = Date.now();
         // Check cooldown period
         if (now - lastInterstitialTime.current < INTERSTITIAL_COOLDOWN) {
@@ -604,8 +604,12 @@ const HomeScreen = () => {
           // Dynamically require to avoid native module when not available
           // eslint-disable-next-line global-require
           const { InterstitialAd, AdEventType, TestIds } = require('react-native-google-mobile-ads');
+          const { getAdRequestOptions } = require('../util/adConfig');
           const unitId = USE_TEST_ADS ? TestIds.INTERSTITIAL : AD_UNIT_IDS.interstitial;
-          const interstitial = InterstitialAd.createForAdRequest(unitId);
+          
+          // Get optimized ad request options for maximum revenue
+          const requestOptions = await getAdRequestOptions();
+          const interstitial = InterstitialAd.createForAdRequest(unitId, requestOptions);
           const onLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
             interstitial.show().catch(() => {});
             // Update last shown time when ad is displayed
