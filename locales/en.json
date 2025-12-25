@@ -83,7 +83,9 @@
     "monthsBefore_plural": "{{count}} months before",
     "addReminder": "Add Reminder",
     "removeReminder": "Remove",
-    "noReminders": "No reminders set"
+    "noReminders": "No reminders set",
+    "customizeDescription": "Customize reminder timing and styles",
+    "customizeProOnly": "Pro feature: Customize reminders with multiple timings"
   },
   "notes": {
     "title": "Notes",

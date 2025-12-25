@@ -149,7 +149,7 @@ const AnalyticsScreen = () => {
   // BarChart component - defined inside main component to access theme variables
   const BarChart = ({ labels, values, gradientId }) => {
     const maxVal = Math.max(...values, 1);
-    const chartH = 70;
+    const chartH = 56; // Reduced by 20% from 70
     const chartW = 100;
     const leftPadding = 6;
     const rightPadding = 2;
@@ -172,8 +172,8 @@ const AnalyticsScreen = () => {
       <Svg viewBox={`0 0 ${chartW} ${chartH}`} width="100%" height={wp('40%')}>
         <Defs>
           <SvgLinearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor={accentColor} stopOpacity="1" />
-            <Stop offset="100%" stopColor={accentLight} stopOpacity="0.8" />
+            <Stop offset="0%" stopColor={accentColor} stopOpacity="0.85" />
+            <Stop offset="100%" stopColor={accentLight} stopOpacity="0.65" />
           </SvgLinearGradient>
         </Defs>
         
@@ -182,15 +182,15 @@ const AnalyticsScreen = () => {
           <G key={i}>
             <Path 
               d={`M ${leftPadding} ${tick.y} H ${chartW - rightPadding}`} 
-              stroke={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'} 
-              strokeWidth={0.3} 
-              opacity={0.5}
+              stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'} 
+              strokeWidth={0.2} 
+              opacity={0.4}
             />
             <SvgText 
               x={leftPadding - 1} 
               y={tick.y + 1} 
               fill={isDark ? '#A1A1A1' : '#6B7280'} 
-              fontSize={2.5} 
+              fontSize={2.2} 
               textAnchor="end"
               fontFamily="System"
             >
@@ -227,7 +227,7 @@ const AnalyticsScreen = () => {
                 x={x + barWidth / 2} 
                 y={chartH - 1} 
                 fill={isDark ? '#A1A1A1' : '#6B7280'} 
-                fontSize={2.8} 
+                fontSize={2.5} 
                 textAnchor="middle"
                 fontFamily="System"
               >
@@ -240,7 +240,7 @@ const AnalyticsScreen = () => {
     );
   };
 
-  const StatCard = ({ title, value, icon, color, animValue, index }) => {
+  const StatCard = ({ title, subtitle, value, icon, color, animValue, index }) => {
     const scaleAnim = useRef(new Animated.Value(1)).current;
     
     const handlePressIn = () => {
@@ -275,16 +275,16 @@ const AnalyticsScreen = () => {
             transform: [{ scale: scaleAnim }],
           }
         ]}>
-          {/* Icon at top */}
+          {/* Icon - smaller, reduced opacity */}
           <View style={[
             styles.statIconContainer,
             {
               backgroundColor: isDark 
-                ? `${color}25` 
-                : `${color}12`,
+                ? `${color}15` 
+                : `${color}08`,
             }
           ]}>
-            <Ionicons name={icon} size={wp('5%')} color={color} />
+            <Ionicons name={icon} size={wp('4%')} color={color} style={{ opacity: 0.7 }} />
           </View>
           
           {/* Large number - most prominent */}
@@ -307,13 +307,23 @@ const AnalyticsScreen = () => {
             ]}>{value}</Text>
           )}
           
-          {/* Title below number */}
+          {/* Title */}
           <Text style={[
             styles.statTitle,
             { 
-              color: isDark ? '#A1A1A1' : '#6B7280',
+              color: isDark ? '#F5F5F5' : '#111111',
             }
           ]}>{title}</Text>
+          
+          {/* Subtitle */}
+          {subtitle && (
+            <Text style={[
+              styles.statSubtitle,
+              { 
+                color: isDark ? '#6B7280' : '#9CA3AF',
+              }
+            ]}>{subtitle}</Text>
+          )}
         </Animated.View>
       </Pressable>
     );
@@ -332,11 +342,110 @@ const AnalyticsScreen = () => {
           contentContainerStyle={styles.scrollContentContainer}
           showsVerticalScrollIndicator={false}
         >
-          {/* Summary Cards - Compact, starts immediately */}
+          {/* Next Event - Primary Focus at Top */}
+          {nextEvent && (
+            <View style={styles.nextEventSection}>
+              <View style={styles.nextEventSectionHeader}>
+                <Text style={[
+                  styles.nextEventSectionTitle,
+                  { color: accentColor }
+                ]}>
+                  {t('analytics.nextEvent')}
+                </Text>
+              </View>
+              
+              <View style={[
+                styles.nextEventCard,
+                {
+                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+                  shadowColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)',
+                }
+              ]}>
+                <View style={styles.nextEventHeader}>
+                  <View style={[
+                    styles.nextEventIconContainer,
+                    {
+                      backgroundColor: isDark 
+                        ? 'rgba(78,158,255,0.15)' 
+                        : 'rgba(78,158,255,0.1)',
+                    }
+                  ]}>
+                    <Text style={styles.nextEventIcon}>{nextEvent.icon}</Text>
+                  </View>
+                  <View style={styles.nextEventInfo}>
+                    <Text style={[
+                      styles.nextEventName,
+                      { color: isDark ? '#F5F5F5' : '#111111' }
+                    ]}>{nextEvent.name}</Text>
+                    
+                    {/* Time Remaining - Larger, Prominent */}
+                    <Text style={[
+                      styles.nextEventTimeRemaining,
+                      { color: accentColor }
+                    ]}>
+                      {(() => {
+                        const now = moment();
+                        const eventDate = moment(nextEvent.date);
+                        const diff = eventDate.diff(now);
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        
+                        if (days > 0) {
+                          return `${days} ${days === 1 ? 'day' : 'days'} remaining`;
+                        } else if (hours > 0) {
+                          return `${hours} ${hours === 1 ? 'hour' : 'hours'} remaining`;
+                        } else {
+                          return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} remaining`;
+                        }
+                      })()}
+                    </Text>
+                    
+                    <Text style={[
+                      styles.nextEventDate,
+                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+                    ]}>
+                      {moment(nextEvent.date).format("MMM D, YYYY [at] h:mm A")}
+                    </Text>
+                  </View>
+                </View>
+                
+                {/* Progress Bar */}
+                <View style={[
+                  styles.progressBarContainer,
+                  {
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                  }
+                ]}>
+                  <View style={[
+                    styles.progressBarFill,
+                    {
+                      backgroundColor: accentColor,
+                      width: `${Math.min(100, Math.max(0, (moment(nextEvent.date).diff(moment()) / (1000 * 60 * 60 * 24 * 30)) * 100))}%`,
+                    }
+                  ]} />
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Section Divider */}
+          <View style={[
+            styles.sectionDivider,
+            {
+              backgroundColor: isDark 
+                ? 'rgba(255,255,255,0.05)' 
+                : 'rgba(0,0,0,0.05)',
+            }
+          ]} />
+
+          {/* Summary Cards - Secondary */}
           <View style={styles.summarySection}>
             <View style={styles.statsGrid}>
               <StatCard 
                 title={t('analytics.totalEvents')} 
+                subtitle="Total Events"
                 value={stats.total} 
                 icon="calendar" 
                 color={accentColor}
@@ -345,6 +454,7 @@ const AnalyticsScreen = () => {
               />
               <StatCard 
                 title={t('analytics.upcoming')} 
+                subtitle="Coming Up"
                 value={stats.upcoming} 
                 icon="time" 
                 color={successColor}
@@ -353,6 +463,7 @@ const AnalyticsScreen = () => {
               />
               <StatCard 
                 title={t('analytics.pastEvents')} 
+                subtitle="Completed"
                 value={stats.past} 
                 icon="checkmark-circle" 
                 color={warningColor}
@@ -362,148 +473,81 @@ const AnalyticsScreen = () => {
             </View>
           </View>
 
-          {/* Bar chart - Upcoming by Month */}
-          <View style={styles.chartSection}>
-            <View style={styles.sectionHeader}>
-              <Ionicons 
-                name="calendar-outline" 
-                size={wp('4.5%')} 
-                color={accentColor} 
-                style={styles.sectionIcon}
-              />
-              <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
-                {t('analytics.upcomingByMonth')}
-              </Text>
-            </View>
-            <View style={[
-              styles.chartCard,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-              }
-            ]}>
-              <BarChart 
-                labels={monthlyLabels} 
-                values={monthlyCounts}
-                gradientId="barGradient1"
-              />
-            </View>
-          </View>
+          {/* Section Divider */}
+          <View style={[
+            styles.sectionDivider,
+            {
+              backgroundColor: isDark 
+                ? 'rgba(255,255,255,0.05)' 
+                : 'rgba(0,0,0,0.05)',
+            }
+          ]} />
 
-          {/* Bar chart - Events by Day of Week */}
-          <View style={styles.chartSection}>
-            <View style={styles.sectionHeader}>
-              <Ionicons 
-                name="time-outline" 
-                size={wp('4.5%')} 
-                color={accentColor} 
-                style={styles.sectionIcon}
-              />
-              <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
-                {t('analytics.eventsByDayOfWeek')}
-              </Text>
-            </View>
-            <View style={[
-              styles.chartCard,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-              }
-            ]}>
-              <BarChart 
-                labels={dayOfWeekLabels} 
-                values={dayOfWeekCounts}
-                gradientId="barGradient2"
-              />
-            </View>
-          </View>
-
-          {/* Next Event */}
-          {nextEvent && (
-            <View style={styles.nextEventSection}>
-              {/* Divider/Gradient fade */}
-              <View style={[
-                styles.sectionDivider,
-                {
-                  backgroundColor: isDark 
-                    ? 'rgba(255,255,255,0.05)' 
-                    : 'rgba(0,0,0,0.05)',
-                }
-              ]} />
-              
-              <View style={styles.nextEventSectionHeader}>
-                <Ionicons 
-                  name="star" 
-                  size={wp('4.5%')} 
-                  color={accentColor} 
-                  style={styles.nextEventSectionIcon}
-                />
-                <Text style={[
-                  styles.nextEventSectionTitle,
-                  { color: accentColor }
-                ]}>
-                  {t('analytics.nextEvent')}
+          {/* Insights Section */}
+          <View style={styles.insightsSection}>
+            <Text style={[
+              styles.insightsLabel,
+              { color: isDark ? '#A1A1A1' : '#6B7280' }
+            ]}>Insights</Text>
+            
+            {/* Bar chart - Upcoming by Month */}
+            <View style={styles.chartSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                  {t('analytics.upcomingByMonth')}
                 </Text>
               </View>
-              
-              <Pressable
-                onPressIn={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  Animated.spring(nextEventCardScale, {
-                    toValue: 0.98,
-                    useNativeDriver: true,
-                    tension: 300,
-                    friction: 10,
-                  }).start();
-                }}
-                onPressOut={() => {
-                  Animated.spring(nextEventCardScale, {
-                    toValue: 1,
-                    useNativeDriver: true,
-                    tension: 300,
-                    friction: 10,
-                  }).start();
-                }}
-              >
-                <Animated.View style={[
-                  styles.nextEventCard,
-                  {
-                    backgroundColor: isDark ? '#1C1C1C' : '#FFFFFF',
-                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                    shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                    transform: [{ scale: nextEventCardScale }],
-                  }
+              <View style={[
+                styles.chartCard,
+                {
+                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                }
+              ]}>
+                <BarChart 
+                  labels={monthlyLabels} 
+                  values={monthlyCounts}
+                  gradientId="barGradient1"
+                />
+                <Text style={[
+                  styles.chartCaption,
+                  { color: isDark ? '#6B7280' : '#9CA3AF' }
                 ]}>
-                  <View style={styles.nextEventHeader}>
-                    <View style={[
-                      styles.nextEventIconContainer,
-                      {
-                        backgroundColor: isDark 
-                          ? 'rgba(255,255,255,0.05)' 
-                          : 'rgba(0,0,0,0.03)',
-                      }
-                    ]}>
-                      <Text style={styles.nextEventIcon}>{nextEvent.icon}</Text>
-                    </View>
-                    <View style={styles.nextEventInfo}>
-                      <Text style={[
-                        styles.nextEventName,
-                        { color: isDark ? '#F5F5F5' : '#111111' }
-                      ]}>{nextEvent.name}</Text>
-                      <Text style={[
-                        styles.nextEventDate,
-                        { color: isDark ? '#A1A1A1' : '#6B7280' }
-                      ]}>
-                        {moment(nextEvent.date).format("MMM D, YYYY [at] h:mm A")}
-                      </Text>
-                    </View>
-                  </View>
-                </Animated.View>
-              </Pressable>
+                  When most of your events are coming up
+                </Text>
+              </View>
             </View>
-          )}
+
+            {/* Bar chart - Events by Day of Week */}
+            <View style={styles.chartSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                  {t('analytics.eventsByDayOfWeek')}
+                </Text>
+              </View>
+              <View style={[
+                styles.chartCard,
+                {
+                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                }
+              ]}>
+                <BarChart 
+                  labels={dayOfWeekLabels} 
+                  values={dayOfWeekCounts}
+                  gradientId="barGradient2"
+                />
+                <Text style={[
+                  styles.chartCaption,
+                  { color: isDark ? '#6B7280' : '#9CA3AF' }
+                ]}>
+                  Days you tend to schedule events
+                </Text>
+              </View>
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -522,11 +566,85 @@ const styles = StyleSheet.create({
   },
   scrollContentContainer: {
     paddingHorizontal: wp('5%'), // 20-24px equivalent
-    paddingTop: wp('3%'), // Minimal top padding
+    paddingTop: wp('4%'), // Top padding
     paddingBottom: wp('8%'),
   },
+  nextEventSection: {
+    marginBottom: wp('5%'), // Spacing before divider
+  },
+  nextEventSectionHeader: {
+    marginBottom: wp('3%'),
+  },
+  nextEventSectionTitle: {
+    fontSize: wp('4.5%'), // 18px
+    fontWeight: '700', // Bolder
+    fontFamily: 'System',
+    letterSpacing: 0.3,
+  },
+  nextEventCard: {
+    padding: wp('5%'), // Larger padding for prominence
+    borderRadius: wp('4%'), // 16px
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  nextEventHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: wp('4%'), // Space before progress bar
+  },
+  nextEventIconContainer: {
+    width: wp('14%'),
+    height: wp('14%'),
+    borderRadius: wp('7%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: wp('4%'),
+  },
+  nextEventIcon: {
+    fontSize: wp('8%'), // Larger icon
+  },
+  nextEventInfo: {
+    flex: 1,
+  },
+  nextEventName: {
+    fontSize: wp('4.5%'), // 18px
+    fontWeight: '600',
+    fontFamily: 'System',
+    marginBottom: wp('2%'),
+    lineHeight: wp('6%'),
+  },
+  nextEventTimeRemaining: {
+    fontSize: wp('5.5%'), // 22px - Large and prominent
+    fontWeight: '700',
+    fontFamily: 'System',
+    marginBottom: wp('1.5%'),
+    lineHeight: wp('7%'),
+  },
+  nextEventDate: {
+    fontSize: wp('3.5%'), // 14px
+    fontWeight: '500',
+    fontFamily: 'System',
+    lineHeight: wp('5%'),
+  },
+  progressBarContainer: {
+    height: wp('1.5%'), // 6px
+    borderRadius: wp('0.75%'),
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: wp('0.75%'),
+  },
+  sectionDivider: {
+    height: 1,
+    marginVertical: wp('5%'), // More spacing
+    marginHorizontal: wp('1%'),
+  },
   summarySection: {
-    marginBottom: wp('6%'), // 24px between summary and first chart
+    marginBottom: wp('5%'), // Spacing before next divider
   },
   statsGrid: {
     flexDirection: 'row',
@@ -537,8 +655,8 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: wp('28%'),
     maxWidth: wp('31%'),
-    paddingTop: wp('3.5%'),
-    paddingBottom: wp('3.5%'),
+    paddingTop: wp('3%'), // Reduced height
+    paddingBottom: wp('3%'),
     paddingHorizontal: wp('2.5%'),
     borderRadius: wp('3.5%'),
     borderWidth: 1,
@@ -546,17 +664,17 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowRadius: 6,
+    elevation: 2,
     marginHorizontal: wp('0.5%'),
   },
   statIconContainer: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
+    width: wp('9%'), // Slightly smaller
+    height: wp('9%'),
+    borderRadius: wp('4.5%'),
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: wp('2%'),
+    marginBottom: wp('1.5%'),
   },
   statValue: {
     fontSize: wp('6%'),
@@ -567,26 +685,40 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   statTitle: {
-    fontSize: wp('3.3%'),
-    fontWeight: '500',
+    fontSize: wp('3.5%'), // Slightly larger
+    fontWeight: '600', // Bolder
+    fontFamily: 'System',
+    textAlign: 'center',
+    includeFontPadding: false,
+    marginBottom: wp('0.5%'),
+  },
+  statSubtitle: {
+    fontSize: wp('2.8%'),
+    fontWeight: '400',
     fontFamily: 'System',
     textAlign: 'center',
     includeFontPadding: false,
   },
+  insightsSection: {
+    marginTop: wp('2%'),
+  },
+  insightsLabel: {
+    fontSize: wp('3.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+    marginBottom: wp('4%'),
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   chartSection: {
-    marginBottom: wp('4%'), // 16px between charts
+    marginBottom: wp('5%'), // More spacing between charts
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: wp('3%'),
   },
-  sectionIcon: {
-    marginRight: wp('2%'),
-  },
   sectionTitle: {
-    fontSize: wp('4.25%'), // 17px semibold
-    fontWeight: '600',
+    fontSize: wp('4.5%'), // 18px - slightly larger
+    fontWeight: '700', // Bolder
     fontFamily: 'System',
   },
   chartCard: {
@@ -598,70 +730,13 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  nextEventSection: {
-    marginTop: wp('2%'),
-    marginBottom: wp('6%'), // 24px breathing room before bottom nav
-  },
-  sectionDivider: {
-    height: 1,
-    marginBottom: wp('4%'),
-    marginHorizontal: wp('1%'),
-  },
-  nextEventSectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: wp('3%'),
-    paddingHorizontal: wp('0.5%'),
-  },
-  nextEventSectionIcon: {
-    marginRight: wp('2.5%'), // 8-10px gap
-  },
-  nextEventSectionTitle: {
-    fontSize: wp('4.25%'), // 16-17px
-    fontWeight: '600',
+  chartCaption: {
+    fontSize: wp('3%'), // 12px
+    fontWeight: '400',
     fontFamily: 'System',
-    letterSpacing: 0.3,
-  },
-  nextEventCard: {
-    padding: wp('4.5%'), // 16-18px
-    borderRadius: wp('3.5%'), // 12-14px
-    borderWidth: 1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 4,
-    marginTop: wp('3%'), // ~12px vertical margin
-  },
-  nextEventHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  nextEventIconContainer: {
-    width: wp('13%'),
-    height: wp('13%'),
-    borderRadius: wp('6.5%'), // Circular
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: wp('4%'),
-  },
-  nextEventIcon: {
-    fontSize: wp('7%'),
-  },
-  nextEventInfo: {
-    flex: 1,
-  },
-  nextEventName: {
-    fontSize: wp('4.25%'), // 17px
-    fontWeight: '600',
-    fontFamily: 'System',
-    marginBottom: wp('1.5%'), // 4-6px spacing
-    lineHeight: wp('5.5%'),
-  },
-  nextEventDate: {
-    fontSize: wp('3.5%'), // 14px
-    fontWeight: '500',
-    fontFamily: 'System',
-    lineHeight: wp('5%'),
+    marginTop: wp('3%'),
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
 

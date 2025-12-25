@@ -33,12 +33,9 @@ import { ReviewManager } from '../util/reviewManager';
 import { ENABLE_ADS, USE_TEST_ADS } from '../util/config';
 import { AD_UNIT_IDS } from '../util/adConfig';
 import eventIcons from '../util/eventIcons';
-import TemplatePicker from '../components/TemplatePicker';
-import ReminderPresetSelector from '../components/ReminderPresetSelector';
 import NotesEditor from '../components/NotesEditor';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
-import { getPresetReminders } from '../util/reminderPresets';
 import { getDefaultEventName } from '../util/eventTemplates';
 import SkeletonCard from '../components/SkeletonCard';
 import FabButton from '../components/FabButton';
@@ -147,13 +144,12 @@ const HomeScreen = () => {
   const [selectedMinute, setSelectedMinute] = useState(0);
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("💻");
+  const [newNotes, setNewNotes] = useState("");
   const [confettiKey, setConfettiKey] = useState(0);
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
   
   // New state for templates, reminders, search, filters
-  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
-  const [selectedReminderPresetId, setSelectedReminderPresetId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [sortType, setSortType] = useState('soonest');
@@ -526,14 +522,18 @@ const HomeScreen = () => {
       return;
     }
     
-    // Get reminders from preset if selected
+    // No reminders by default (can be added later via Pro feature)
     let reminders = [];
-    if (selectedReminderPresetId) {
-      reminders = getPresetReminders(selectedReminderPresetId);
+    
+    // Schedule notification for the main event time
+    const mainNotificationId = await scheduleNotificationIfFuture(newName, combinedDateTime);
+    
+    // Schedule notifications for reminders (if any)
+    const notificationIds = [];
+    if (mainNotificationId) {
+      notificationIds.push(mainNotificationId);
     }
     
-    // Schedule notifications for reminders
-    const notificationIds = [];
     for (const reminder of reminders) {
       const reminderDate = new Date(combinedDateTime);
       if (reminder.unit === 'days') {
@@ -554,22 +554,21 @@ const HomeScreen = () => {
       name: newName,
       date: combinedDateTime.toISOString(),
       icon: newIcon,
-      notificationId: notificationIds.length > 0 ? notificationIds[0] : null,
+      notificationId: mainNotificationId, // Main event notification
       createdAt: new Date().toISOString(),
       // New fields
-      notes: '',
-      templateId: selectedTemplateId,
-      reminderPresetId: selectedReminderPresetId,
+      notes: newNotes.trim() || '',
+      templateId: null, // Templates removed for now, but keeping field for future compatibility
+      reminderPresetId: null, // Reminder presets removed
       reminders: reminders,
     };
     setCountdowns((prev) => [...prev, newCountdown]);
     setNewName("");
     setNewIcon("💻");
+    setNewNotes("");
     setSelectedDate(new Date());
     setSelectedHour(9);
     setSelectedMinute(0);
-    setSelectedTemplateId(null);
-    setSelectedReminderPresetId(null);
     setModalVisible(false);
     
     // Haptic feedback for successful creation
@@ -919,26 +918,11 @@ const HomeScreen = () => {
                 { color: isDark ? '#F5F5F5' : '#111111' }
               ]}>{t('create.title')}</Text>
               
-              {/* Template Picker */}
-              <TemplatePicker
-                selectedTemplateId={selectedTemplateId}
-                onSelect={(templateId) => {
-                  setSelectedTemplateId(templateId);
-                  if (templateId) {
-                    const template = require('../util/eventTemplates').TEMPLATES[templateId];
-                    if (template) {
-                      setNewIcon(template.icon);
-                      // Set default reminder preset
-                      if (template.defaultReminderPreset) {
-                        setSelectedReminderPresetId(template.defaultReminderPreset);
-                      }
-                    }
-                  }
-                }}
-                onSkip={() => setSelectedTemplateId(null)}
-              />
-              
               {/* Countdown Name Input */}
+              <Text style={[
+                styles.iconLabel,
+                { color: isDark ? '#A1A1A1' : '#6B7280', marginBottom: wp('2%') }
+              ]}>{t('create.namePlaceholder')}</Text>
               <TextInput
                 placeholder={t('create.namePlaceholder')}
                 placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
@@ -954,15 +938,11 @@ const HomeScreen = () => {
                       ? (isDark ? '#4E9EFF' : '#4A9EFF')
                       : (isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB'),
                     color: isDark ? '#F5F5F5' : '#111111',
+                    marginBottom: wp('4%'),
                   }
                 ]}
               />
 
-              {/* Reminder Preset Selector */}
-              <ReminderPresetSelector
-                selectedPresetId={selectedReminderPresetId}
-                onSelect={setSelectedReminderPresetId}
-              />
 
             {/* Date Label + Button */}
             <Text style={[
@@ -1169,6 +1149,51 @@ const HomeScreen = () => {
               </Text>
             </TouchableOpacity>
 
+            {/* Notes Input (Optional) */}
+            <View style={styles.notesSection}>
+              <View style={styles.notesHeader}>
+                <Ionicons
+                  name="document-text-outline"
+                  size={wp('4%')}
+                  color={isDark ? '#6B7280' : '#9CA3AF'}
+                  style={styles.notesIcon}
+                />
+                <Text style={[
+                  styles.iconLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>Notes (optional)</Text>
+              </View>
+              <TextInput
+                placeholder="Add notes, plans, or reminders…"
+                placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+                value={newNotes}
+                onChangeText={(text) => {
+                  if (text.length <= 500) {
+                    setNewNotes(text);
+                  }
+                }}
+                multiline
+                textAlignVertical="top"
+                maxLength={500}
+                style={[
+                  styles.notesInput,
+                  {
+                    backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                    color: isDark ? '#F5F5F5' : '#111111',
+                  }
+                ]}
+              />
+              {newNotes.length > 0 && (
+                <Text style={[
+                  styles.notesCharCount,
+                  { color: isDark ? '#6B7280' : '#9CA3AF' }
+                ]}>
+                  {newNotes.length}/500
+                </Text>
+              )}
+            </View>
+
             {/* Icon Picker Modal */}
             <Modal
               animationType="fade"
@@ -1265,19 +1290,29 @@ const HomeScreen = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleAddCountdown}
+                disabled={!newName.trim()}
                 style={[
                   styles.button,
                   {
-                    backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
-                    shadowColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                    backgroundColor: !newName.trim()
+                      ? (isDark ? '#2A2A2A' : '#E5E7EB')
+                      : (isDark ? '#3CC4A2' : '#4E9EFF'),
+                    shadowColor: !newName.trim() ? 'transparent' : (isDark ? '#3CC4A2' : '#4E9EFF'),
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.3,
                     shadowRadius: 4,
                     elevation: 4,
+                    opacity: !newName.trim() ? 0.5 : 1,
                   }
                 ]}
               >
-                <Text style={styles.buttonTextSave}>{t('common.save')}</Text>
+                <Text style={[
+                  styles.buttonTextSave,
+                  { color: !newName.trim() 
+                    ? (isDark ? '#6B7280' : '#9CA3AF')
+                    : '#FFFFFF'
+                  }
+                ]}>Create countdown</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -1305,6 +1340,7 @@ const HomeScreen = () => {
           console.log('Upgrade to Pro:', proUpsellFeature);
         }}
       />
+
     </SafeAreaView>
   );
 };
@@ -1613,6 +1649,35 @@ const styles = StyleSheet.create({
   timePickerButtonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  notesSection: {
+    marginTop: wp('3%'),
+    marginBottom: wp('2%'),
+  },
+  notesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: wp('2%'),
+  },
+  notesIcon: {
+    marginRight: wp('2%'),
+  },
+  notesInput: {
+    borderWidth: 1,
+    borderRadius: wp('2.5%'),
+    paddingHorizontal: wp('3%'),
+    paddingVertical: wp('3%'),
+    minHeight: wp('20%'),
+    maxHeight: wp('40%'),
+    fontSize: wp('3.5%'),
+    fontFamily: 'System',
+    lineHeight: wp('5%'),
+  },
+  notesCharCount: {
+    fontSize: wp('2.8%'),
+    marginTop: wp('1.5%'),
+    textAlign: 'right',
+    fontFamily: 'System',
   },
 });
 

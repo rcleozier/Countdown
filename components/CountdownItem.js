@@ -120,6 +120,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   // Edit form states
   const [editName, setEditName] = useState(event.name);
   const [editIcon, setEditIcon] = useState(event.icon);
+  const [editNotes, setEditNotes] = useState(event.notes || '');
   const [tempSelectedDate, setTempSelectedDate] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date(event.date));
   const [selectedHour, setSelectedHour] = useState(moment(event.date).hour());
@@ -216,6 +217,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     
     setEditName(event.name);
     setEditIcon(event.icon);
+    setEditNotes(event.notes || '');
     setSelectedDate(new Date(event.date));
     setSelectedHour(moment(event.date).hour());
     setSelectedMinute(moment(event.date).minute());
@@ -260,6 +262,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       name: editName,
       icon: editIcon,
       date: combinedDateTime.toISOString(),
+      notes: editNotes.trim() || '',
     };
     
     onEdit(updatedEvent);
@@ -654,6 +657,51 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   {editIcon ? `Icon: ${editIcon}` : "Select Icon"}
                 </Text>
               </TouchableOpacity>
+
+              {/* Notes Section */}
+              <View style={styles.notesSection}>
+                <View style={styles.notesHeader}>
+                  <Ionicons
+                    name="document-text-outline"
+                    size={wp('4%')}
+                    color={isDark ? '#6B7280' : '#9CA3AF'}
+                    style={styles.notesIcon}
+                  />
+                  <Text style={[
+                    styles.iconLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>Notes</Text>
+                </View>
+                <TextInput
+                  placeholder="Add notes, plans, or reminders…"
+                  placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+                  value={editNotes}
+                  onChangeText={(text) => {
+                    if (text.length <= 500) {
+                      setEditNotes(text);
+                    }
+                  }}
+                  multiline
+                  textAlignVertical="top"
+                  maxLength={500}
+                  style={[
+                    styles.notesInput,
+                    {
+                      backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                      borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                      color: isDark ? '#F5F5F5' : '#111111',
+                    }
+                  ]}
+                />
+                {editNotes.length > 0 && (
+                  <Text style={[
+                    styles.notesCharCount,
+                    { color: isDark ? '#6B7280' : '#9CA3AF' }
+                  ]}>
+                    {editNotes.length}/500
+                  </Text>
+                )}
+              </View>
             </ScrollView>
 
             {/* Action Buttons */}
@@ -1216,6 +1264,48 @@ const styles = StyleSheet.create({
   },
   iconText: {
     fontSize: wp("3%"),
+  },
+  notesSection: {
+    marginTop: wp('3%'),
+    marginBottom: wp('2%'),
+  },
+  notesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: wp('2%'),
+  },
+  notesIcon: {
+    marginRight: wp('2%'),
+  },
+  notesInput: {
+    borderWidth: 1,
+    borderRadius: wp('2.5%'),
+    paddingHorizontal: wp('3%'),
+    paddingVertical: wp('3%'),
+    minHeight: wp('20%'),
+    maxHeight: wp('40%'),
+    fontSize: wp('3.5%'),
+    fontFamily: 'System',
+    lineHeight: wp('5%'),
+  },
+  notesCharCount: {
+    fontSize: wp('2.8%'),
+    marginTop: wp('1.5%'),
+    textAlign: 'right',
+    fontFamily: 'System',
+  },
+  addNotesButton: {
+    paddingVertical: wp('2%'),
+    paddingHorizontal: wp('3%'),
+    borderRadius: wp('2%'),
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    marginTop: wp('1%'),
+  },
+  addNotesButtonText: {
+    fontSize: wp('3.5%'),
+    fontFamily: 'System',
   },
 });
 
