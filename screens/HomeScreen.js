@@ -539,13 +539,16 @@ const HomeScreen = () => {
   };
 
   const openPaywall = (feature) => {
-    // Close creation modal overlays so the paywall is not blocked
-    closeCreationModal();
-    setPaywallFeature(feature);
-    // Wait a tick so the modal tear-down completes before showing sheet
+    // Close creation modal + its child overlays first
+    setCalendarModalVisible(false);
+    setTimePickerVisible(false);
+    setIconPickerVisible(false);
+    setModalVisible(false);
+    // Then open paywall shortly after to avoid overlay stacking
     setTimeout(() => {
+      setPaywallFeature(feature);
       setPaywallVisible(true);
-    }, 60);
+    }, 120);
   };
 
   // Schedules a notification only if the event time is in the future
@@ -1063,7 +1066,10 @@ const HomeScreen = () => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={closeCreationModal}
+            onPress={() => {
+              if (iconPickerVisible || calendarModalVisible || timePickerVisible) return;
+              closeCreationModal();
+            }}
             style={[
               styles.modalContainer,
               { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
@@ -1077,7 +1083,11 @@ const HomeScreen = () => {
                 transform: [{ scale: modalScale }],
               }
             ]}>
-              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+                pointerEvents={iconPickerVisible || calendarModalVisible || timePickerVisible ? 'none' : 'auto'}
+              >
               <ScrollView 
                 style={styles.modalFormScroll}
                 contentContainerStyle={styles.modalFormContent}
@@ -1528,8 +1538,7 @@ const HomeScreen = () => {
                   <TouchableOpacity
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setPaywallFeature('Long Notes');
-                      setPaywallVisible(true);
+                      openPaywall('Long Notes');
                     }}
                     activeOpacity={0.7}
                     style={styles.notesUpsellRow}

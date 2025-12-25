@@ -27,11 +27,12 @@ import { Analytics } from '../util/analytics';
 import { buildRemindersForEvent } from '../util/reminderBuilder';
 import { syncScheduledReminders } from '../util/reminderScheduler';
 import * as Haptics from 'expo-haptics';
+import BottomSheet from '../components/BottomSheet';
 
 const FREE_REMINDERS_MAX_DAYS = 7;
 const FREE_REMINDERS_MAX_COUNT = 10;
 
-const FilterChip = ({ label, selected, locked, onPress }) => {
+const FilterChip = ({ label, selected, locked, showPro, onPress }) => {
   const { theme, isDark } = useTheme();
   const baseBg = isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6';
   const baseText = isDark ? '#E5E7EB' : '#0F172A';
@@ -69,6 +70,11 @@ const FilterChip = ({ label, selected, locked, onPress }) => {
           style={styles.chipIcon}
         />
       )}
+      {locked && showPro && (
+        <View style={styles.chipBadge}>
+          <Text style={styles.chipBadgeText}>PRO</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -96,7 +102,7 @@ const UpsellCard = ({ onPress, isDark, accentColor }) => (
           style={[styles.upsellBody, { color: isDark ? '#CBD5E1' : '#475569' }]}
           numberOfLines={2}
         >
-          Get full filters, search, grouping, and unlimited upcoming reminders.
+          Get full filters, search, grouping, and unlimited reminders.
         </Text>
       </View>
       <View style={styles.upsellBadge}>
@@ -124,6 +130,8 @@ const RemindersScreen = ({ navigation }) => {
   const { t } = useLocale();
   const { isPro } = useEntitlements();
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const [filterInfoVisible, setFilterInfoVisible] = useState(false);
+  const [filterInfoLabel, setFilterInfoLabel] = useState('');
 
   // Load events and build reminders
   const loadReminders = async () => {
@@ -373,14 +381,22 @@ const RemindersScreen = ({ navigation }) => {
 
   const renderReminderItem = ({ item: reminder }) => {
     const fireAt = moment(reminder.fireAtISO);
-  const exactTime = fireAt.format('h:mm A');
-  const exactDate = fireAt.format('MMM D');
-  const deltaLabel = (() => {
     const now = moment();
-    if (fireAt.isSame(now, 'day')) return 'Today';
-    if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) return 'Tomorrow';
-    return fireAt.fromNow();
-  })();
+    const within7 = fireAt.diff(now, 'days') <= 7 && fireAt.isAfter(now);
+    const line1 = reminder.typeLabel || reminder.type || 'Reminder';
+    const line2 = (() => {
+      if (within7) {
+        return fireAt.calendar(null, {
+          sameDay: '[Today at] h:mm A',
+          nextDay: '[Tomorrow at] h:mm A',
+          nextWeek: 'dddd [at] h:mm A',
+          lastDay: '[Yesterday at] h:mm A',
+          lastWeek: '[Last] dddd [at] h:mm A',
+          sameElse: 'MMM D [at] h:mm A',
+        });
+      }
+      return fireAt.format('MMM D, h:mm A');
+    })();
 
     return (
       <TouchableOpacity
@@ -415,34 +431,24 @@ const RemindersScreen = ({ navigation }) => {
               styles.eventName,
               { color: isDark ? '#FFFFFF' : '#1A1A1A' }
             ]}>
-              {reminder.event.name || 'Untitled Event'}
+              {line1}
             </Text>
             <Text style={[
               styles.typeLabel,
               { color: isDark ? '#A1A1A1' : '#6B7280' }
             ]}>
-              {reminder.typeLabel || 'Reminder'}
-            </Text>
-            <Text style={[
-              styles.timeInfo,
-              { color: isDark ? '#6B7280' : '#9CA3AF' }
-            ]}>
-              {deltaLabel} • {exactDate}, {exactTime}
+              {filter === 'all'
+                ? `${reminder.event.name || 'Untitled Event'} · ${line2}`
+                : line2}
             </Text>
           </View>
         </View>
-        {isPro && (
-          <TouchableOpacity
-            onPress={() => toggleReminderEnabled(reminder)}
-            style={styles.toggleButton}
-          >
-            <Ionicons
-              name={reminder.enabled ? "notifications" : "notifications-off"}
-              size={wp('5%')}
-              color={reminder.enabled ? accentColor : (isDark ? '#6B7280' : '#9CA3AF')}
-            />
-          </TouchableOpacity>
-        )}
+        <Ionicons
+          name={reminder.enabled ? "notifications" : "notifications-off"}
+          size={wp('5%')}
+          color={reminder.enabled ? accentColor : (isDark ? '#6B7280' : '#9CA3AF')}
+          style={styles.toggleButton}
+        />
       </TouchableOpacity>
     );
   };
@@ -539,13 +545,16 @@ const RemindersScreen = ({ navigation }) => {
 
           {/* Inline upgrade card for non-pro */}
           {!isPro && (
-            <UpsellCard
-              onPress={() => {
-                setPaywallVisible(true);
-              }}
-              isDark={isDark}
-              accentColor={accentColor}
-            />
+            <View style={{ marginBottom: wp('3%') }}>
+              <UpsellCard
+                onPress={() => {
+                  setPaywallFeature('reminders_filters');
+                  setPaywallVisible(true);
+                }}
+                isDark={isDark}
+                accentColor={accentColor}
+              />
+            </View>
           )}
 
           {/* Filters */}
@@ -558,6 +567,7 @@ const RemindersScreen = ({ navigation }) => {
               label="All"
               selected={filter === 'all'}
               locked={false}
+              showPro={false}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setFilter('all');
@@ -576,10 +586,12 @@ const RemindersScreen = ({ navigation }) => {
                   label={label}
                   selected={selected}
                   locked={locked}
+                  showPro
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     if (locked) {
-                      setPaywallVisible(true);
+                      setFilterInfoLabel(label);
+                      setFilterInfoVisible(true);
                       return;
                     }
                     setFilter(key);
@@ -660,7 +672,7 @@ const RemindersScreen = ({ navigation }) => {
                 styles.emptyText,
                 { color: isDark ? '#A1A1A1' : '#6B7280' }
               ]}>
-                No reminders found
+                No reminders yet. Add one from an event.
               </Text>
             </View>
           ) : (
@@ -725,6 +737,38 @@ const RemindersScreen = ({ navigation }) => {
         onClose={() => setPaywallVisible(false)}
         feature="reminders"
       />
+
+      {/* Filter info sheet (lightweight) */}
+      <BottomSheet
+        visible={filterInfoVisible}
+        onClose={() => setFilterInfoVisible(false)}
+        height="28%"
+        showHandle
+      >
+        <View style={{ paddingHorizontal: wp('4%'), paddingTop: wp('2%'), gap: wp('3%') }}>
+          <Text style={{ fontSize: 18, fontWeight: '700', color: isDark ? '#FFFFFF' : '#0F172A' }}>
+            Pro filter
+          </Text>
+          <Text style={{ fontSize: 15, fontWeight: '500', color: isDark ? '#CBD5E1' : '#475569' }}>
+            {filterInfoLabel || 'This filter'} is part of Pro. Upgrade to better organize your reminders.
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setFilterInfoVisible(false);
+              setPaywallFeature('reminders_filters');
+              setPaywallVisible(true);
+            }}
+            style={{
+              backgroundColor: accentColor,
+              paddingVertical: 12,
+              borderRadius: 12,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '700' }}>Go Pro</Text>
+          </TouchableOpacity>
+        </View>
+      </BottomSheet>
     </LinearGradient>
   );
 };
@@ -803,7 +847,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: wp('4%'),
+    padding: wp('3.5%'),
     borderRadius: wp('3%'),
     borderWidth: 1,
     marginBottom: wp('2%'),
@@ -915,6 +959,19 @@ const styles = StyleSheet.create({
   },
   chipIcon: {
     marginLeft: 8,
+  },
+  chipBadge: {
+    marginLeft: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 10,
+    backgroundColor: 'rgba(74,158,255,0.15)',
+  },
+  chipBadgeText: {
+    color: '#1D4ED8',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   upsellCardNew: {
     padding: wp('4%'),
