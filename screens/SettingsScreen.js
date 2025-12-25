@@ -27,6 +27,7 @@ import { SUPPORTED_LOCALES } from '../util/i18n';
 import { useSubscription } from '../context/SubscriptionContext';
 import SubscriptionModal from '../components/SubscriptionModal';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 const SettingsScreen = () => {

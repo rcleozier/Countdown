@@ -29,7 +29,16 @@
       "bundleIdentifier": "com.chronox.app",
       "buildNumber": "1",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleLocalizations": [
+          "en",
+          "hi",
+          "es",
+          "fr",
+          "de",
+          "pt",
+          "ja"
+        ]
       }
     },
     "android": {
@@ -39,7 +48,19 @@
         "com.google.android.gms.permission.AD_ID",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE"
-      ]
+      ],
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-0083160636450496~3067587784"
+      }
+    },
+    "locales": {
+      "en": "./locales/en.json",
+      "hi": "./locales/hi.json",
+      "es": "./locales/es.json",
+      "fr": "./locales/fr.json",
+      "de": "./locales/de.json",
+      "pt": "./locales/pt.json",
+      "ja": "./locales/ja.json"
     },
     "description": "Chrono | Remember your important events",
     "extra": {

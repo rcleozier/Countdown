@@ -1,0 +1,240 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "yes": "Sim",
+    "no": "Não",
+    "ok": "OK",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso"
+  },
+  "home": {
+    "title": "Contagens regressivas",
+    "emptyTitle": "Ainda não há contagens regressivas",
+    "emptySubtitle": "Toque no botão + para criar sua primeira contagem regressiva",
+    "createButton": "Criar nova contagem regressiva",
+    "upcoming": "Próximos",
+    "past": "Passados",
+    "all": "Todos"
+  },
+  "create": {
+    "title": "Criar contagem regressiva",
+    "namePlaceholder": "Nome do evento",
+    "selectDate": "Selecionar uma data",
+    "selectTime": "Selecionar hora",
+    "selectIcon": "Selecionar ícone",
+    "selectTemplate": "Selecionar modelo",
+    "noTemplate": "Sem modelo",
+    "selectReminderPreset": "Predefinição de lembrete",
+    "customReminders": "Lembretes personalizados"
+  },
+  "edit": {
+    "title": "Editar contagem regressiva",
+    "namePlaceholder": "Nome do evento",
+    "selectDate": "Selecionar uma data",
+    "selectTime": "Selecionar hora",
+    "selectIcon": "Selecionar ícone"
+  },
+  "templates": {
+    "birthday": {
+      "name": "Aniversário",
+      "defaultName": "Aniversário de {{name}}"
+    },
+    "trip": {
+      "name": "Viagem",
+      "defaultName": "Viagem para {{destination}}"
+    },
+    "exam": {
+      "name": "Exame",
+      "defaultName": "Exame de {{subject}}"
+    },
+    "wedding": {
+      "name": "Casamento",
+      "defaultName": "Casamento de {{name}}"
+    },
+    "flight": {
+      "name": "Voo",
+      "defaultName": "Voo para {{destination}}"
+    },
+    "appointment": {
+      "name": "Compromisso",
+      "defaultName": "Compromisso {{type}}"
+    }
+  },
+  "reminders": {
+    "chill": "Relaxado",
+    "standard": "Padrão",
+    "intense": "Intenso",
+    "custom": "Personalizado",
+    "daysBefore": "{{count}} dia antes",
+    "daysBefore_plural": "{{count}} dias antes",
+    "weeksBefore": "{{count}} semana antes",
+    "weeksBefore_plural": "{{count}} semanas antes",
+    "monthsBefore": "{{count}} mês antes",
+    "monthsBefore_plural": "{{count}} meses antes",
+    "addReminder": "Adicionar lembrete",
+    "removeReminder": "Remover",
+    "noReminders": "Nenhum lembrete definido"
+  },
+  "notes": {
+    "title": "Notas",
+    "addNote": "Adicionar nota",
+    "editNote": "Editar nota",
+    "placeholder": "Adicionar uma nota para este evento...",
+    "empty": "Ainda não há notas",
+    "autosave": "Salvando..."
+  },
+  "filters": {
+    "upcoming": "Próximos",
+    "past": "Passados",
+    "all": "Todos",
+    "sortSoonest": "Mais próximo",
+    "sortRecent": "Adicionados recentemente",
+    "sortName": "Nome (A-Z)",
+    "byTemplate": "Por modelo"
+  },
+  "settings": {
+    "title": "Configurações",
+    "language": "Idioma",
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "clearAll": "Limpar todos os eventos",
+    "clearConfirm": "Tem certeza de que deseja limpar todos os eventos?",
+    "clearConfirmTitle": "Confirmar limpeza",
+    "clearConfirmMessage": "Tem certeza de que deseja limpar todos os eventos? Esta ação não pode ser desfeita.",
+    "version": "Versão",
+    "rtlToggle": "Modo RTL (apenas Dev)",
+    "appInfo": "Informações do aplicativo",
+    "notes": "Notas",
+    "notesDescription": "Ver e gerenciar suas notas",
+    "actions": "Ações"
+  },
+  "time": {
+    "now": "agora",
+    "today": "hoje",
+    "tomorrow": "amanhã",
+    "yesterday": "ontem",
+    "daysFromNow": "em {{count}} dia",
+    "daysFromNow_plural": "em {{count}} dias",
+    "daysAgo": "há {{count}} dia",
+    "daysAgo_plural": "há {{count}} dias",
+    "hours": "{{count}} hora",
+    "hours_plural": "{{count}} horas",
+    "minutes": "{{count}} minuto",
+    "minutes_plural": "{{count}} minutos"
+  },
+  "analytics": {
+    "title": "Análises",
+    "total": "Total de eventos",
+    "totalEvents": "Total de eventos",
+    "upcoming": "Próximos",
+    "past": "Passados",
+    "pastEvents": "Eventos passados",
+    "nextEvent": "Próximo evento",
+    "upcomingByMonth": "Próximos por mês",
+    "eventsByDayOfWeek": "Eventos por dia da semana",
+    "days": {
+      "sun": "Dom",
+      "mon": "Seg",
+      "tue": "Ter",
+      "wed": "Qua",
+      "thu": "Qui",
+      "fri": "Sex",
+      "sat": "Sáb"
+    }
+  },
+  "calendar": {
+    "title": "Calendário",
+    "noEvents": "Nenhum evento nesta data"
+  },
+  "past": {
+    "title": "Eventos passados",
+    "empty": "Nenhum evento passado"
+  },
+  "delete": {
+    "confirm": "Excluir contagem regressiva",
+    "message": "Tem certeza de que deseja excluir \"{{name}}\"?",
+    "cannotUndo": "Esta ação não pode ser desfeita."
+  },
+  "subscription": {
+    "title": "Atualizar para Pro",
+    "subtitle": "Desbloqueie todos os recursos premium e melhore sua experiência de contagem regressiva",
+    "subscribe": "Assinar",
+    "processing": "Processando...",
+    "restorePurchases": "Restaurar compras",
+    "mostPopular": "Mais popular",
+    "savings": "economia",
+    "perMonth": "por mês",
+    "legal": "O pagamento será cobrado na sua conta Apple ID na confirmação da compra. A assinatura é renovada automaticamente, a menos que a renovação automática seja desativada pelo menos 24 horas antes do final do período atual.",
+    "plans": {
+      "monthly": {
+        "name": "Mensal",
+        "description": "Cobrado mensalmente"
+      },
+      "yearly": {
+        "name": "Anual",
+        "description": "Cobrado anualmente"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "Contagens regressivas ilimitadas",
+      "unlimited_notes": "Notas ilimitadas por evento",
+      "advanced_reminders": "Predefinições de lembrete avançadas",
+      "custom_templates": "Modelos de evento personalizados",
+      "export_data": "Exportar seus dados",
+      "no_ads": "Experiência sem anúncios",
+      "priority_support": "Suporte prioritário"
+    },
+    "status": {
+      "active": "Ativo",
+      "expired": "Expirado",
+      "none": "Nenhuma assinatura ativa"
+    },
+    "manage": "Gerenciar assinatura",
+    "upsell": {
+      "unlockPro": "Desbloquear Pro",
+      "notNow": "Agora não",
+      "customReminders": {
+        "title": "Pro: Personalizar lembretes",
+        "bullet1": "Definir vários lembretes por evento",
+        "bullet2": "Deslocamentos de tempo personalizados (semanas, meses)",
+        "bullet3": "Sugestões de lembretes inteligentes"
+      },
+      "notes": {
+        "title": "Pro: Notas de evento",
+        "bullet1": "Notas ilimitadas por evento",
+        "bullet2": "Pesquisar notas em todos os eventos",
+        "bullet3": "Formatação de texto rico"
+      },
+      "advancedTemplates": {
+        "title": "Pro: Modelos avançados",
+        "bullet1": "Modelos de Casamento, Voo, Exame",
+        "bullet2": "Criar modelos personalizados",
+        "bullet3": "Edição e compartilhamento de modelos"
+      },
+      "unitControls": {
+        "title": "Pro: Controles de exibição",
+        "bullet1": "Ocultar segundos para visualização mais limpa",
+        "bullet2": "Mostrar detalhamento semanas/meses",
+        "bullet3": "Preferências de formato de hora personalizadas"
+      },
+      "smartSuggestions": {
+        "title": "Pro: Sugestões inteligentes",
+        "bullet1": "Padrões de lembretes escalonados",
+        "bullet2": "Modo de preparação para eventos",
+        "bullet3": "Sugestões de tempo alimentadas por IA"
+      }
+    }
+  }
+}
+

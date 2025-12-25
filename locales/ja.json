@@ -1,0 +1,240 @@
+{
+  "common": {
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "close": "閉じる",
+    "confirm": "確認",
+    "yes": "はい",
+    "no": "いいえ",
+    "ok": "OK",
+    "search": "検索",
+    "filter": "フィルター",
+    "sort": "並び替え",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功"
+  },
+  "home": {
+    "title": "カウントダウン",
+    "emptyTitle": "まだカウントダウンがありません",
+    "emptySubtitle": "+ボタンをタップして最初のカウントダウンを作成",
+    "createButton": "新しいカウントダウンを作成",
+    "upcoming": "今後の予定",
+    "past": "過去",
+    "all": "すべて"
+  },
+  "create": {
+    "title": "カウントダウンを作成",
+    "namePlaceholder": "イベント名",
+    "selectDate": "日付を選択",
+    "selectTime": "時刻を選択",
+    "selectIcon": "アイコンを選択",
+    "selectTemplate": "テンプレートを選択",
+    "noTemplate": "テンプレートなし",
+    "selectReminderPreset": "リマインダープリセット",
+    "customReminders": "カスタムリマインダー"
+  },
+  "edit": {
+    "title": "カウントダウンを編集",
+    "namePlaceholder": "イベント名",
+    "selectDate": "日付を選択",
+    "selectTime": "時刻を選択",
+    "selectIcon": "アイコンを選択"
+  },
+  "templates": {
+    "birthday": {
+      "name": "誕生日",
+      "defaultName": "{{name}}の誕生日"
+    },
+    "trip": {
+      "name": "旅行",
+      "defaultName": "{{destination}}への旅行"
+    },
+    "exam": {
+      "name": "試験",
+      "defaultName": "{{subject}}の試験"
+    },
+    "wedding": {
+      "name": "結婚式",
+      "defaultName": "{{name}}の結婚式"
+    },
+    "flight": {
+      "name": "フライト",
+      "defaultName": "{{destination}}へのフライト"
+    },
+    "appointment": {
+      "name": "予約",
+      "defaultName": "{{type}}の予約"
+    }
+  },
+  "reminders": {
+    "chill": "リラックス",
+    "standard": "標準",
+    "intense": "集中的",
+    "custom": "カスタム",
+    "daysBefore": "{{count}}日前",
+    "daysBefore_plural": "{{count}}日前",
+    "weeksBefore": "{{count}}週間前",
+    "weeksBefore_plural": "{{count}}週間前",
+    "monthsBefore": "{{count}}ヶ月前",
+    "monthsBefore_plural": "{{count}}ヶ月前",
+    "addReminder": "リマインダーを追加",
+    "removeReminder": "削除",
+    "noReminders": "リマインダーが設定されていません"
+  },
+  "notes": {
+    "title": "メモ",
+    "addNote": "メモを追加",
+    "editNote": "メモを編集",
+    "placeholder": "このイベントのメモを追加...",
+    "empty": "まだメモがありません",
+    "autosave": "保存中..."
+  },
+  "filters": {
+    "upcoming": "今後の予定",
+    "past": "過去",
+    "all": "すべて",
+    "sortSoonest": "最も近い",
+    "sortRecent": "最近追加",
+    "sortName": "名前（あ-ん）",
+    "byTemplate": "テンプレート別"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "言語",
+    "theme": "テーマ",
+    "light": "ライト",
+    "dark": "ダーク",
+    "clearAll": "すべてのイベントをクリア",
+    "clearConfirm": "すべてのイベントをクリアしてもよろしいですか？",
+    "clearConfirmTitle": "クリアを確認",
+    "clearConfirmMessage": "すべてのイベントをクリアしてもよろしいですか？この操作は元に戻せません。",
+    "version": "バージョン",
+    "rtlToggle": "RTLモード（開発のみ）",
+    "appInfo": "アプリ情報",
+    "notes": "メモ",
+    "notesDescription": "メモを表示および管理",
+    "actions": "アクション"
+  },
+  "time": {
+    "now": "今",
+    "today": "今日",
+    "tomorrow": "明日",
+    "yesterday": "昨日",
+    "daysFromNow": "{{count}}日後",
+    "daysFromNow_plural": "{{count}}日後",
+    "daysAgo": "{{count}}日前",
+    "daysAgo_plural": "{{count}}日前",
+    "hours": "{{count}}時間",
+    "hours_plural": "{{count}}時間",
+    "minutes": "{{count}}分",
+    "minutes_plural": "{{count}}分"
+  },
+  "analytics": {
+    "title": "分析",
+    "total": "総イベント数",
+    "totalEvents": "総イベント数",
+    "upcoming": "今後の予定",
+    "past": "過去",
+    "pastEvents": "過去のイベント",
+    "nextEvent": "次のイベント",
+    "upcomingByMonth": "月別の今後の予定",
+    "eventsByDayOfWeek": "曜日別のイベント",
+    "days": {
+      "sun": "日",
+      "mon": "月",
+      "tue": "火",
+      "wed": "水",
+      "thu": "木",
+      "fri": "金",
+      "sat": "土"
+    }
+  },
+  "calendar": {
+    "title": "カレンダー",
+    "noEvents": "この日にイベントはありません"
+  },
+  "past": {
+    "title": "過去のイベント",
+    "empty": "過去のイベントはありません"
+  },
+  "delete": {
+    "confirm": "カウントダウンを削除",
+    "message": "「{{name}}」を削除してもよろしいですか？",
+    "cannotUndo": "この操作は元に戻せません。"
+  },
+  "subscription": {
+    "title": "Proにアップグレード",
+    "subtitle": "すべてのプレミアム機能を解除して、カウントダウン体験を向上させます",
+    "subscribe": "購読",
+    "processing": "処理中...",
+    "restorePurchases": "購入を復元",
+    "mostPopular": "最も人気",
+    "savings": "節約",
+    "perMonth": "月額",
+    "legal": "購入の確認時に、Apple IDアカウントに請求されます。現在の期間終了の少なくとも24時間前に自動更新をオフにしない限り、サブスクリプションは自動的に更新されます。",
+    "plans": {
+      "monthly": {
+        "name": "月額",
+        "description": "月額請求"
+      },
+      "yearly": {
+        "name": "年間",
+        "description": "年間請求"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "無制限のカウントダウン",
+      "unlimited_notes": "イベントごとの無制限のメモ",
+      "advanced_reminders": "高度なリマインダープリセット",
+      "custom_templates": "カスタムイベントテンプレート",
+      "export_data": "データをエクスポート",
+      "no_ads": "広告なしの体験",
+      "priority_support": "優先サポート"
+    },
+    "status": {
+      "active": "アクティブ",
+      "expired": "期限切れ",
+      "none": "アクティブなサブスクリプションなし"
+    },
+    "manage": "サブスクリプションを管理",
+    "upsell": {
+      "unlockPro": "Proを解除",
+      "notNow": "今はしない",
+      "customReminders": {
+        "title": "Pro: リマインダーをカスタマイズ",
+        "bullet1": "イベントごとに複数のリマインダーを設定",
+        "bullet2": "カスタム時間オフセット（週、月）",
+        "bullet3": "スマートリマインダー提案"
+      },
+      "notes": {
+        "title": "Pro: イベントメモ",
+        "bullet1": "イベントごとの無制限のメモ",
+        "bullet2": "すべてのイベントでメモを検索",
+        "bullet3": "リッチテキストフォーマット"
+      },
+      "advancedTemplates": {
+        "title": "Pro: 高度なテンプレート",
+        "bullet1": "結婚式、フライト、試験テンプレート",
+        "bullet2": "カスタムテンプレートを作成",
+        "bullet3": "テンプレートの編集と共有"
+      },
+      "unitControls": {
+        "title": "Pro: 表示コントロール",
+        "bullet1": "よりクリーンな表示のために秒を非表示",
+        "bullet2": "週/月の内訳を表示",
+        "bullet3": "カスタム時間形式の設定"
+      },
+      "smartSuggestions": {
+        "title": "Pro: スマート提案",
+        "bullet1": "エスカレートするリマインダーパターン",
+        "bullet2": "イベントの準備モード",
+        "bullet3": "AI駆動のタイミング提案"
+      }
+    }
+  }
+}
+

@@ -1,0 +1,240 @@
+{
+  "common": {
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "yes": "Ja",
+    "no": "Nein",
+    "ok": "OK",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg"
+  },
+  "home": {
+    "title": "Countdowns",
+    "emptyTitle": "Noch keine Countdowns",
+    "emptySubtitle": "Tippen Sie auf die + Schaltfläche, um Ihren ersten Countdown zu erstellen",
+    "createButton": "Neuen Countdown erstellen",
+    "upcoming": "Bevorstehend",
+    "past": "Vergangen",
+    "all": "Alle"
+  },
+  "create": {
+    "title": "Countdown erstellen",
+    "namePlaceholder": "Ereignisname",
+    "selectDate": "Datum auswählen",
+    "selectTime": "Uhrzeit auswählen",
+    "selectIcon": "Symbol auswählen",
+    "selectTemplate": "Vorlage auswählen",
+    "noTemplate": "Keine Vorlage",
+    "selectReminderPreset": "Erinnerungsvoreinstellung",
+    "customReminders": "Benutzerdefinierte Erinnerungen"
+  },
+  "edit": {
+    "title": "Countdown bearbeiten",
+    "namePlaceholder": "Ereignisname",
+    "selectDate": "Datum auswählen",
+    "selectTime": "Uhrzeit auswählen",
+    "selectIcon": "Symbol auswählen"
+  },
+  "templates": {
+    "birthday": {
+      "name": "Geburtstag",
+      "defaultName": "{{name}}s Geburtstag"
+    },
+    "trip": {
+      "name": "Reise",
+      "defaultName": "Reise nach {{destination}}"
+    },
+    "exam": {
+      "name": "Prüfung",
+      "defaultName": "{{subject}} Prüfung"
+    },
+    "wedding": {
+      "name": "Hochzeit",
+      "defaultName": "{{name}}s Hochzeit"
+    },
+    "flight": {
+      "name": "Flug",
+      "defaultName": "Flug nach {{destination}}"
+    },
+    "appointment": {
+      "name": "Termin",
+      "defaultName": "{{type}} Termin"
+    }
+  },
+  "reminders": {
+    "chill": "Entspannt",
+    "standard": "Standard",
+    "intense": "Intensiv",
+    "custom": "Benutzerdefiniert",
+    "daysBefore": "{{count}} Tag vorher",
+    "daysBefore_plural": "{{count}} Tage vorher",
+    "weeksBefore": "{{count}} Woche vorher",
+    "weeksBefore_plural": "{{count}} Wochen vorher",
+    "monthsBefore": "{{count}} Monat vorher",
+    "monthsBefore_plural": "{{count}} Monate vorher",
+    "addReminder": "Erinnerung hinzufügen",
+    "removeReminder": "Entfernen",
+    "noReminders": "Keine Erinnerungen festgelegt"
+  },
+  "notes": {
+    "title": "Notizen",
+    "addNote": "Notiz hinzufügen",
+    "editNote": "Notiz bearbeiten",
+    "placeholder": "Eine Notiz für dieses Ereignis hinzufügen...",
+    "empty": "Noch keine Notizen",
+    "autosave": "Speichern..."
+  },
+  "filters": {
+    "upcoming": "Bevorstehend",
+    "past": "Vergangen",
+    "all": "Alle",
+    "sortSoonest": "Baldigste",
+    "sortRecent": "Kürzlich hinzugefügt",
+    "sortName": "Name (A-Z)",
+    "byTemplate": "Nach Vorlage"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "theme": "Design",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "clearAll": "Alle Ereignisse löschen",
+    "clearConfirm": "Möchten Sie wirklich alle Ereignisse löschen?",
+    "clearConfirmTitle": "Löschen bestätigen",
+    "clearConfirmMessage": "Möchten Sie wirklich alle Ereignisse löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "version": "Version",
+    "rtlToggle": "RTL-Modus (nur Dev)",
+    "appInfo": "App-Informationen",
+    "notes": "Notizen",
+    "notesDescription": "Ihre Notizen anzeigen und verwalten",
+    "actions": "Aktionen"
+  },
+  "time": {
+    "now": "jetzt",
+    "today": "heute",
+    "tomorrow": "morgen",
+    "yesterday": "gestern",
+    "daysFromNow": "in {{count}} Tag",
+    "daysFromNow_plural": "in {{count}} Tagen",
+    "daysAgo": "vor {{count}} Tag",
+    "daysAgo_plural": "vor {{count}} Tagen",
+    "hours": "{{count}} Stunde",
+    "hours_plural": "{{count}} Stunden",
+    "minutes": "{{count}} Minute",
+    "minutes_plural": "{{count}} Minuten"
+  },
+  "analytics": {
+    "title": "Analysen",
+    "total": "Gesamtveranstaltungen",
+    "totalEvents": "Gesamtveranstaltungen",
+    "upcoming": "Bevorstehend",
+    "past": "Vergangen",
+    "pastEvents": "Vergangene Ereignisse",
+    "nextEvent": "Nächstes Ereignis",
+    "upcomingByMonth": "Bevorstehend nach Monat",
+    "eventsByDayOfWeek": "Ereignisse nach Wochentag",
+    "days": {
+      "sun": "So",
+      "mon": "Mo",
+      "tue": "Di",
+      "wed": "Mi",
+      "thu": "Do",
+      "fri": "Fr",
+      "sat": "Sa"
+    }
+  },
+  "calendar": {
+    "title": "Kalender",
+    "noEvents": "Keine Ereignisse an diesem Datum"
+  },
+  "past": {
+    "title": "Vergangene Ereignisse",
+    "empty": "Keine vergangenen Ereignisse"
+  },
+  "delete": {
+    "confirm": "Countdown löschen",
+    "message": "Möchten Sie \"{{name}}\" wirklich löschen?",
+    "cannotUndo": "Diese Aktion kann nicht rückgängig gemacht werden."
+  },
+  "subscription": {
+    "title": "Auf Pro upgraden",
+    "subtitle": "Schalten Sie alle Premium-Funktionen frei und verbessern Sie Ihr Countdown-Erlebnis",
+    "subscribe": "Abonnieren",
+    "processing": "Verarbeitung...",
+    "restorePurchases": "Käufe wiederherstellen",
+    "mostPopular": "Am beliebtesten",
+    "savings": "Ersparnis",
+    "perMonth": "pro Monat",
+    "legal": "Die Zahlung wird bei Bestätigung des Kaufs auf Ihr Apple ID-Konto belastet. Das Abonnement verlängert sich automatisch, es sei denn, die automatische Verlängerung wird mindestens 24 Stunden vor Ende des aktuellen Zeitraums deaktiviert.",
+    "plans": {
+      "monthly": {
+        "name": "Monatlich",
+        "description": "Monatlich abgerechnet"
+      },
+      "yearly": {
+        "name": "Jährlich",
+        "description": "Jährlich abgerechnet"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "Unbegrenzte Countdowns",
+      "unlimited_notes": "Unbegrenzte Notizen pro Ereignis",
+      "advanced_reminders": "Erweiterte Erinnerungsvoreinstellungen",
+      "custom_templates": "Benutzerdefinierte Ereignisvorlagen",
+      "export_data": "Ihre Daten exportieren",
+      "no_ads": "Werbefreie Erfahrung",
+      "priority_support": "Prioritätssupport"
+    },
+    "status": {
+      "active": "Aktiv",
+      "expired": "Abgelaufen",
+      "none": "Kein aktives Abonnement"
+    },
+    "manage": "Abonnement verwalten",
+    "upsell": {
+      "unlockPro": "Pro freischalten",
+      "notNow": "Nicht jetzt",
+      "customReminders": {
+        "title": "Pro: Erinnerungen anpassen",
+        "bullet1": "Mehrere Erinnerungen pro Ereignis festlegen",
+        "bullet2": "Benutzerdefinierte Zeitversätze (Wochen, Monate)",
+        "bullet3": "Intelligente Erinnerungsvorschläge"
+      },
+      "notes": {
+        "title": "Pro: Ereignisnotizen",
+        "bullet1": "Unbegrenzte Notizen pro Ereignis",
+        "bullet2": "Notizen in allen Ereignissen durchsuchen",
+        "bullet3": "Rich-Text-Formatierung"
+      },
+      "advancedTemplates": {
+        "title": "Pro: Erweiterte Vorlagen",
+        "bullet1": "Hochzeit-, Flug-, Prüfungsvorlagen",
+        "bullet2": "Benutzerdefinierte Vorlagen erstellen",
+        "bullet3": "Vorlagenbearbeitung und -freigabe"
+      },
+      "unitControls": {
+        "title": "Pro: Anzeigesteuerung",
+        "bullet1": "Sekunden ausblenden für klarere Ansicht",
+        "bullet2": "Wochen/Monate-Aufschlüsselung anzeigen",
+        "bullet3": "Benutzerdefinierte Zeitformat-Präferenzen"
+      },
+      "smartSuggestions": {
+        "title": "Pro: Intelligente Vorschläge",
+        "bullet1": "Eskalierende Erinnerungsmuster",
+        "bullet2": "Vorbereitungsmodus für Ereignisse",
+        "bullet3": "KI-gestützte Zeitvorschläge"
+      }
+    }
+  }
+}
+

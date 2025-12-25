@@ -13,7 +13,6 @@ import { Analytics } from './util/analytics';
 import { runMigration } from './util/eventMigration';
 
 import HomeScreen from "./screens/HomeScreen";
-import PastScreen from "./screens/PastScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import AnalyticsScreen from "./screens/AnalyticsScreen";
 import CalendarScreen from "./screens/CalendarScreen";
@@ -50,22 +49,6 @@ function HomeScreenStack() {
       }}
     >
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
-    </Stack.Navigator>
-  );
-}
-
-function PastScreenStack() {
-  const { theme } = useTheme();
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false, // Removed header
-        contentStyle: {
-          backgroundColor: theme.colors.background,
-        },
-      }}
-    >
-      <Stack.Screen name="PastScreen" component={PastScreen} />
     </Stack.Navigator>
   );
 }
@@ -144,8 +127,6 @@ function ThemedApp() {
 
             if (route.name === "Home") {
               iconName = focused ? "timer" : "timer-outline";
-            } else if (route.name === "Past") {
-              iconName = focused ? "hourglass" : "hourglass-outline";
             } else if (route.name === "Calendar") {
               iconName = focused ? "calendar" : "calendar-outline";
             } else if (route.name === "Analytics") {
@@ -183,7 +164,6 @@ function ThemedApp() {
         })}
       >
         <Tab.Screen name="Home" component={HomeScreenStack} />
-        <Tab.Screen name="Past" component={PastScreenStack} />
         <Tab.Screen name="Calendar" component={CalendarScreen} />
         <Tab.Screen name="Analytics" component={AnalyticsScreen} />
         <Tab.Screen name="Settings" component={SettingsScreenStack} />

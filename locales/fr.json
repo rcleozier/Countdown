@@ -1,0 +1,240 @@
+{
+  "common": {
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non",
+    "ok": "OK",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès"
+  },
+  "home": {
+    "title": "Compteurs",
+    "emptyTitle": "Aucun compte à rebours pour le moment",
+    "emptySubtitle": "Appuyez sur le bouton + pour créer votre premier compte à rebours",
+    "createButton": "Créer un nouveau compte à rebours",
+    "upcoming": "À venir",
+    "past": "Passé",
+    "all": "Tous"
+  },
+  "create": {
+    "title": "Créer un compte à rebours",
+    "namePlaceholder": "Nom de l'événement",
+    "selectDate": "Sélectionner une date",
+    "selectTime": "Sélectionner l'heure",
+    "selectIcon": "Sélectionner une icône",
+    "selectTemplate": "Sélectionner un modèle",
+    "noTemplate": "Aucun modèle",
+    "selectReminderPreset": "Préréglage de rappel",
+    "customReminders": "Rappels personnalisés"
+  },
+  "edit": {
+    "title": "Modifier le compte à rebours",
+    "namePlaceholder": "Nom de l'événement",
+    "selectDate": "Sélectionner une date",
+    "selectTime": "Sélectionner l'heure",
+    "selectIcon": "Sélectionner une icône"
+  },
+  "templates": {
+    "birthday": {
+      "name": "Anniversaire",
+      "defaultName": "Anniversaire de {{name}}"
+    },
+    "trip": {
+      "name": "Voyage",
+      "defaultName": "Voyage à {{destination}}"
+    },
+    "exam": {
+      "name": "Examen",
+      "defaultName": "Examen de {{subject}}"
+    },
+    "wedding": {
+      "name": "Mariage",
+      "defaultName": "Mariage de {{name}}"
+    },
+    "flight": {
+      "name": "Vol",
+      "defaultName": "Vol vers {{destination}}"
+    },
+    "appointment": {
+      "name": "Rendez-vous",
+      "defaultName": "Rendez-vous {{type}}"
+    }
+  },
+  "reminders": {
+    "chill": "Détendu",
+    "standard": "Standard",
+    "intense": "Intense",
+    "custom": "Personnalisé",
+    "daysBefore": "{{count}} jour avant",
+    "daysBefore_plural": "{{count}} jours avant",
+    "weeksBefore": "{{count}} semaine avant",
+    "weeksBefore_plural": "{{count}} semaines avant",
+    "monthsBefore": "{{count}} mois avant",
+    "monthsBefore_plural": "{{count}} mois avant",
+    "addReminder": "Ajouter un rappel",
+    "removeReminder": "Supprimer",
+    "noReminders": "Aucun rappel défini"
+  },
+  "notes": {
+    "title": "Notes",
+    "addNote": "Ajouter une note",
+    "editNote": "Modifier la note",
+    "placeholder": "Ajouter une note pour cet événement...",
+    "empty": "Aucune note pour le moment",
+    "autosave": "Enregistrement..."
+  },
+  "filters": {
+    "upcoming": "À venir",
+    "past": "Passé",
+    "all": "Tous",
+    "sortSoonest": "Plus proche",
+    "sortRecent": "Récemment ajouté",
+    "sortName": "Nom (A-Z)",
+    "byTemplate": "Par modèle"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "theme": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "clearAll": "Effacer tous les événements",
+    "clearConfirm": "Êtes-vous sûr de vouloir effacer tous les événements ?",
+    "clearConfirmTitle": "Confirmer l'effacement",
+    "clearConfirmMessage": "Êtes-vous sûr de vouloir effacer tous les événements ? Cette action ne peut pas être annulée.",
+    "version": "Version",
+    "rtlToggle": "Mode RTL (Dev uniquement)",
+    "appInfo": "Informations sur l'application",
+    "notes": "Notes",
+    "notesDescription": "Voir et gérer vos notes",
+    "actions": "Actions"
+  },
+  "time": {
+    "now": "maintenant",
+    "today": "aujourd'hui",
+    "tomorrow": "demain",
+    "yesterday": "hier",
+    "daysFromNow": "dans {{count}} jour",
+    "daysFromNow_plural": "dans {{count}} jours",
+    "daysAgo": "il y a {{count}} jour",
+    "daysAgo_plural": "il y a {{count}} jours",
+    "hours": "{{count}} heure",
+    "hours_plural": "{{count}} heures",
+    "minutes": "{{count}} minute",
+    "minutes_plural": "{{count}} minutes"
+  },
+  "analytics": {
+    "title": "Analyses",
+    "total": "Total des événements",
+    "totalEvents": "Total des événements",
+    "upcoming": "À venir",
+    "past": "Passé",
+    "pastEvents": "Événements passés",
+    "nextEvent": "Prochain événement",
+    "upcomingByMonth": "À venir par mois",
+    "eventsByDayOfWeek": "Événements par jour de la semaine",
+    "days": {
+      "sun": "Dim",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Jeu",
+      "fri": "Ven",
+      "sat": "Sam"
+    }
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "noEvents": "Aucun événement à cette date"
+  },
+  "past": {
+    "title": "Événements passés",
+    "empty": "Aucun événement passé"
+  },
+  "delete": {
+    "confirm": "Supprimer le compte à rebours",
+    "message": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ?",
+    "cannotUndo": "Cette action ne peut pas être annulée."
+  },
+  "subscription": {
+    "title": "Passer à Pro",
+    "subtitle": "Débloquez toutes les fonctionnalités premium et améliorez votre expérience de compte à rebours",
+    "subscribe": "S'abonner",
+    "processing": "Traitement...",
+    "restorePurchases": "Restaurer les achats",
+    "mostPopular": "Le plus populaire",
+    "savings": "économies",
+    "perMonth": "par mois",
+    "legal": "Le paiement sera débité sur votre compte Apple ID à la confirmation de l'achat. L'abonnement se renouvelle automatiquement sauf si le renouvellement automatique est désactivé au moins 24 heures avant la fin de la période en cours.",
+    "plans": {
+      "monthly": {
+        "name": "Mensuel",
+        "description": "Facturé mensuellement"
+      },
+      "yearly": {
+        "name": "Annuel",
+        "description": "Facturé annuellement"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "Compteurs illimités",
+      "unlimited_notes": "Notes illimitées par événement",
+      "advanced_reminders": "Préréglages de rappel avancés",
+      "custom_templates": "Modèles d'événements personnalisés",
+      "export_data": "Exporter vos données",
+      "no_ads": "Expérience sans publicité",
+      "priority_support": "Support prioritaire"
+    },
+    "status": {
+      "active": "Actif",
+      "expired": "Expiré",
+      "none": "Aucun abonnement actif"
+    },
+    "manage": "Gérer l'abonnement",
+    "upsell": {
+      "unlockPro": "Débloquer Pro",
+      "notNow": "Pas maintenant",
+      "customReminders": {
+        "title": "Pro : Personnaliser les rappels",
+        "bullet1": "Définir plusieurs rappels par événement",
+        "bullet2": "Décalages horaires personnalisés (semaines, mois)",
+        "bullet3": "Suggestions de rappels intelligentes"
+      },
+      "notes": {
+        "title": "Pro : Notes d'événement",
+        "bullet1": "Notes illimitées par événement",
+        "bullet2": "Rechercher des notes dans tous les événements",
+        "bullet3": "Formatage de texte enrichi"
+      },
+      "advancedTemplates": {
+        "title": "Pro : Modèles avancés",
+        "bullet1": "Modèles Mariage, Vol, Examen",
+        "bullet2": "Créer des modèles personnalisés",
+        "bullet3": "Édition et partage de modèles"
+      },
+      "unitControls": {
+        "title": "Pro : Contrôles d'affichage",
+        "bullet1": "Masquer les secondes pour une vue plus claire",
+        "bullet2": "Afficher la répartition semaines/mois",
+        "bullet3": "Préférences de format d'heure personnalisées"
+      },
+      "smartSuggestions": {
+        "title": "Pro : Suggestions intelligentes",
+        "bullet1": "Modèles de rappels progressifs",
+        "bullet2": "Mode préparation pour les événements",
+        "bullet3": "Suggestions de timing alimentées par l'IA"
+      }
+    }
+  }
+}
+

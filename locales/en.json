@@ -200,7 +200,41 @@
       "expired": "Expired",
       "none": "No active subscription"
     },
-    "manage": "Manage Subscription"
+    "manage": "Manage Subscription",
+    "upsell": {
+      "unlockPro": "Unlock Pro",
+      "notNow": "Not now",
+      "customReminders": {
+        "title": "Pro: Customize Reminders",
+        "bullet1": "Set multiple reminders per event",
+        "bullet2": "Custom time offsets (weeks, months)",
+        "bullet3": "Smart reminder suggestions"
+      },
+      "notes": {
+        "title": "Pro: Event Notes",
+        "bullet1": "Unlimited notes per event",
+        "bullet2": "Search notes across all events",
+        "bullet3": "Rich text formatting"
+      },
+      "advancedTemplates": {
+        "title": "Pro: Advanced Templates",
+        "bullet1": "Wedding, Flight, Exam templates",
+        "bullet2": "Create custom templates",
+        "bullet3": "Template editing and sharing"
+      },
+      "unitControls": {
+        "title": "Pro: Display Controls",
+        "bullet1": "Hide seconds for cleaner view",
+        "bullet2": "Show weeks/months breakdown",
+        "bullet3": "Custom time format preferences"
+      },
+      "smartSuggestions": {
+        "title": "Pro: Smart Suggestions",
+        "bullet1": "Escalating reminder patterns",
+        "bullet2": "Prep mode for events",
+        "bullet3": "AI-powered timing suggestions"
+      }
+    }
   }
 }
 

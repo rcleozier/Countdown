@@ -3,6 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import en from '../locales/en.json';
 import hi from '../locales/hi.json';
 import es from '../locales/es.json';
+import fr from '../locales/fr.json';
+import de from '../locales/de.json';
+import pt from '../locales/pt.json';
+import ja from '../locales/ja.json';
 
 const LOCALE_STORAGE_KEY = '@app_locale';
 const RTL_STORAGE_KEY = '@app_rtl_override';
@@ -12,6 +16,10 @@ export const SUPPORTED_LOCALES = {
   en: { name: 'English', translations: en, rtl: false },
   hi: { name: 'हिंदी', translations: hi, rtl: false },
   es: { name: 'Español', translations: es, rtl: false },
+  fr: { name: 'Français', translations: fr, rtl: false },
+  de: { name: 'Deutsch', translations: de, rtl: false },
+  pt: { name: 'Português', translations: pt, rtl: false },
+  ja: { name: '日本語', translations: ja, rtl: false },
 };
 
 // RTL locales (for future support)

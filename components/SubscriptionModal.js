@@ -19,7 +19,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import * as Haptics from 'expo-haptics';
 
 const SubscriptionModal = ({ visible, onClose, onSubscribe }) => {
-  const { isPurchasing, purchaseSubscription, hasActiveSubscription } = useSubscription();
+  const { isPurchasing, purchaseSubscription, hasActiveSubscription, restorePurchases } = useSubscription();
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
   const [selectedPlan, setSelectedPlan] = useState('yearly');
@@ -85,8 +85,16 @@ const SubscriptionModal = ({ visible, onClose, onSubscribe }) => {
 
   const handleRestore = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // Restore purchases functionality will be added later
-    console.log('Restore purchases');
+    const result = await restorePurchases();
+    if (result.success && result.restored) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      onClose();
+    } else if (result.success && !result.restored) {
+      // No purchases to restore
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
   };
 
   if (hasActiveSubscription) {

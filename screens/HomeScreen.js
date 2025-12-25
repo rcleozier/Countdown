@@ -40,6 +40,11 @@ import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 import { getPresetReminders } from '../util/reminderPresets';
 import { getDefaultEventName } from '../util/eventTemplates';
+import SkeletonCard from '../components/SkeletonCard';
+import FabButton from '../components/FabButton';
+import { useEntitlements } from '../hooks/useEntitlements';
+import ProUpsellSheet from '../components/ProUpsellSheet';
+import LockedRow from '../components/LockedRow';
 
 const IconItem = ({ icon, isSelected, onPress, isDark }) => {
   const iconScale = useRef(new Animated.Value(1)).current;
@@ -128,6 +133,10 @@ const generateGUID = () =>
 const HomeScreen = () => {
   const [countdowns, setCountdowns] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [proUpsellVisible, setProUpsellVisible] = useState(false);
+  const [proUpsellFeature, setProUpsellFeature] = useState(null);
+  const { hasFeature } = useEntitlements();
   const [modalVisible, setModalVisible] = useState(false);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
@@ -172,6 +181,13 @@ const HomeScreen = () => {
   const loadCountdowns = async () => {
     try {
       setIsLoading(true);
+      setLoadingTimeout(false);
+      
+      // Set timeout for loading fallback
+      const timeout = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 2000);
+      
       const storedCountdowns = await AsyncStorage.getItem("countdowns");
       const hasLaunchedBefore = await AsyncStorage.getItem("hasLaunchedBefore");
       
@@ -188,6 +204,7 @@ const HomeScreen = () => {
       console.error("Error loading countdowns", error);
     } finally {
       setIsLoading(false);
+      clearTimeout(timeout);
     }
   };
 
@@ -758,7 +775,27 @@ const HomeScreen = () => {
 
       {isLoading ? (
         <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-          <Text style={[styles.loadingText, { color: theme.colors.text }]}>{t('common.loading')}</Text>
+          {loadingTimeout ? (
+            <View style={styles.loadingFallback}>
+              <Text style={[styles.loadingText, { color: isDark ? '#F5F5F5' : '#111111' }]}>
+                Loading your events...
+              </Text>
+              <TouchableOpacity
+                style={[styles.retryButton, { backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }]}
+                onPress={loadCountdowns}
+              >
+                <Text style={[styles.retryButtonText, { color: isDark ? '#4E9EFF' : '#4A9EFF' }]}>
+                  Retry
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.skeletonContainer}>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </View>
+          )}
         </View>
       ) : filteredAndSortedCountdowns.length === 0 && !searchQuery && filterType === 'all' ? (
         <LinearGradient
@@ -849,21 +886,7 @@ const HomeScreen = () => {
             renderItem={renderItem}
             contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
           />
-          {/* Floating Button to Add New Event */}
-          <Pressable
-            onPress={handleOpenModal}
-            style={({ pressed }) => [
-              styles.floatingButton,
-              {
-                backgroundColor: theme.colors.button,
-                opacity: pressed ? 0.9 : 1,
-                transform: [{ scale: pressed ? 0.98 : 1 }],
-              }
-            ]}
-          >
-            <Ionicons name="add" size={wp('5%')} color={theme.colors.buttonText} style={{ marginRight: wp('2%') }} />
-            <Text style={[styles.floatingButtonText, { color: theme.colors.buttonText }]}>Add New Event</Text>
-          </Pressable>
+          <FabButton onPress={handleOpenModal} />
         </>
       )}
 
@@ -1270,6 +1293,18 @@ const HomeScreen = () => {
           fallSpeed={2500}
         />
       )}
+
+      {/* Pro Upsell Sheet */}
+      <ProUpsellSheet
+        visible={proUpsellVisible}
+        onClose={() => setProUpsellVisible(false)}
+        feature={proUpsellFeature}
+        onUpgrade={() => {
+          // Navigate to subscription screen or open subscription modal
+          // For now, just log
+          console.log('Upgrade to Pro:', proUpsellFeature);
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -1358,16 +1393,32 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
+    paddingHorizontal: wp("5%"),
+    paddingVertical: wp("4%"),
+  },
+  skeletonContainer: {
+    flex: 1,
+  },
+  loadingFallback: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: wp("6%"),
-    paddingVertical: wp("8%"),
   },
   loadingText: {
     fontSize: wp("4%"),
+    fontWeight: "500",
+    marginBottom: wp("4%"),
+    fontFamily: "System",
+  },
+  retryButton: {
+    paddingVertical: wp("3%"),
+    paddingHorizontal: wp("5%"),
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    fontSize: wp("4%"),
     fontWeight: "600",
-    color: "#2C3E50",
-    fontFamily: "monospace",
+    fontFamily: "System",
   },
   floatingButton: {
     position: "absolute",
