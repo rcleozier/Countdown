@@ -41,15 +41,15 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
         t('subscription.upsell.unlockPro'),
-        'Pro unlocked! Enjoy all premium features.',
-        [{ text: 'OK', onPress: onClose }]
+        t('subscription.proUnlocked'),
+        [{ text: t('common.ok'), onPress: onClose }]
       );
     } catch (err) {
       if (!err.userCancelled) {
         Alert.alert(
-          'Purchase Failed',
-          err.message || 'Something went wrong. Please try again.',
-          [{ text: 'OK' }]
+          t('subscription.purchaseFailed'),
+          err.message || t('subscription.purchaseFailedMessage'),
+          [{ text: t('common.ok') }]
         );
       }
     } finally {
@@ -66,15 +66,15 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
-        'Restore Complete',
-        'Your purchases have been restored.',
-        [{ text: 'OK', onPress: onClose }]
+        t('subscription.restoreComplete'),
+        t('subscription.restoreCompleteMessage'),
+        [{ text: t('common.ok'), onPress: onClose }]
       );
     } catch (err) {
       Alert.alert(
-        'Restore Failed',
-        err.message || 'Could not restore purchases. Please try again.',
-        [{ text: 'OK' }]
+        t('subscription.restoreFailed'),
+        err.message || t('subscription.restoreFailedMessage'),
+        [{ text: t('common.ok') }]
       );
     } finally {
       setIsRestoring(false);
@@ -93,14 +93,14 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.colors.text }]}>
             {feature === 'Standard & Intense Reminders' 
-              ? 'Upgrade for stronger reminders'
-              : 'Upgrade to Pro'
+              ? t('subscription.upgradeTitleReminders')
+              : t('subscription.upgradeTitle')
             }
           </Text>
           <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
             {feature === 'Standard & Intense Reminders'
-              ? 'Standard and Intense reminders are included with Pro.'
-              : 'More control, less noise.'
+              ? t('subscription.upgradeSubtitleReminders')
+              : t('subscription.upgradeSubtitle')
             }
           </Text>
         </View>
@@ -110,19 +110,19 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
           <View style={styles.featureItem}>
             <Ionicons name="checkmark-circle" size={wp('5%')} color={theme.colors.success || '#4CAF50'} />
             <Text style={[styles.featureText, { color: theme.colors.text }]}>
-              Standard & Intense reminders
+              {t('subscription.featureStandardReminders')}
             </Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="checkmark-circle" size={wp('5%')} color={theme.colors.success || '#4CAF50'} />
             <Text style={[styles.featureText, { color: theme.colors.text }]}>
-              Extended notes (up to 5000 characters)
+              {t('subscription.featureExtendedNotes')}
             </Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="checkmark-circle" size={wp('5%')} color={theme.colors.success || '#4CAF50'} />
             <Text style={[styles.featureText, { color: theme.colors.text }]}>
-              No ads
+              {t('subscription.featureNoAds')}
             </Text>
           </View>
         </View>
@@ -142,7 +142,7 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
             {isPurchasing ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.primaryButtonText}>Subscribe for {monthlyPkg.product.priceString}/month</Text>
+              <Text style={styles.primaryButtonText}>{t('subscription.subscribeFor')} {monthlyPkg.product.priceString}/month</Text>
             )}
           </TouchableOpacity>
         ) : (
@@ -159,7 +159,7 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
             {isPurchasing ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.primaryButtonText}>Start Pro</Text>
+              <Text style={styles.primaryButtonText}>{t('subscription.startPro')}</Text>
             )}
           </TouchableOpacity>
         )}
@@ -182,7 +182,7 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
               <ActivityIndicator color={theme.colors.textSecondary} size="small" />
             ) : (
               <Text style={[styles.secondaryButtonText, { color: theme.colors.textSecondary }]}>
-                Restore purchases
+                {t('subscription.restorePurchases')}
               </Text>
             )}
           </TouchableOpacity>
@@ -193,7 +193,7 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
             disabled={isPurchasing || isRestoring}
           >
             <Text style={[styles.secondaryButtonText, { color: theme.colors.textSecondary }]}>
-              Not now
+              {t('subscription.upsell.notNow')}
             </Text>
           </TouchableOpacity>
         </View>

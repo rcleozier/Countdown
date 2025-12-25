@@ -200,24 +200,40 @@ const HomeScreen = () => {
       const storedCountdowns = await AsyncStorage.getItem("countdowns");
       const hasLaunchedBefore = await AsyncStorage.getItem("hasLaunchedBefore");
       
+      console.log('🔍 [LOAD DEBUG] Raw stored data exists:', !!storedCountdowns);
+      console.log('🔍 [LOAD DEBUG] Raw stored data length:', storedCountdowns ? storedCountdowns.length : 0);
+      console.log('🔍 [LOAD DEBUG] Raw stored data preview:', storedCountdowns ? storedCountdowns.substring(0, 200) : 'null');
+      console.log('🔍 [LOAD DEBUG] Has launched before:', !!hasLaunchedBefore);
+      
       if (storedCountdowns) {
         try {
           const parsed = JSON.parse(storedCountdowns);
+          console.log('🔍 [LOAD DEBUG] Parsed data type:', typeof parsed);
+          console.log('🔍 [LOAD DEBUG] Parsed data is array:', Array.isArray(parsed));
+          
           if (Array.isArray(parsed)) {
+            console.log('🔍 [LOAD DEBUG] Parsed countdowns count:', parsed.length);
+            console.log('🔍 [LOAD DEBUG] Parsed countdowns sample (first):', parsed.length > 0 ? JSON.stringify(parsed[0], null, 2) : 'no countdowns');
+            console.log('🔍 [LOAD DEBUG] Parsed countdowns IDs:', parsed.map(c => c.id));
             setCountdowns(parsed);
           } else {
-            console.error('Countdowns data is not an array');
+            console.error('❌ [LOAD DEBUG] Countdowns data is not an array');
+            console.error('🔍 [LOAD DEBUG] Data type:', typeof parsed);
+            console.error('🔍 [LOAD DEBUG] Data value:', JSON.stringify(parsed, null, 2).substring(0, 500));
             setCountdowns([]);
           }
         } catch (parseError) {
-          console.error('Error parsing countdowns:', parseError);
+          console.error('❌ [LOAD DEBUG] Error parsing countdowns:', parseError);
+          console.error('🔍 [LOAD DEBUG] Raw data that failed:', storedCountdowns.substring(0, 500));
           setCountdowns([]);
         }
       } else if (!hasLaunchedBefore) {
         // First time user - seed with test data
+        console.log('🔍 [LOAD DEBUG] First time user - seeding test data');
         await seedTestDataForNewUser();
         await AsyncStorage.setItem("hasLaunchedBefore", "true");
       } else {
+        console.log('🔍 [LOAD DEBUG] No stored data and has launched before - setting empty array');
         setCountdowns([]);
       }
     } catch (error) {

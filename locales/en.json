@@ -70,23 +70,6 @@
       "defaultName": "{{type}} Appointment"
     }
   },
-  "reminders": {
-    "chill": "Chill",
-    "standard": "Standard",
-    "intense": "Intense",
-    "custom": "Custom",
-    "daysBefore": "{{count}} day before",
-    "daysBefore_plural": "{{count}} days before",
-    "weeksBefore": "{{count}} week before",
-    "weeksBefore_plural": "{{count}} weeks before",
-    "monthsBefore": "{{count}} month before",
-    "monthsBefore_plural": "{{count}} months before",
-    "addReminder": "Add Reminder",
-    "removeReminder": "Remove",
-    "noReminders": "No reminders set",
-    "customizeDescription": "Customize reminder timing and styles",
-    "customizeProOnly": "Pro feature: Customize reminders with multiple timings"
-  },
   "notes": {
     "title": "Notes",
     "addNote": "Add note",
@@ -178,6 +161,22 @@
     "savings": "savings",
     "perMonth": "per month",
     "legal": "Payment will be charged to your Apple ID account at the confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.",
+    "proUnlocked": "Pro unlocked! Enjoy all premium features.",
+    "purchaseFailed": "Purchase Failed",
+    "purchaseFailedMessage": "Something went wrong. Please try again.",
+    "restoreComplete": "Restore Complete",
+    "restoreCompleteMessage": "Your purchases have been restored.",
+    "restoreFailed": "Restore Failed",
+    "restoreFailedMessage": "Could not restore purchases. Please try again.",
+    "upgradeTitle": "Upgrade to Pro",
+    "upgradeTitleReminders": "Upgrade for stronger reminders",
+    "upgradeSubtitle": "More control, less noise.",
+    "upgradeSubtitleReminders": "Standard and Intense reminders are included with Pro.",
+    "featureStandardReminders": "Standard & Intense reminders",
+    "featureExtendedNotes": "Extended notes (up to 5000 characters)",
+    "featureNoAds": "No ads",
+    "subscribeFor": "Subscribe for",
+    "startPro": "Start Pro",
     "plans": {
       "monthly": {
         "name": "Monthly",
@@ -237,6 +236,47 @@
         "bullet3": "AI-powered timing suggestions"
       }
     }
+  },
+  "countdown": {
+    "endsToday": "Ends today",
+    "endsTomorrow": "Ends tomorrow",
+    "justStarted": "Just started!",
+    "iconLabel": "Icon:",
+    "longNotes": "Long Notes",
+    "upgradeNotes": "Upgrade to Pro for 5000-char notes + no ads",
+    "proEnabled": "Pro enabled",
+    "pickDateError": "Please pick a date on the calendar.",
+    "futureDateError": "Please select a date and time in the future.",
+    "allDay": "All Day"
+  },
+  "reminders": {
+    "chill": "Chill",
+    "standard": "Standard",
+    "intense": "Intense",
+    "custom": "Custom",
+    "daysBefore": "{{count}} day before",
+    "daysBefore_plural": "{{count}} days before",
+    "weeksBefore": "{{count}} week before",
+    "weeksBefore_plural": "{{count}} weeks before",
+    "monthsBefore": "{{count}} month before",
+    "monthsBefore_plural": "{{count}} months before",
+    "addReminder": "Add Reminder",
+    "removeReminder": "Remove",
+    "noReminders": "No reminders set",
+    "customizeDescription": "Customize reminder timing and styles",
+    "customizeProOnly": "Pro feature: Customize reminders with multiple timings",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "event": "Event",
+    "reminder": "Reminder",
+    "untitledEvent": "Untitled Event",
+    "searchPlaceholder": "Search reminders by event",
+    "date": "Date",
+    "filterProMessage": "is part of Pro. Upgrade to better organize your reminders.",
+    "thisFilter": "This filter",
+    "updateError": "Failed to update reminder",
+    "updateErrorPlural": "Failed to update reminders",
+    "settingsError": "Could not open settings"
   }
 }
 

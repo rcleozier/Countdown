@@ -250,18 +250,18 @@ const RemindersScreen = ({ navigation }) => {
   const groupedReminders = displayReminders.reduce((groups, reminder) => {
     const fireAt = moment(reminder.fireAtISO);
     const now = moment();
-    let groupKey = groupBy === 'event' ? (reminder.event.name || 'Event') : undefined;
+    let groupKey = groupBy === 'event' ? (reminder.event.name || t('reminders.event')) : undefined;
 
     if (groupBy === 'date') {
       if (fireAt.isSame(now, 'day')) {
-        groupKey = 'Today';
+        groupKey = t('reminders.today');
       } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
-        groupKey = 'Tomorrow';
+        groupKey = t('reminders.tomorrow');
       } else {
         groupKey = fireAt.format('dddd, MMM D');
       }
     } else {
-      groupKey = groupKey || 'Event';
+      groupKey = groupKey || t('reminders.event');
     }
 
     if (!groups[groupKey]) {
@@ -304,7 +304,7 @@ const RemindersScreen = ({ navigation }) => {
       await syncScheduledReminders(updatedEvents, isPro);
     } catch (error) {
       console.error('Error toggling reminder:', error);
-      Alert.alert('Error', 'Failed to update reminder');
+      Alert.alert(t('common.error'), t('reminders.updateError'));
     }
   };
 
@@ -334,7 +334,7 @@ const RemindersScreen = ({ navigation }) => {
       await syncScheduledReminders(updatedEvents, isPro);
     } catch (error) {
       console.error('Error toggling event reminders:', error);
-      Alert.alert('Error', 'Failed to update reminders');
+      Alert.alert(t('common.error'), t('reminders.updateErrorPlural'));
     }
   };
 
@@ -362,7 +362,7 @@ const RemindersScreen = ({ navigation }) => {
       await syncScheduledReminders(updatedEvents, isPro);
     } catch (error) {
       console.error('Error toggling reminders:', error);
-      Alert.alert('Error', 'Failed to update reminders');
+      Alert.alert(t('common.error'), t('reminders.updateErrorPlural'));
     }
   };
 
@@ -371,7 +371,7 @@ const RemindersScreen = ({ navigation }) => {
     try {
       await Linking.openSettings();
     } catch (error) {
-      Alert.alert('Error', 'Could not open settings');
+      Alert.alert(t('common.error'), t('reminders.settingsError'));
     }
   };
 
@@ -384,7 +384,7 @@ const RemindersScreen = ({ navigation }) => {
     const fireAt = moment(reminder.fireAtISO);
     const now = moment();
     const within7 = fireAt.diff(now, 'days') <= 7 && fireAt.isAfter(now);
-    const line1 = reminder.typeLabel || reminder.type || 'Reminder';
+    const line1 = reminder.typeLabel || reminder.type || t('reminders.reminder');
     const line2 = (() => {
       if (within7) {
         return fireAt.calendar(null, {
@@ -439,7 +439,7 @@ const RemindersScreen = ({ navigation }) => {
               { color: isDark ? '#A1A1A1' : '#6B7280' }
             ]}>
               {filter === 'all'
-                ? `${reminder.event.name || 'Untitled Event'} · ${line2}`
+                ? `${reminder.event.name || t('reminders.untitledEvent')} · ${line2}`
                 : line2}
             </Text>
           </View>
@@ -575,7 +575,7 @@ const RemindersScreen = ({ navigation }) => {
               }}
             />
             {[
-              { key: 'today', label: 'Today' },
+              { key: 'today', label: t('reminders.today') },
               { key: 'week', label: 'This Week' },
               { key: 'enabled', label: 'Enabled' },
             ].map(({ key, label }) => {
@@ -607,7 +607,7 @@ const RemindersScreen = ({ navigation }) => {
             <>
               <View style={styles.proControls}>
                 <TextInput
-                  placeholder="Search reminders by event"
+                  placeholder={t('reminders.searchPlaceholder')}
                   placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
                   value={searchQuery}
                   onChangeText={setSearchQuery}
@@ -626,7 +626,7 @@ const RemindersScreen = ({ navigation }) => {
                     {['date', 'event'].map(mode => (
                       <Pill
                         key={mode}
-                        label={mode === 'date' ? 'Date' : 'Event'}
+                        label={mode === 'date' ? t('reminders.date') : t('reminders.event')}
                         active={groupBy === mode}
                         onPress={() => {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -751,7 +751,7 @@ const RemindersScreen = ({ navigation }) => {
             Pro filter
           </Text>
           <Text style={{ fontSize: 15, fontWeight: '500', color: isDark ? '#CBD5E1' : '#475569' }}>
-            {filterInfoLabel || 'This filter'} is part of Pro. Upgrade to better organize your reminders.
+            {filterInfoLabel || t('reminders.thisFilter')} {t('reminders.filterProMessage')}
           </Text>
           <TouchableOpacity
             onPress={() => {

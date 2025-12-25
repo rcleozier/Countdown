@@ -18,6 +18,7 @@ import { Calendar } from "react-native-calendars";
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../context/LocaleContext';
 import { useEntitlements } from '../src/billing/useEntitlements';
 import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from './ProUpsellInline';
@@ -120,6 +121,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [showNotesEditor, setShowNotesEditor] = useState(false);
   const { theme, isDark } = useTheme();
+  const { t } = useLocale();
   
   // Animation refs
   const cardScale = useRef(new Animated.Value(1)).current;
@@ -244,7 +246,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
 
   const handleConfirmDate = () => {
     if (!tempSelectedDate) {
-      alert("Please pick a date on the calendar.");
+      alert(t('countdown.pickDateError'));
       return;
     }
     const [year, month, day] = tempSelectedDate.split("-");
@@ -267,7 +269,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     combinedDateTime.setMilliseconds(0);
     
     if (combinedDateTime <= new Date()) {
-      alert("Please select a date and time in the future.");
+      alert(t('countdown.futureDateError'));
       return;
     }
     
@@ -509,7 +511,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             }
           ]}>
             {progress === 0
-              ? 'Just started!'
+              ? t('countdown.justStarted')
               : `${Math.round(progress * 100)}% of the way there`}
           </Text>
         </Animated.View>
@@ -640,9 +642,9 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       { color: isDark ? '#6B7280' : '#9CA3AF', marginLeft: wp('6.5%'), marginTop: wp('1%') }
                     ]}>
                       {timeLeft.days === 0 
-                        ? 'Ends today'
+                        ? t('countdown.endsToday')
                         : timeLeft.days === 1
-                        ? 'Ends tomorrow'
+                        ? t('countdown.endsTomorrow')
                         : `Ends in ${timeLeft.days} days`}
                     </Text>
                   </>
@@ -974,7 +976,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>Name</Text>
               <TextInput
-                placeholder="Event name"
+                placeholder={t('edit.namePlaceholder')}
                 placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
                 value={editName}
                 onChangeText={setEditName}
@@ -1208,7 +1210,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     styles.iconButtonText,
                     { color: isDark ? '#F5F5F5' : '#111111' }
                   ]}>
-                    {editIcon ? `Icon: ${editIcon}` : 'Select Icon'}
+                    {editIcon ? `${t('countdown.iconLabel')} ${editIcon}` : t('edit.selectIcon')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1265,7 +1267,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   <TouchableOpacity
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setPaywallFeature('Long Notes');
+                      setPaywallFeature(t('countdown.longNotes'));
                       setPaywallVisible(true);
                     }}
                     activeOpacity={0.7}
@@ -1275,7 +1277,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       styles.notesUpsellText,
                       { color: isDark ? '#6B7280' : '#9CA3AF' }
                     ]}>
-                      Upgrade to Pro for 5000-char notes + no ads
+                      {t('countdown.upgradeNotes')}
                     </Text>
                     <Ionicons
                       name="lock-closed"
@@ -1296,7 +1298,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       styles.proEnabledText,
                       { color: isDark ? 'rgba(60,196,162,0.5)' : 'rgba(78,158,255,0.5)' }
                     ]}>
-                      Pro enabled
+                      {t('countdown.proEnabled')}
                     </Text>
                   </View>
                 )}
