@@ -11,7 +11,6 @@ import { LocaleProvider } from './context/LocaleContext';
 import { PurchasesProvider } from './src/billing/PurchasesProvider';
 import { AdProvider } from './src/ads/AdProvider';
 import { Analytics } from './util/analytics';
-import { runMigration } from './util/eventMigration';
 
 import HomeScreen from "./screens/HomeScreen";
 import SettingsScreen from "./screens/SettingsScreen";
@@ -156,8 +155,6 @@ function App() {
   useEffect(() => {
     requestTrackingPermission();
     Analytics.initialize();
-    // Run data migration on app start
-    runMigration();
   }, []);
 
   return (

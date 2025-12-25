@@ -41,8 +41,15 @@ const AnalyticsScreen = () => {
       const stored = await AsyncStorage.getItem("countdowns");
       const allEvents = stored ? JSON.parse(stored) : [];
       const now = moment();
-      const upcoming = allEvents.filter((e) => moment(e.date).isAfter(now));
-      const past = allEvents.filter((e) => moment(e.date).isBefore(now));
+      // Use nextOccurrenceAt for recurring events
+      const upcoming = allEvents.filter((e) => {
+        const eventDate = e.nextOccurrenceAt || e.date;
+        return moment(eventDate).isAfter(now);
+      });
+      const past = allEvents.filter((e) => {
+        const eventDate = e.nextOccurrenceAt || e.date;
+        return moment(eventDate).isBefore(now);
+      });
       
       const newStats = {
         total: allEvents.length,
@@ -71,7 +78,11 @@ const AnalyticsScreen = () => {
       ]).start();
 
       // Next upcoming event
-      const sortedUpcoming = upcoming.sort((a, b) => moment(a.date).diff(moment(b.date)));
+      const sortedUpcoming = upcoming.sort((a, b) => {
+        const dateA = moment(a.nextOccurrenceAt || a.date);
+        const dateB = moment(b.nextOccurrenceAt || b.date);
+        return dateA.diff(dateB);
+      });
       if (sortedUpcoming.length > 0) {
         setNextEvent(sortedUpcoming[0]);
       } else {
@@ -84,7 +95,8 @@ const AnalyticsScreen = () => {
       const buckets = Array(6).fill(0);
       for (let i = 0; i < 6; i++) labels.push(start.clone().add(i, 'months').format('MMM'));
       allEvents.forEach((e) => {
-        const m = moment(e.date);
+        const eventDate = e.nextOccurrenceAt || e.date;
+        const m = moment(eventDate);
         if (m.isSameOrAfter(start) && m.isBefore(start.clone().add(6, 'months'))) {
           const idx = m.diff(start, 'months');
           if (idx >= 0 && idx < 6) buckets[idx] += 1;
@@ -105,7 +117,8 @@ const AnalyticsScreen = () => {
       ];
       const dayCounts = Array(7).fill(0);
       allEvents.forEach((e) => {
-        const dayIndex = moment(e.date).day();
+        const eventDate = e.nextOccurrenceAt || e.date;
+        const dayIndex = moment(eventDate).day();
         dayCounts[dayIndex] += 1;
       });
       setDayOfWeekLabels(dayLabels);

@@ -204,6 +204,19 @@ export const migrateEvents = async () => {
         migrated.createdAt = migrated.date || new Date().toISOString();
       }
 
+      // Add recurrence fields if missing (for backward compatibility)
+      // Note: This migration is optional - the app will work without it due to defensive coding
+      // but it ensures data consistency and slightly better performance
+      if (migrated.recurrence === undefined) {
+        migrated.recurrence = 'none';
+      }
+      if (migrated.nextOccurrenceAt === undefined) {
+        // For non-recurring events, nextOccurrenceAt equals the event date
+        migrated.nextOccurrenceAt = migrated.date;
+      }
+      // originalDateAt is optional, only set if we have a recurring event that's been rolled forward
+      // For new migrations, we'll leave it undefined unless needed
+
       return migrated;
     });
 
@@ -304,8 +317,6 @@ export const migrateEvents = async () => {
   }
 };
 
-// Run migration on app start
-export const runMigration = async () => {
-  await migrateEvents();
-};
+// Migration removed - all fields are normalized on-the-fly in loadCountdowns()
+// This ensures backward compatibility without requiring a migration step
 

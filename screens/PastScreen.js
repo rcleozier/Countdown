@@ -22,10 +22,17 @@ const PastScreen = () => {
       if (stored) {
         const allEvents = JSON.parse(stored);
         const now = moment();
-        // Filter for events that have already ended
-        const past = allEvents.filter((e) => moment(e.date).isBefore(now));
+        // Filter for events that have already ended (use nextOccurrenceAt for recurring events)
+        const past = allEvents.filter((e) => {
+          const eventDate = e.nextOccurrenceAt || e.date;
+          return moment(eventDate).isBefore(now);
+        });
         // Sort descending by date (most recent first)
-        past.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        past.sort((a, b) => {
+          const dateA = new Date(a.nextOccurrenceAt || a.date).getTime();
+          const dateB = new Date(b.nextOccurrenceAt || b.date).getTime();
+          return dateB - dateA;
+        });
         // Take the first 50
         const lastFifty = past.slice(0, 50);
         setPastEvents(lastFifty);

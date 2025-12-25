@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../context/LocaleContext';
 import { useEntitlements } from '../src/billing/useEntitlements';
+import { getRecurrenceLabel, RECURRENCE_TYPES } from '../util/recurrence';
 import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from './ProUpsellInline';
 import LockRow from './LockRow';
@@ -112,7 +113,9 @@ const IconItem = ({ icon, isSelected, onPress, isDark }) => {
 };
 
 const CountdownItem = ({ event, index, onDelete, onEdit }) => {
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
+  // Use nextOccurrenceAt for recurring events, otherwise use date
+  const displayDate = event.nextOccurrenceAt || event.date;
+  const [timeLeft, setTimeLeft] = useState(getTimeLeft(displayDate));
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -167,10 +170,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeLeft(getTimeLeft(event.date));
+      setTimeLeft(getTimeLeft(displayDate));
     }, 1000);
     return () => clearInterval(interval);
-  }, [event.date]);
+  }, [displayDate]);
 
   // Animate progress bar when progress changes
   useEffect(() => {
@@ -214,7 +217,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   // Progress calculation
   const getProgress = () => {
     const now = moment();
-    const end = moment(event.date);
+    const end = moment(displayDate);
     const todayStart = moment().startOf('day');
     if (now.isAfter(end)) return 1;
     if (now.isBefore(todayStart)) return 0;
@@ -223,7 +226,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     return Math.min(Math.max(elapsed / total, 0), 1);
   };
   const progress = getProgress();
-  const isPastEvent = moment(event.date).isBefore(moment());
+  const isPastEvent = moment(displayDate).isBefore(moment());
 
   // Icons are centralized in util/eventIcons to ensure add and edit use the same set
 
@@ -234,9 +237,11 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     setEditName(event.name);
     setEditIcon(event.icon);
     setEditNotes(event.notes || '');
-    setSelectedDate(new Date(event.date));
-    setSelectedHour(moment(event.date).hour());
-    setSelectedMinute(moment(event.date).minute());
+    // For editing, use originalDateAt if available (for recurring events), otherwise use date
+    const editDate = event.originalDateAt || event.date;
+    setSelectedDate(new Date(editDate));
+    setSelectedHour(moment(editDate).hour());
+    setSelectedMinute(moment(editDate).minute());
     setEditModalVisible(true);
   };
 
@@ -279,6 +284,15 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       icon: editIcon,
       date: combinedDateTime.toISOString(),
       notes: editNotes.trim() || '',
+      // Preserve recurrence fields
+      recurrence: event.recurrence || RECURRENCE_TYPES.NONE,
+      // If recurring, update nextOccurrenceAt and preserve originalDateAt
+      nextOccurrenceAt: event.recurrence && event.recurrence !== RECURRENCE_TYPES.NONE 
+        ? combinedDateTime.toISOString() 
+        : (event.nextOccurrenceAt || combinedDateTime.toISOString()),
+      originalDateAt: event.recurrence && event.recurrence !== RECURRENCE_TYPES.NONE
+        ? (event.originalDateAt || event.date)
+        : undefined,
     };
     
     onEdit(updatedEvent);
@@ -407,22 +421,39 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
                   </Text>
                 )}
-                <Text style={[
-                  styles.date,
-                  {
-                    color: isDark ? '#A1A1A1' : '#6B7280',
-                    fontSize: wp('3.5%'), // 13-14px
-                  }
-                ]}>
-                  {(() => {
-                    const m = moment(event.date);
-                    if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
-                      return m.format("MMM D, YYYY") + " (All Day)";
-                    } else {
-                      return m.format("MMM D, YYYY [at] hh:mm A");
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: wp('1%') }}>
+                  {event.recurrence && event.recurrence !== RECURRENCE_TYPES.NONE && (
+                    <Text style={{ fontSize: wp('3.5%') }}>🔁</Text>
+                  )}
+                  <Text style={[
+                    styles.date,
+                    {
+                      color: isDark ? '#A1A1A1' : '#6B7280',
+                      fontSize: wp('3.5%'), // 13-14px
                     }
-                  })()}
-                </Text>
+                  ]}>
+                    {(() => {
+                      const m = moment(displayDate);
+                      if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
+                        return m.format("MMM D, YYYY") + " (All Day)";
+                      } else {
+                        return m.format("MMM D, YYYY [at] hh:mm A");
+                      }
+                    })()}
+                  </Text>
+                  {event.recurrence && event.recurrence !== RECURRENCE_TYPES.NONE && (
+                    <Text style={[
+                      styles.date,
+                      {
+                        color: isDark ? '#6B7280' : '#9CA3AF',
+                        fontSize: wp('3%'),
+                        fontStyle: 'italic',
+                      }
+                    ]}>
+                      • Repeats {getRecurrenceLabel(event.recurrence).toLowerCase()}
+                    </Text>
+                  )}
+                </View>
               </View>
             </View>
             {/* Action buttons */}
@@ -597,7 +628,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   { color: isDark ? '#FFFFFF' : '#1A1A1A' }
                 ]}>
                   {(() => {
-                    const m = moment(event.date);
+                    const m = moment(displayDate);
                     if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
                       return m.format("MMMM D, YYYY") + " (All Day)";
                     } else {
@@ -605,6 +636,24 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     }
                   })()}
                 </Text>
+                {event.recurrence && event.recurrence !== RECURRENCE_TYPES.NONE && (
+                  <Text style={[
+                    styles.detailsValue,
+                    { 
+                      color: isDark ? '#6B7280' : '#9CA3AF',
+                      fontSize: wp('3.5%'),
+                      marginTop: wp('1%'),
+                    }
+                  ]}>
+                    Repeats {getRecurrenceLabel(event.recurrence).toLowerCase()}
+                    {event.nextOccurrenceAt && event.originalDateAt && (
+                      <Text style={{ fontStyle: 'italic' }}>
+                        {' • Next: '}
+                        {moment(event.nextOccurrenceAt).format("MMM D, YYYY [at] h:mm A")}
+                      </Text>
+                    )}
+                  </Text>
+                )}
               </View>
 
               {/* Countdown */}

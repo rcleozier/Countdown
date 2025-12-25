@@ -45,12 +45,11 @@ import FabButton from '../components/FabButton';
 import { useEntitlements } from '../src/billing/useEntitlements';
 import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from '../components/ProUpsellInline';
+import ProBadge from '../components/ProBadge';
 import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
 import { isPresetPro, getPresetDescription } from '../util/reminderPresets';
 import { syncScheduledReminders } from '../util/reminderScheduler';
-import Pill from '../components/Pill';
-import LockRow from '../components/LockRow';
-import ProBadge from '../components/ProBadge';
+import { rollForwardIfNeeded, RECURRENCE_TYPES, getRecurrenceLabel, isRecurrencePro } from '../util/recurrence';
 
 const IconItem = ({ icon, isSelected, onPress, isDark }) => {
   const iconScale = useRef(new Animated.Value(1)).current;
@@ -159,6 +158,8 @@ const HomeScreen = () => {
   const [confettiKey, setConfettiKey] = useState(0);
   const [reminderPreset, setReminderPreset] = useState('off'); // 'off', 'simple', 'standard', 'intense'
   const [remindersEnabled, setRemindersEnabled] = useState(true);
+  const [recurrence, setRecurrence] = useState(RECURRENCE_TYPES.NONE);
+  const [recurrencePickerVisible, setRecurrencePickerVisible] = useState(false);
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
   
@@ -215,7 +216,43 @@ const HomeScreen = () => {
             console.log('🔍 [LOAD DEBUG] Parsed countdowns count:', parsed.length);
             console.log('🔍 [LOAD DEBUG] Parsed countdowns sample (first):', parsed.length > 0 ? JSON.stringify(parsed[0], null, 2) : 'no countdowns');
             console.log('🔍 [LOAD DEBUG] Parsed countdowns IDs:', parsed.map(c => c.id));
-            setCountdowns(parsed);
+            
+            // Normalize and roll forward events (backward compatible - no migration needed)
+            const now = new Date();
+            let needsSave = false;
+            const rolledEvents = parsed.map(event => {
+              // Normalize missing fields for old events (backward compatibility)
+              // This happens on-the-fly, so no migration is required
+              const normalized = {
+                ...event,
+                recurrence: event.recurrence !== undefined ? event.recurrence : RECURRENCE_TYPES.NONE,
+                nextOccurrenceAt: event.nextOccurrenceAt !== undefined ? event.nextOccurrenceAt : event.date,
+              };
+              
+              const rolled = rollForwardIfNeeded(normalized, now);
+              
+              // Check if we need to save (either rolled forward or normalized fields)
+              if (rolled !== normalized) {
+                needsSave = true;
+                console.log('🔁 [RECURRENCE] Rolled forward event', event.id, 'from', normalized.nextOccurrenceAt, 'to', rolled.nextOccurrenceAt);
+              } else if (normalized.recurrence !== event.recurrence || normalized.nextOccurrenceAt !== event.nextOccurrenceAt) {
+                // Normalized fields for old event - save for consistency
+                needsSave = true;
+              }
+              
+              return rolled;
+            });
+            
+            if (needsSave) {
+              // Save normalized/rolled-forward events (ensures consistency going forward)
+              await AsyncStorage.setItem("countdowns", JSON.stringify(rolledEvents));
+              // Reschedule notifications for rolled events
+              syncScheduledReminders(rolledEvents, isPro).catch(err => {
+                console.error('Error rescheduling after roll-forward:', err);
+              });
+            }
+            
+            setCountdowns(rolledEvents);
           } else {
             console.error('❌ [LOAD DEBUG] Countdowns data is not an array');
             console.error('🔍 [LOAD DEBUG] Data type:', typeof parsed);
@@ -366,17 +403,27 @@ const HomeScreen = () => {
       });
     }
     
-    // Apply type filter
+    // Apply type filter (use nextOccurrenceAt for recurring events)
     const now = new Date();
     if (filterType === 'upcoming') {
-      filtered = filtered.filter(event => new Date(event.date) > now);
+      filtered = filtered.filter(event => {
+        const eventDate = new Date(event.nextOccurrenceAt || event.date);
+        return eventDate > now;
+      });
     } else if (filterType === 'past') {
-      filtered = filtered.filter(event => new Date(event.date) <= now);
+      filtered = filtered.filter(event => {
+        const eventDate = new Date(event.nextOccurrenceAt || event.date);
+        return eventDate <= now;
+      });
     }
     
-    // Apply sort
+    // Apply sort (use nextOccurrenceAt for recurring events)
     if (sortType === 'soonest') {
-      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+      filtered.sort((a, b) => {
+        const dateA = new Date(a.nextOccurrenceAt || a.date);
+        const dateB = new Date(b.nextOccurrenceAt || b.date);
+        return dateA - dateB;
+      });
     } else if (sortType === 'recent') {
       filtered.sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
     } else if (sortType === 'name') {
@@ -542,6 +589,8 @@ const HomeScreen = () => {
   };
 
   const closeCreationModal = () => {
+    setRecurrence(RECURRENCE_TYPES.NONE);
+    setReminderPreset('off');
     setCalendarModalVisible(false);
     setTimePickerVisible(false);
     setIconPickerVisible(false);
@@ -642,6 +691,10 @@ const HomeScreen = () => {
       reminderPresetId: null, // Legacy field
       reminderPlan: reminderPlan,
       reminders: [], // Will be generated and synced
+      // Recurrence fields
+      recurrence: recurrence,
+      nextOccurrenceAt: combinedDateTime.toISOString(), // For recurring events, this will roll forward
+      originalDateAt: recurrence !== RECURRENCE_TYPES.NONE ? combinedDateTime.toISOString() : undefined,
     };
     
     // Generate reminders from plan (always includes "On time" notification)
@@ -712,8 +765,23 @@ const HomeScreen = () => {
     const planChanged = existingEvent && 
       JSON.stringify(existingEvent.reminderPlan) !== JSON.stringify(updatedEvent.reminderPlan);
     
+    // Ensure recurrence fields are set (for backward compatibility with old events)
+    if (updatedEvent.recurrence === undefined) {
+      updatedEvent.recurrence = RECURRENCE_TYPES.NONE;
+    }
+    if (updatedEvent.nextOccurrenceAt === undefined) {
+      // For non-recurring, nextOccurrenceAt equals date
+      // For recurring, it should be the next occurrence from the new date
+      if (updatedEvent.recurrence !== RECURRENCE_TYPES.NONE) {
+        updatedEvent.nextOccurrenceAt = updatedEvent.date;
+        updatedEvent.originalDateAt = updatedEvent.date;
+      } else {
+        updatedEvent.nextOccurrenceAt = updatedEvent.date;
+      }
+    }
+    
     if (dateChanged || planChanged) {
-      // Regenerate reminders from reminderPlan
+      // Regenerate reminders from reminderPlan (uses nextOccurrenceAt)
       updatedEvent.reminders = buildRemindersForEvent(updatedEvent, isPro);
     } else if (!updatedEvent.reminders) {
       // Ensure reminders exist
@@ -1477,6 +1545,126 @@ const HomeScreen = () => {
                 )}
               </View>
 
+              {/* Recurrence Section */}
+              <View style={styles.modalSection}>
+                <Text style={[
+                  styles.modalSectionLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>Repeats</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!isPro) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      openPaywall('recurring_countdowns');
+                      return;
+                    }
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setRecurrencePickerVisible(true);
+                  }}
+                  style={[
+                    styles.iconButton,
+                    {
+                      backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                      borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                      opacity: !isPro ? 0.6 : 1,
+                    }
+                  ]}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <Text style={[
+                      styles.iconButtonText,
+                      { color: isDark ? '#F5F5F5' : '#111111' }
+                    ]}>
+                      {recurrence === RECURRENCE_TYPES.NONE ? 'None' : getRecurrenceLabel(recurrence)}
+                    </Text>
+                    {!isPro && (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: wp('1%') }}>
+                        <Ionicons
+                          name="lock-closed"
+                          size={wp('3%')}
+                          color={isDark ? '#6B7280' : '#9CA3AF'}
+                        />
+                        <ProBadge size="small" />
+                      </View>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              </View>
+
+              {/* Recurrence Picker Modal */}
+              <Modal
+                animationType="slide"
+                transparent
+                visible={recurrencePickerVisible}
+                onRequestClose={() => setRecurrencePickerVisible(false)}
+              >
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => setRecurrencePickerVisible(false)}
+                  style={[
+                    styles.modalContainer,
+                    { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+                  ]}
+                >
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={(e) => e.stopPropagation()}
+                    style={[
+                      styles.modalContent,
+                      {
+                        backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                        maxHeight: hp('50%'),
+                      }
+                    ]}
+                  >
+                    <Text style={[
+                      styles.modalTitle,
+                      { color: isDark ? '#F5F5F5' : '#111111', marginBottom: wp('4%') }
+                    ]}>Select Recurrence</Text>
+                    <ScrollView>
+                      {Object.values(RECURRENCE_TYPES).map((type) => (
+                        <TouchableOpacity
+                          key={type}
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            setRecurrence(type);
+                            setRecurrencePickerVisible(false);
+                          }}
+                          style={[
+                            styles.recurrenceOption,
+                            {
+                              backgroundColor: recurrence === type
+                                ? (isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)')
+                                : 'transparent',
+                              borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB',
+                            }
+                          ]}
+                        >
+                          <Text style={[
+                            styles.recurrenceOptionText,
+                            {
+                              color: recurrence === type
+                                ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                                : (isDark ? '#F5F5F5' : '#111111'),
+                              fontWeight: recurrence === type ? '600' : '400',
+                            }
+                          ]}>
+                            {type === RECURRENCE_TYPES.NONE ? 'None' : getRecurrenceLabel(type)}
+                          </Text>
+                          {recurrence === type && (
+                            <Ionicons
+                              name="checkmark"
+                              size={wp('4%')}
+                              color={isDark ? '#4E9EFF' : '#4A9EFF'}
+                            />
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              </Modal>
+
               {/* Icon Section */}
               <View style={styles.modalSection}>
                 <Text style={[
@@ -2214,6 +2402,18 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
     fontStyle: 'italic',
     marginLeft: wp('0.5%'),
+  },
+  recurrenceOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: wp('4%'),
+    paddingHorizontal: wp('4%'),
+    borderBottomWidth: 1,
+  },
+  recurrenceOptionText: {
+    fontSize: wp('4%'),
+    fontFamily: 'System',
   },
   lockedIndicator: {
     flexDirection: 'row',

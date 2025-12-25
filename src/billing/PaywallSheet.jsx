@@ -92,16 +92,16 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.colors.text }]}>
-            {feature === 'Standard & Intense Reminders' 
-              ? t('subscription.upgradeTitleReminders')
-              : t('subscription.upgradeTitle')
-            }
+            {t('subscription.upgradeTitle')}
           </Text>
           <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
             {feature === 'Standard & Intense Reminders'
               ? t('subscription.upgradeSubtitleReminders')
               : t('subscription.upgradeSubtitle')
             }
+          </Text>
+          <Text style={[styles.helperText, { color: theme.colors.textSecondary }]}>
+            {t('subscription.upgradeHelper')}
           </Text>
         </View>
 
@@ -122,46 +122,40 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
           <View style={styles.featureItem}>
             <Ionicons name="checkmark-circle" size={wp('5%')} color={theme.colors.success || '#4CAF50'} />
             <Text style={[styles.featureText, { color: theme.colors.text }]}>
+              {t('subscription.featureRecurringCountdowns')}
+            </Text>
+          </View>
+          <View style={styles.featureItem}>
+            <Ionicons name="checkmark-circle" size={wp('5%')} color={theme.colors.success || '#4CAF50'} />
+            <Text style={[styles.featureText, { color: theme.colors.text }]}>
               {t('subscription.featureNoAds')}
             </Text>
           </View>
         </View>
 
         {/* Purchase Button */}
-        {monthlyPkg ? (
-          <TouchableOpacity
-            style={[
-              styles.primaryButton,
-              {
-                backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
-              }
-            ]}
-            onPress={() => handlePurchase(monthlyPkg.identifier)}
-            disabled={isPurchasing || isRestoring || isLoading}
-          >
-            {isPurchasing ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.primaryButtonText}>{t('subscription.subscribeFor')} {monthlyPkg.product.priceString}/month</Text>
-            )}
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[
-              styles.primaryButton,
-              {
-                backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
-              }
-            ]}
-            onPress={() => handlePurchase()}
-            disabled={isPurchasing || isRestoring || isLoading}
-          >
-            {isPurchasing ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.primaryButtonText}>{t('subscription.startPro')}</Text>
-            )}
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.primaryButton,
+            {
+              backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+            }
+          ]}
+          onPress={() => handlePurchase(monthlyPkg?.identifier)}
+          disabled={isPurchasing || isRestoring || isLoading}
+        >
+          {isPurchasing ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.primaryButtonText}>{t('subscription.startPro')}</Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Pricing Transparency */}
+        {monthlyPkg?.product?.priceString && (
+          <Text style={[styles.pricingText, { color: theme.colors.textSecondary }]}>
+            {t('subscription.pricingTransparency', { price: monthlyPkg.product.priceString })}
+          </Text>
         )}
 
         {/* Error Message */}
@@ -227,6 +221,14 @@ const styles = StyleSheet.create({
     fontSize: wp('4%'),
     fontWeight: '500',
     textAlign: 'center',
+    marginBottom: wp('1.5%'),
+  },
+  helperText: {
+    fontSize: wp('3.2%'),
+    fontWeight: '400',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    opacity: 0.8,
   },
   featuresList: {
     marginBottom: wp('6%'),
@@ -247,6 +249,12 @@ const styles = StyleSheet.create({
     paddingVertical: wp('4%'),
     borderRadius: wp('3%'),
     alignItems: 'center',
+    marginBottom: wp('2%'),
+  },
+  pricingText: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    textAlign: 'center',
     marginBottom: wp('3%'),
   },
   primaryButtonText: {

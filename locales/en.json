@@ -172,9 +172,12 @@
     "upgradeTitleReminders": "Upgrade for stronger reminders",
     "upgradeSubtitle": "More control, less noise.",
     "upgradeSubtitleReminders": "Standard and Intense reminders are included with Pro.",
+    "upgradeHelper": "Best for recurring events, routines, and important deadlines.",
     "featureStandardReminders": "Standard & Intense reminders",
-    "featureExtendedNotes": "Extended notes (up to 5000 characters)",
+    "featureExtendedNotes": "Extended notes for plans, checklists, and details (up to 5000 characters)",
+    "featureRecurringCountdowns": "Recurring countdowns (auto-updating, no duplicates — always shows the next occurrence)",
     "featureNoAds": "No ads",
+    "pricingTransparency": "{{price}} / month · Cancel anytime",
     "subscribeFor": "Subscribe for",
     "startPro": "Start Pro",
     "plans": {

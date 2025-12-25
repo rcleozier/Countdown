@@ -9,6 +9,9 @@ import { Analytics } from "../util/analytics";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from "@react-navigation/native";
+import { rollForwardIfNeeded } from '../util/recurrence';
+import { syncScheduledReminders } from '../util/reminderScheduler';
+import { useEntitlements } from '../src/billing/useEntitlements';
 
 const EventCard = ({ event, isDark }) => {
   const eventCardScale = useRef(new Animated.Value(1)).current;
@@ -48,7 +51,7 @@ const EventCard = ({ event, isDark }) => {
         <View style={styles.eventInfo}>
           <Text style={[styles.eventTitle, { color: isDark ? '#F5F5F5' : '#111111' }]}>{event.name}</Text>
           <Text style={[styles.eventTime, { color: isDark ? '#A1A1A1' : '#6B7280' }]}>
-            {moment(event.date).format('ddd, D MMM YYYY [at] hh:mm A')}
+            {moment(event.nextOccurrenceAt || event.date).format('ddd, D MMM YYYY [at] hh:mm A')}
           </Text>
         </View>
       </Animated.View>
@@ -58,6 +61,7 @@ const EventCard = ({ event, isDark }) => {
 
 const CalendarScreen = () => {
   const { theme, isDark } = useTheme();
+  const { isPro } = useEntitlements();
   const [events, setEvents] = useState([]);
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
@@ -134,10 +138,32 @@ const CalendarScreen = () => {
     try {
       const stored = await AsyncStorage.getItem("countdowns");
       const parsed = stored ? JSON.parse(stored) : [];
-      setEvents(parsed);
+      
+      // Roll forward recurring events
+      const now = new Date();
+      let needsSave = false;
+      const rolledEvents = parsed.map(event => {
+        const rolled = rollForwardIfNeeded(event, now);
+        if (rolled !== event) {
+          needsSave = true;
+        }
+        return rolled;
+      });
+      
+      if (needsSave) {
+        await AsyncStorage.setItem("countdowns", JSON.stringify(rolledEvents));
+        // Reschedule notifications
+        syncScheduledReminders(rolledEvents, isPro).catch(err => {
+          console.error('Error rescheduling after roll-forward:', err);
+        });
+      }
+      
+      setEvents(rolledEvents);
       const marks = {};
-      parsed.forEach((e) => {
-        const key = moment(e.date).format("YYYY-MM-DD");
+      rolledEvents.forEach((e) => {
+        // Use nextOccurrenceAt for recurring events
+        const eventDate = e.nextOccurrenceAt || e.date;
+        const key = moment(eventDate).format("YYYY-MM-DD");
         marks[key] = { 
           marked: true, 
           dotColor: isDark ? '#3CC4A2' : theme.colors.primary,
@@ -157,8 +183,15 @@ const CalendarScreen = () => {
   const onDayPress = (day) => {
     const key = day.dateString;
     const items = events
-      .filter((e) => moment(e.date).format("YYYY-MM-DD") === key)
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
+      .filter((e) => {
+        const eventDate = e.nextOccurrenceAt || e.date;
+        return moment(eventDate).format("YYYY-MM-DD") === key;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.nextOccurrenceAt || a.date);
+        const dateB = new Date(b.nextOccurrenceAt || b.date);
+        return dateA - dateB;
+      });
     setSelectedDate(key);
     setEventsForDay(items);
     setModalVisible(true);

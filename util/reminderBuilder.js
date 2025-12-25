@@ -37,7 +37,8 @@ export const buildRemindersForEvent = (event, isPro = false) => {
     return [];
   }
 
-  const eventDate = moment(event.date);
+  // Use nextOccurrenceAt for recurring events, otherwise use date
+  const eventDate = moment(event.nextOccurrenceAt || event.date);
   const now = moment();
   
   // If event is in the past, no reminders

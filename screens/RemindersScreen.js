@@ -26,6 +26,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Analytics } from '../util/analytics';
 import { buildRemindersForEvent } from '../util/reminderBuilder';
 import { syncScheduledReminders } from '../util/reminderScheduler';
+import { runNotificationRecovery } from '../util/notificationRecovery';
+import { rollForwardIfNeeded } from '../util/recurrence';
 import * as Haptics from 'expo-haptics';
 import BottomSheet from '../components/BottomSheet';
 
@@ -145,11 +147,50 @@ const RemindersScreen = ({ navigation }) => {
       }
 
       const loadedEvents = JSON.parse(stored);
-      setEvents(loadedEvents);
 
-      // Build reminders for all events
+      // Try to recover legacy notifications first (one-time recovery)
+      const recoveryKey = '@notification_recovery_completed';
+      const recoveryCompleted = await AsyncStorage.getItem(recoveryKey);
+      let eventsToUse = loadedEvents;
+      
+      if (!recoveryCompleted) {
+        console.log('🔍 [REMINDERS] Running notification recovery...');
+        try {
+          const recoveredEvents = await runNotificationRecovery(loadedEvents);
+          if (recoveredEvents && recoveredEvents.length > 0) {
+            eventsToUse = recoveredEvents;
+            await AsyncStorage.setItem(recoveryKey, 'true');
+            console.log('✅ [REMINDERS] Notification recovery completed');
+          }
+        } catch (error) {
+          console.error('Error recovering notifications:', error);
+        }
+      }
+
+      // Roll forward recurring events
+      const now = new Date();
+      let needsSave = false;
+      const rolledEvents = eventsToUse.map(event => {
+        const rolled = rollForwardIfNeeded(event, now);
+        if (rolled !== event) {
+          needsSave = true;
+        }
+        return rolled;
+      });
+      
+      if (needsSave) {
+        await AsyncStorage.setItem('countdowns', JSON.stringify(rolledEvents));
+        // Reschedule notifications
+        syncScheduledReminders(rolledEvents, isPro).catch(err => {
+          console.error('Error rescheduling after roll-forward:', err);
+        });
+      }
+      
+      setEvents(rolledEvents);
+
+      // Build reminders for all events (including recovered and rolled ones)
       const reminders = [];
-      loadedEvents.forEach(event => {
+      rolledEvents.forEach(event => {
         if (event.reminderPlan && event.reminderPlan.enabled) {
           const eventReminders = event.reminders || buildRemindersForEvent(event);
           eventReminders.forEach(reminder => {
@@ -172,7 +213,7 @@ const RemindersScreen = ({ navigation }) => {
       setAllReminders(reminders);
 
       // Sync scheduled notifications in background
-      syncScheduledReminders(loadedEvents, isPro).catch(err => {
+      syncScheduledReminders(eventsToUse, isPro).catch(err => {
         console.error('Error syncing reminders:', err);
       });
     } catch (error) {
