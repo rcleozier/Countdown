@@ -1,0 +1,282 @@
+{
+  "common": {
+    "cancel": "Annulla",
+    "save": "Salva",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "add": "Aggiungi",
+    "close": "Chiudi",
+    "confirm": "Conferma",
+    "yes": "Sì",
+    "no": "No",
+    "ok": "OK",
+    "search": "Cerca",
+    "filter": "Filtra",
+    "sort": "Ordina",
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "success": "Successo"
+  },
+  "home": {
+    "title": "Conto alla rovescia",
+    "emptyTitle": "Nessun conto alla rovescia ancora",
+    "emptySubtitle": "Tocca il pulsante + per creare il tuo primo conto alla rovescia",
+    "createButton": "Crea Nuovo Conto alla Rovescia",
+    "upcoming": "In arrivo",
+    "past": "Passati",
+    "all": "Tutti"
+  },
+  "create": {
+    "title": "Crea Conto alla Rovescia",
+    "namePlaceholder": "Nome evento",
+    "selectDate": "Seleziona una Data",
+    "selectTime": "Seleziona Ora",
+    "selectIcon": "Seleziona Icona",
+    "selectTemplate": "Seleziona Modello",
+    "noTemplate": "Nessun Modello",
+    "selectReminderPreset": "Preset Promemoria",
+    "customReminders": "Promemoria Personalizzati"
+  },
+  "edit": {
+    "title": "Modifica Conto alla Rovescia",
+    "namePlaceholder": "Nome evento",
+    "selectDate": "Seleziona una Data",
+    "selectTime": "Seleziona Ora",
+    "selectIcon": "Seleziona Icona"
+  },
+  "templates": {
+    "birthday": {
+      "name": "Compleanno",
+      "defaultName": "Compleanno di {{name}}"
+    },
+    "trip": {
+      "name": "Viaggio",
+      "defaultName": "Viaggio a {{destination}}"
+    },
+    "exam": {
+      "name": "Esame",
+      "defaultName": "Esame di {{subject}}"
+    },
+    "wedding": {
+      "name": "Matrimonio",
+      "defaultName": "Matrimonio di {{name}}"
+    },
+    "flight": {
+      "name": "Volo",
+      "defaultName": "Volo per {{destination}}"
+    },
+    "appointment": {
+      "name": "Appuntamento",
+      "defaultName": "Appuntamento {{type}}"
+    }
+  },
+  "notes": {
+    "title": "Note",
+    "addNote": "Aggiungi nota",
+    "editNote": "Modifica nota",
+    "placeholder": "Aggiungi una nota per questo evento...",
+    "empty": "Nessuna nota ancora",
+    "autosave": "Salvataggio..."
+  },
+  "filters": {
+    "upcoming": "In arrivo",
+    "past": "Passati",
+    "all": "Tutti",
+    "sortSoonest": "Prossimi",
+    "sortRecent": "Aggiunti di recente",
+    "sortName": "Nome (A-Z)",
+    "byTemplate": "Per Modello"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "language": "Lingua",
+    "theme": "Tema",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "clearAll": "Cancella Tutti gli Eventi",
+    "clearConfirm": "Sei sicuro di voler cancellare tutti gli eventi?",
+    "clearConfirmTitle": "Conferma Cancellazione",
+    "clearConfirmMessage": "Sei sicuro di voler cancellare tutti gli eventi? Questa azione non può essere annullata.",
+    "version": "Versione",
+    "rtlToggle": "Modalità RTL (Solo Dev)",
+    "appInfo": "Info App",
+    "notes": "Note",
+    "notesDescription": "Visualizza e gestisci le tue note",
+    "actions": "Azioni"
+  },
+  "time": {
+    "now": "ora",
+    "today": "oggi",
+    "tomorrow": "domani",
+    "yesterday": "ieri",
+    "daysFromNow": "tra {{count}} giorno",
+    "daysFromNow_plural": "tra {{count}} giorni",
+    "daysAgo": "{{count}} giorno fa",
+    "daysAgo_plural": "{{count}} giorni fa",
+    "hours": "{{count}} ora",
+    "hours_plural": "{{count}} ore",
+    "minutes": "{{count}} minuto",
+    "minutes_plural": "{{count}} minuti"
+  },
+  "analytics": {
+    "title": "Analisi",
+    "total": "Totale Eventi",
+    "totalEvents": "Totale Eventi",
+    "upcoming": "In arrivo",
+    "past": "Passati",
+    "pastEvents": "Eventi Passati",
+    "nextEvent": "Prossimo Evento",
+    "upcomingByMonth": "In arrivo per Mese",
+    "eventsByDayOfWeek": "Eventi per Giorno della Settimana",
+    "days": {
+      "sun": "Dom",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Gio",
+      "fri": "Ven",
+      "sat": "Sab"
+    }
+  },
+  "calendar": {
+    "title": "Calendario",
+    "noEvents": "Nessun evento in questa data"
+  },
+  "past": {
+    "title": "Eventi Passati",
+    "empty": "Nessun evento passato"
+  },
+  "delete": {
+    "confirm": "Elimina Conto alla Rovescia",
+    "message": "Sei sicuro di voler eliminare \"{{name}}\"?",
+    "cannotUndo": "Questa azione non può essere annullata."
+  },
+  "subscription": {
+    "title": "Passa a Pro",
+    "subtitle": "Sblocca tutte le funzionalità premium e migliora la tua esperienza di conto alla rovescia",
+    "subscribe": "Abbonati",
+    "processing": "Elaborazione...",
+    "restorePurchases": "Ripristina Acquisti",
+    "mostPopular": "Più Popolare",
+    "savings": "risparmio",
+    "perMonth": "al mese",
+    "legal": "Il pagamento verrà addebitato sul tuo account Apple ID alla conferma dell'acquisto. L'abbonamento si rinnova automaticamente a meno che il rinnovo automatico non venga disattivato almeno 24 ore prima della fine del periodo corrente.",
+    "proUnlocked": "Pro sbloccato! Goditi tutte le funzionalità premium.",
+    "purchaseFailed": "Acquisto Fallito",
+    "purchaseFailedMessage": "Qualcosa è andato storto. Riprova.",
+    "restoreComplete": "Ripristino Completato",
+    "restoreCompleteMessage": "I tuoi acquisti sono stati ripristinati.",
+    "restoreFailed": "Ripristino Fallito",
+    "restoreFailedMessage": "Impossibile ripristinare gli acquisti. Riprova.",
+    "upgradeTitle": "Passa a Pro",
+    "upgradeSubtitle": "Più controllo. Meno rumore.",
+    "featureStandardReminders": "Promemoria avanzati",
+    "featureExtendedNotes": "Note estese",
+    "featureRecurringCountdowns": "Conti alla rovescia ricorrenti",
+    "featureNoAds": "Nessuna pubblicità",
+    "pricingTransparency": "{{price}} / mese · Cancella in qualsiasi momento",
+    "subscribeFor": "Abbonati per",
+    "startPro": "Inizia Pro",
+    "plans": {
+      "monthly": {
+        "name": "Mensile",
+        "description": "Fatturato mensilmente"
+      },
+      "yearly": {
+        "name": "Annuale",
+        "description": "Fatturato annualmente"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "Conti alla rovescia illimitati",
+      "unlimited_notes": "Note illimitate per evento",
+      "advanced_reminders": "Preset promemoria avanzati",
+      "custom_templates": "Modelli evento personalizzati",
+      "export_data": "Esporta i tuoi dati",
+      "no_ads": "Esperienza senza pubblicità",
+      "priority_support": "Supporto prioritario"
+    },
+    "status": {
+      "active": "Attivo",
+      "expired": "Scaduto",
+      "none": "Nessun abbonamento attivo"
+    },
+    "manage": "Gestisci Abbonamento",
+    "upsell": {
+      "unlockPro": "Sblocca Pro",
+      "notNow": "Non ora",
+      "customReminders": {
+        "title": "Pro: Personalizza Promemoria",
+        "bullet1": "Imposta più promemoria per evento",
+        "bullet2": "Offset temporali personalizzati (settimane, mesi)",
+        "bullet3": "Suggerimenti promemoria intelligenti"
+      },
+      "notes": {
+        "title": "Pro: Note Evento",
+        "bullet1": "Note illimitate per evento",
+        "bullet2": "Cerca note in tutti gli eventi",
+        "bullet3": "Formattazione testo ricco"
+      },
+      "advancedTemplates": {
+        "title": "Pro: Modelli Avanzati",
+        "bullet1": "Modelli Matrimonio, Volo, Esame",
+        "bullet2": "Crea modelli personalizzati",
+        "bullet3": "Modifica e condivisione modelli"
+      },
+      "unitControls": {
+        "title": "Pro: Controlli Visualizzazione",
+        "bullet1": "Nascondi secondi per vista più pulita",
+        "bullet2": "Mostra ripartizione settimane/mesi",
+        "bullet3": "Preferenze formato ora personalizzate"
+      },
+      "smartSuggestions": {
+        "title": "Pro: Suggerimenti Intelligenti",
+        "bullet1": "Modelli promemoria crescenti",
+        "bullet2": "Modalità preparazione per eventi",
+        "bullet3": "Suggerimenti temporali alimentati da IA"
+      }
+    }
+  },
+  "countdown": {
+    "endsToday": "Termina oggi",
+    "endsTomorrow": "Termina domani",
+    "justStarted": "Appena iniziato!",
+    "iconLabel": "Icona:",
+    "longNotes": "Note Lunghe",
+    "upgradeNotes": "Passa a Pro per note da 5000 caratteri + nessuna pubblicità",
+    "proEnabled": "Pro abilitato",
+    "pickDateError": "Seleziona una data sul calendario.",
+    "futureDateError": "Seleziona una data e un'ora nel futuro.",
+    "allDay": "Tutto il Giorno"
+  },
+  "reminders": {
+    "chill": "Rilassato",
+    "standard": "Standard",
+    "intense": "Intenso",
+    "custom": "Personalizzato",
+    "daysBefore": "{{count}} giorno prima",
+    "daysBefore_plural": "{{count}} giorni prima",
+    "weeksBefore": "{{count}} settimana prima",
+    "weeksBefore_plural": "{{count}} settimane prima",
+    "monthsBefore": "{{count}} mese prima",
+    "monthsBefore_plural": "{{count}} mesi prima",
+    "addReminder": "Aggiungi Promemoria",
+    "removeReminder": "Rimuovi",
+    "noReminders": "Nessun promemoria impostato",
+    "customizeDescription": "Personalizza tempi e stili promemoria",
+    "customizeProOnly": "Funzionalità Pro: Personalizza promemoria con più tempi",
+    "today": "Oggi",
+    "tomorrow": "Domani",
+    "event": "Evento",
+    "reminder": "Promemoria",
+    "untitledEvent": "Evento Senza Titolo",
+    "searchPlaceholder": "Cerca promemoria per evento",
+    "date": "Data",
+    "filterProMessage": "fa parte di Pro. Passa a Pro per organizzare meglio i tuoi promemoria.",
+    "thisFilter": "Questo filtro",
+    "updateError": "Impossibile aggiornare il promemoria",
+    "updateErrorPlural": "Impossibile aggiornare i promemoria",
+    "settingsError": "Impossibile aprire le impostazioni"
+  }
+}
+

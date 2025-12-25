@@ -1,0 +1,282 @@
+{
+  "common": {
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "add": "Добавить",
+    "close": "Закрыть",
+    "confirm": "Подтвердить",
+    "yes": "Да",
+    "no": "Нет",
+    "ok": "ОК",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "sort": "Сортировать",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успех"
+  },
+  "home": {
+    "title": "Обратный отсчет",
+    "emptyTitle": "Пока нет обратных отсчетов",
+    "emptySubtitle": "Нажмите кнопку +, чтобы создать первый обратный отсчет",
+    "createButton": "Создать Новый Обратный Отсчет",
+    "upcoming": "Предстоящие",
+    "past": "Прошедшие",
+    "all": "Все"
+  },
+  "create": {
+    "title": "Создать Обратный Отсчет",
+    "namePlaceholder": "Название события",
+    "selectDate": "Выберите Дату",
+    "selectTime": "Выберите Время",
+    "selectIcon": "Выберите Иконку",
+    "selectTemplate": "Выберите Шаблон",
+    "noTemplate": "Без Шаблона",
+    "selectReminderPreset": "Пресет Напоминания",
+    "customReminders": "Пользовательские Напоминания"
+  },
+  "edit": {
+    "title": "Редактировать Обратный Отсчет",
+    "namePlaceholder": "Название события",
+    "selectDate": "Выберите Дату",
+    "selectTime": "Выберите Время",
+    "selectIcon": "Выберите Иконку"
+  },
+  "templates": {
+    "birthday": {
+      "name": "День рождения",
+      "defaultName": "День рождения {{name}}"
+    },
+    "trip": {
+      "name": "Поездка",
+      "defaultName": "Поездка в {{destination}}"
+    },
+    "exam": {
+      "name": "Экзамен",
+      "defaultName": "Экзамен по {{subject}}"
+    },
+    "wedding": {
+      "name": "Свадьба",
+      "defaultName": "Свадьба {{name}}"
+    },
+    "flight": {
+      "name": "Рейс",
+      "defaultName": "Рейс в {{destination}}"
+    },
+    "appointment": {
+      "name": "Встреча",
+      "defaultName": "Встреча {{type}}"
+    }
+  },
+  "notes": {
+    "title": "Заметки",
+    "addNote": "Добавить заметку",
+    "editNote": "Редактировать заметку",
+    "placeholder": "Добавьте заметку для этого события...",
+    "empty": "Пока нет заметок",
+    "autosave": "Сохранение..."
+  },
+  "filters": {
+    "upcoming": "Предстоящие",
+    "past": "Прошедшие",
+    "all": "Все",
+    "sortSoonest": "Ближайшие",
+    "sortRecent": "Недавно добавленные",
+    "sortName": "Имя (А-Я)",
+    "byTemplate": "По Шаблону"
+  },
+  "settings": {
+    "title": "Настройки",
+    "language": "Язык",
+    "theme": "Тема",
+    "light": "Светлая",
+    "dark": "Темная",
+    "clearAll": "Очистить Все События",
+    "clearConfirm": "Вы уверены, что хотите очистить все события?",
+    "clearConfirmTitle": "Подтвердить Очистку",
+    "clearConfirmMessage": "Вы уверены, что хотите очистить все события? Это действие нельзя отменить.",
+    "version": "Версия",
+    "rtlToggle": "Режим RTL (Только для разработчиков)",
+    "appInfo": "Информация о приложении",
+    "notes": "Заметки",
+    "notesDescription": "Просмотр и управление заметками",
+    "actions": "Действия"
+  },
+  "time": {
+    "now": "сейчас",
+    "today": "сегодня",
+    "tomorrow": "завтра",
+    "yesterday": "вчера",
+    "daysFromNow": "через {{count}} день",
+    "daysFromNow_plural": "через {{count}} дня",
+    "daysAgo": "{{count}} день назад",
+    "daysAgo_plural": "{{count}} дня назад",
+    "hours": "{{count}} час",
+    "hours_plural": "{{count}} часа",
+    "minutes": "{{count}} минута",
+    "minutes_plural": "{{count}} минуты"
+  },
+  "analytics": {
+    "title": "Аналитика",
+    "total": "Всего Событий",
+    "totalEvents": "Всего Событий",
+    "upcoming": "Предстоящие",
+    "past": "Прошедшие",
+    "pastEvents": "Прошедшие События",
+    "nextEvent": "Следующее Событие",
+    "upcomingByMonth": "Предстоящие по Месяцам",
+    "eventsByDayOfWeek": "События по Дням Недели",
+    "days": {
+      "sun": "Вс",
+      "mon": "Пн",
+      "tue": "Вт",
+      "wed": "Ср",
+      "thu": "Чт",
+      "fri": "Пт",
+      "sat": "Сб"
+    }
+  },
+  "calendar": {
+    "title": "Календарь",
+    "noEvents": "Нет событий на эту дату"
+  },
+  "past": {
+    "title": "Прошедшие События",
+    "empty": "Нет прошедших событий"
+  },
+  "delete": {
+    "confirm": "Удалить Обратный Отсчет",
+    "message": "Вы уверены, что хотите удалить \"{{name}}\"?",
+    "cannotUndo": "Это действие нельзя отменить."
+  },
+  "subscription": {
+    "title": "Обновить до Pro",
+    "subtitle": "Разблокируйте все премиум-функции и улучшите свой опыт обратного отсчета",
+    "subscribe": "Подписаться",
+    "processing": "Обработка...",
+    "restorePurchases": "Восстановить Покупки",
+    "mostPopular": "Самый Популярный",
+    "savings": "экономия",
+    "perMonth": "в месяц",
+    "legal": "Платеж будет списан с вашего аккаунта Apple ID при подтверждении покупки. Подписка автоматически продлевается, если автоматическое продление не отключено как минимум за 24 часа до окончания текущего периода.",
+    "proUnlocked": "Pro разблокирован! Наслаждайтесь всеми премиум-функциями.",
+    "purchaseFailed": "Покупка Не Удалась",
+    "purchaseFailedMessage": "Что-то пошло не так. Пожалуйста, попробуйте снова.",
+    "restoreComplete": "Восстановление Завершено",
+    "restoreCompleteMessage": "Ваши покупки были восстановлены.",
+    "restoreFailed": "Восстановление Не Удалось",
+    "restoreFailedMessage": "Не удалось восстановить покупки. Пожалуйста, попробуйте снова.",
+    "upgradeTitle": "Обновить до Pro",
+    "upgradeSubtitle": "Больше контроля. Меньше шума.",
+    "featureStandardReminders": "Расширенные напоминания",
+    "featureExtendedNotes": "Расширенные заметки",
+    "featureRecurringCountdowns": "Повторяющиеся обратные отсчеты",
+    "featureNoAds": "Без рекламы",
+    "pricingTransparency": "{{price}} / месяц · Отменить в любое время",
+    "subscribeFor": "Подписаться на",
+    "startPro": "Начать Pro",
+    "plans": {
+      "monthly": {
+        "name": "Ежемесячно",
+        "description": "Оплата ежемесячно"
+      },
+      "yearly": {
+        "name": "Ежегодно",
+        "description": "Оплата ежегодно"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "Неограниченные обратные отсчеты",
+      "unlimited_notes": "Неограниченные заметки на событие",
+      "advanced_reminders": "Расширенные пресеты напоминаний",
+      "custom_templates": "Пользовательские шаблоны событий",
+      "export_data": "Экспорт ваших данных",
+      "no_ads": "Опыт без рекламы",
+      "priority_support": "Приоритетная поддержка"
+    },
+    "status": {
+      "active": "Активна",
+      "expired": "Истекла",
+      "none": "Нет активной подписки"
+    },
+    "manage": "Управлять Подпиской",
+    "upsell": {
+      "unlockPro": "Разблокировать Pro",
+      "notNow": "Не сейчас",
+      "customReminders": {
+        "title": "Pro: Настройка Напоминаний",
+        "bullet1": "Установить несколько напоминаний на событие",
+        "bullet2": "Пользовательские временные смещения (недели, месяцы)",
+        "bullet3": "Умные предложения напоминаний"
+      },
+      "notes": {
+        "title": "Pro: Заметки Событий",
+        "bullet1": "Неограниченные заметки на событие",
+        "bullet2": "Поиск заметок по всем событиям",
+        "bullet3": "Форматирование богатого текста"
+      },
+      "advancedTemplates": {
+        "title": "Pro: Расширенные Шаблоны",
+        "bullet1": "Шаблоны Свадьбы, Рейса, Экзамена",
+        "bullet2": "Создать пользовательские шаблоны",
+        "bullet3": "Редактирование и обмен шаблонами"
+      },
+      "unitControls": {
+        "title": "Pro: Элементы Управления Отображением",
+        "bullet1": "Скрыть секунды для более чистого вида",
+        "bullet2": "Показать разбивку недель/месяцев",
+        "bullet3": "Пользовательские настройки формата времени"
+      },
+      "smartSuggestions": {
+        "title": "Pro: Умные Предложения",
+        "bullet1": "Эскалационные паттерны напоминаний",
+        "bullet2": "Режим подготовки для событий",
+        "bullet3": "Предложения времени на основе ИИ"
+      }
+    }
+  },
+  "countdown": {
+    "endsToday": "Заканчивается сегодня",
+    "endsTomorrow": "Заканчивается завтра",
+    "justStarted": "Только началось!",
+    "iconLabel": "Иконка:",
+    "longNotes": "Длинные Заметки",
+    "upgradeNotes": "Обновитесь до Pro для заметок на 5000 символов + без рекламы",
+    "proEnabled": "Pro включен",
+    "pickDateError": "Пожалуйста, выберите дату в календаре.",
+    "futureDateError": "Пожалуйста, выберите дату и время в будущем.",
+    "allDay": "Весь День"
+  },
+  "reminders": {
+    "chill": "Расслабленный",
+    "standard": "Стандартный",
+    "intense": "Интенсивный",
+    "custom": "Пользовательский",
+    "daysBefore": "{{count}} день до",
+    "daysBefore_plural": "{{count}} дня до",
+    "weeksBefore": "{{count}} неделя до",
+    "weeksBefore_plural": "{{count}} недели до",
+    "monthsBefore": "{{count}} месяц до",
+    "monthsBefore_plural": "{{count}} месяца до",
+    "addReminder": "Добавить Напоминание",
+    "removeReminder": "Удалить",
+    "noReminders": "Напоминания не установлены",
+    "customizeDescription": "Настройка времени и стилей напоминаний",
+    "customizeProOnly": "Функция Pro: Настройка напоминаний с несколькими временами",
+    "today": "Сегодня",
+    "tomorrow": "Завтра",
+    "event": "Событие",
+    "reminder": "Напоминание",
+    "untitledEvent": "Событие Без Названия",
+    "searchPlaceholder": "Поиск напоминаний по событию",
+    "date": "Дата",
+    "filterProMessage": "является частью Pro. Обновитесь для лучшей организации напоминаний.",
+    "thisFilter": "Этот фильтр",
+    "updateError": "Не удалось обновить напоминание",
+    "updateErrorPlural": "Не удалось обновить напоминания",
+    "settingsError": "Не удалось открыть настройки"
+  }
+}
+

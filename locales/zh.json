@@ -1,0 +1,282 @@
+{
+  "common": {
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "close": "关闭",
+    "confirm": "确认",
+    "yes": "是",
+    "no": "否",
+    "ok": "确定",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功"
+  },
+  "home": {
+    "title": "倒计时",
+    "emptyTitle": "还没有倒计时",
+    "emptySubtitle": "点击 + 按钮创建您的第一个倒计时",
+    "createButton": "创建新倒计时",
+    "upcoming": "即将到来",
+    "past": "已过去",
+    "all": "全部"
+  },
+  "create": {
+    "title": "创建倒计时",
+    "namePlaceholder": "事件名称",
+    "selectDate": "选择日期",
+    "selectTime": "选择时间",
+    "selectIcon": "选择图标",
+    "selectTemplate": "选择模板",
+    "noTemplate": "无模板",
+    "selectReminderPreset": "提醒预设",
+    "customReminders": "自定义提醒"
+  },
+  "edit": {
+    "title": "编辑倒计时",
+    "namePlaceholder": "事件名称",
+    "selectDate": "选择日期",
+    "selectTime": "选择时间",
+    "selectIcon": "选择图标"
+  },
+  "templates": {
+    "birthday": {
+      "name": "生日",
+      "defaultName": "{{name}}的生日"
+    },
+    "trip": {
+      "name": "旅行",
+      "defaultName": "前往{{destination}}的旅行"
+    },
+    "exam": {
+      "name": "考试",
+      "defaultName": "{{subject}}考试"
+    },
+    "wedding": {
+      "name": "婚礼",
+      "defaultName": "{{name}}的婚礼"
+    },
+    "flight": {
+      "name": "航班",
+      "defaultName": "前往{{destination}}的航班"
+    },
+    "appointment": {
+      "name": "预约",
+      "defaultName": "{{type}}预约"
+    }
+  },
+  "notes": {
+    "title": "笔记",
+    "addNote": "添加笔记",
+    "editNote": "编辑笔记",
+    "placeholder": "为此事件添加笔记...",
+    "empty": "还没有笔记",
+    "autosave": "保存中..."
+  },
+  "filters": {
+    "upcoming": "即将到来",
+    "past": "已过去",
+    "all": "全部",
+    "sortSoonest": "最近",
+    "sortRecent": "最近添加",
+    "sortName": "名称（A-Z）",
+    "byTemplate": "按模板"
+  },
+  "settings": {
+    "title": "设置",
+    "language": "语言",
+    "theme": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "clearAll": "清除所有事件",
+    "clearConfirm": "您确定要清除所有事件吗？",
+    "clearConfirmTitle": "确认清除",
+    "clearConfirmMessage": "您确定要清除所有事件吗？此操作无法撤销。",
+    "version": "版本",
+    "rtlToggle": "RTL模式（仅开发）",
+    "appInfo": "应用信息",
+    "notes": "笔记",
+    "notesDescription": "查看和管理您的笔记",
+    "actions": "操作"
+  },
+  "time": {
+    "now": "现在",
+    "today": "今天",
+    "tomorrow": "明天",
+    "yesterday": "昨天",
+    "daysFromNow": "{{count}}天后",
+    "daysFromNow_plural": "{{count}}天后",
+    "daysAgo": "{{count}}天前",
+    "daysAgo_plural": "{{count}}天前",
+    "hours": "{{count}}小时",
+    "hours_plural": "{{count}}小时",
+    "minutes": "{{count}}分钟",
+    "minutes_plural": "{{count}}分钟"
+  },
+  "analytics": {
+    "title": "分析",
+    "total": "总事件数",
+    "totalEvents": "总事件数",
+    "upcoming": "即将到来",
+    "past": "已过去",
+    "pastEvents": "已过去的事件",
+    "nextEvent": "下一个事件",
+    "upcomingByMonth": "按月份即将到来",
+    "eventsByDayOfWeek": "按星期几的事件",
+    "days": {
+      "sun": "日",
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六"
+    }
+  },
+  "calendar": {
+    "title": "日历",
+    "noEvents": "此日期没有事件"
+  },
+  "past": {
+    "title": "已过去的事件",
+    "empty": "没有已过去的事件"
+  },
+  "delete": {
+    "confirm": "删除倒计时",
+    "message": "您确定要删除\"{{name}}\"吗？",
+    "cannotUndo": "此操作无法撤销。"
+  },
+  "subscription": {
+    "title": "升级到Pro",
+    "subtitle": "解锁所有高级功能，提升您的倒计时体验",
+    "subscribe": "订阅",
+    "processing": "处理中...",
+    "restorePurchases": "恢复购买",
+    "mostPopular": "最受欢迎",
+    "savings": "节省",
+    "perMonth": "每月",
+    "legal": "购买确认后，将从您的Apple ID账户收费。除非在当前期间结束前至少24小时关闭自动续订，否则订阅将自动续订。",
+    "proUnlocked": "Pro已解锁！享受所有高级功能。",
+    "purchaseFailed": "购买失败",
+    "purchaseFailedMessage": "出了点问题。请重试。",
+    "restoreComplete": "恢复完成",
+    "restoreCompleteMessage": "您的购买已恢复。",
+    "restoreFailed": "恢复失败",
+    "restoreFailedMessage": "无法恢复购买。请重试。",
+    "upgradeTitle": "升级到Pro",
+    "upgradeSubtitle": "更多控制。更少干扰。",
+    "featureStandardReminders": "高级提醒",
+    "featureExtendedNotes": "扩展笔记",
+    "featureRecurringCountdowns": "重复倒计时",
+    "featureNoAds": "无广告",
+    "pricingTransparency": "{{price}} / 月 · 随时取消",
+    "subscribeFor": "订阅",
+    "startPro": "开始Pro",
+    "plans": {
+      "monthly": {
+        "name": "月度",
+        "description": "按月计费"
+      },
+      "yearly": {
+        "name": "年度",
+        "description": "按年计费"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "无限倒计时",
+      "unlimited_notes": "每个事件无限笔记",
+      "advanced_reminders": "高级提醒预设",
+      "custom_templates": "自定义事件模板",
+      "export_data": "导出您的数据",
+      "no_ads": "无广告体验",
+      "priority_support": "优先支持"
+    },
+    "status": {
+      "active": "活跃",
+      "expired": "已过期",
+      "none": "无活跃订阅"
+    },
+    "manage": "管理订阅",
+    "upsell": {
+      "unlockPro": "解锁Pro",
+      "notNow": "暂不",
+      "customReminders": {
+        "title": "Pro：自定义提醒",
+        "bullet1": "为每个事件设置多个提醒",
+        "bullet2": "自定义时间偏移（周、月）",
+        "bullet3": "智能提醒建议"
+      },
+      "notes": {
+        "title": "Pro：事件笔记",
+        "bullet1": "每个事件无限笔记",
+        "bullet2": "在所有事件中搜索笔记",
+        "bullet3": "富文本格式"
+      },
+      "advancedTemplates": {
+        "title": "Pro：高级模板",
+        "bullet1": "婚礼、航班、考试模板",
+        "bullet2": "创建自定义模板",
+        "bullet3": "模板编辑和共享"
+      },
+      "unitControls": {
+        "title": "Pro：显示控制",
+        "bullet1": "隐藏秒数以获得更清晰的视图",
+        "bullet2": "显示周/月细分",
+        "bullet3": "自定义时间格式偏好"
+      },
+      "smartSuggestions": {
+        "title": "Pro：智能建议",
+        "bullet1": "升级提醒模式",
+        "bullet2": "事件准备模式",
+        "bullet3": "AI驱动的时间建议"
+      }
+    }
+  },
+  "countdown": {
+    "endsToday": "今天结束",
+    "endsTomorrow": "明天结束",
+    "justStarted": "刚刚开始！",
+    "iconLabel": "图标：",
+    "longNotes": "长笔记",
+    "upgradeNotes": "升级到Pro可获得5000字符笔记 + 无广告",
+    "proEnabled": "Pro已启用",
+    "pickDateError": "请在日历上选择日期。",
+    "futureDateError": "请选择未来的日期和时间。",
+    "allDay": "全天"
+  },
+  "reminders": {
+    "chill": "轻松",
+    "standard": "标准",
+    "intense": "密集",
+    "custom": "自定义",
+    "daysBefore": "{{count}}天前",
+    "daysBefore_plural": "{{count}}天前",
+    "weeksBefore": "{{count}}周前",
+    "weeksBefore_plural": "{{count}}周前",
+    "monthsBefore": "{{count}}月前",
+    "monthsBefore_plural": "{{count}}月前",
+    "addReminder": "添加提醒",
+    "removeReminder": "删除",
+    "noReminders": "未设置提醒",
+    "customizeDescription": "自定义提醒时间和样式",
+    "customizeProOnly": "Pro功能：使用多个时间自定义提醒",
+    "today": "今天",
+    "tomorrow": "明天",
+    "event": "事件",
+    "reminder": "提醒",
+    "untitledEvent": "未命名事件",
+    "searchPlaceholder": "按事件搜索提醒",
+    "date": "日期",
+    "filterProMessage": "是Pro的一部分。升级以更好地组织您的提醒。",
+    "thisFilter": "此筛选器",
+    "updateError": "无法更新提醒",
+    "updateErrorPlural": "无法更新提醒",
+    "settingsError": "无法打开设置"
+  }
+}
+

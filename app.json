@@ -38,7 +38,10 @@
           "fr",
           "de",
           "pt",
-          "ja"
+          "ja",
+          "it",
+          "ru",
+          "zh"
         ]
       }
     },
@@ -61,7 +64,10 @@
       "fr": "./locales/fr.json",
       "de": "./locales/de.json",
       "pt": "./locales/pt.json",
-      "ja": "./locales/ja.json"
+      "ja": "./locales/ja.json",
+      "it": "./locales/it.json",
+      "ru": "./locales/ru.json",
+      "zh": "./locales/zh.json"
     },
     "description": "Chrono | Remember your important events",
     "extra": {

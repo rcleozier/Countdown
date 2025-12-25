@@ -95,6 +95,12 @@ const UpsellCard = ({ onPress, isDark, accentColor }) => (
         <Text style={[styles.upsellTitleNew, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
           Unlock full reminder schedule
         </Text>
+        <Text
+          style={[styles.upsellBody, { color: isDark ? '#CBD5E1' : '#475569' }]}
+          numberOfLines={2}
+        >
+          Get full filters, search, grouping, and unlimited reminders.
+        </Text>
       </View>
     </View>
     <TouchableOpacity
@@ -732,6 +738,12 @@ const RemindersScreen = ({ navigation }) => {
                       { color: isDark ? '#FFFFFF' : '#1A1A1A' }
                     ]}>
                       Unlock unlimited reminders
+                    </Text>
+                    <Text style={[
+                      styles.upsellText,
+                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+                    ]}>
+                      Upgrade to Pro for unlimited reminders + per-reminder toggles
                     </Text>
                   </View>
                   <TouchableOpacity
