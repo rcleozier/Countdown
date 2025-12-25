@@ -32,8 +32,6 @@
     "selectDate": "Seleccionar Fecha",
     "selectTime": "Seleccionar Hora",
     "selectIcon": "Seleccionar Icono",
-    "selectTemplate": "Seleccionar Plantilla",
-    "noTemplate": "Sin Plantilla",
     "selectReminderPreset": "Preajuste de Recordatorio",
     "customReminders": "Recordatorios Personalizados"
   },
@@ -43,32 +41,6 @@
     "selectDate": "Seleccionar Fecha",
     "selectTime": "Seleccionar Hora",
     "selectIcon": "Seleccionar Icono"
-  },
-  "templates": {
-    "birthday": {
-      "name": "Cumpleaños",
-      "defaultName": "Cumpleaños de {{name}}"
-    },
-    "trip": {
-      "name": "Viaje",
-      "defaultName": "Viaje a {{destination}}"
-    },
-    "exam": {
-      "name": "Examen",
-      "defaultName": "Examen de {{subject}}"
-    },
-    "wedding": {
-      "name": "Boda",
-      "defaultName": "Boda de {{name}}"
-    },
-    "flight": {
-      "name": "Vuelo",
-      "defaultName": "Vuelo a {{destination}}"
-    },
-    "appointment": {
-      "name": "Cita",
-      "defaultName": "Cita de {{type}}"
-    }
   },
   "reminders": {
     "chill": "Relajado",
@@ -100,7 +72,6 @@
     "sortSoonest": "Próximos",
     "sortRecent": "Agregados Recientemente",
     "sortName": "Nombre (A-Z)",
-    "byTemplate": "Por Plantilla"
   },
   "settings": {
     "title": "Configuración",
@@ -206,7 +177,6 @@
       "unlimited_countdowns": "Cuentas regresivas ilimitadas",
       "unlimited_notes": "Notas ilimitadas por evento",
       "advanced_reminders": "Preajustes de recordatorio avanzados",
-      "custom_templates": "Plantillas de evento personalizadas",
       "export_data": "Exporta tus datos",
       "no_ads": "Experiencia sin anuncios",
       "priority_support": "Soporte prioritario"

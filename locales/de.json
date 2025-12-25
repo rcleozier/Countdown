@@ -32,8 +32,6 @@
     "selectDate": "Datum auswählen",
     "selectTime": "Uhrzeit auswählen",
     "selectIcon": "Symbol auswählen",
-    "selectTemplate": "Vorlage auswählen",
-    "noTemplate": "Keine Vorlage",
     "selectReminderPreset": "Erinnerungsvoreinstellung",
     "customReminders": "Benutzerdefinierte Erinnerungen"
   },
@@ -43,32 +41,6 @@
     "selectDate": "Datum auswählen",
     "selectTime": "Uhrzeit auswählen",
     "selectIcon": "Symbol auswählen"
-  },
-  "templates": {
-    "birthday": {
-      "name": "Geburtstag",
-      "defaultName": "{{name}}s Geburtstag"
-    },
-    "trip": {
-      "name": "Reise",
-      "defaultName": "Reise nach {{destination}}"
-    },
-    "exam": {
-      "name": "Prüfung",
-      "defaultName": "{{subject}} Prüfung"
-    },
-    "wedding": {
-      "name": "Hochzeit",
-      "defaultName": "{{name}}s Hochzeit"
-    },
-    "flight": {
-      "name": "Flug",
-      "defaultName": "Flug nach {{destination}}"
-    },
-    "appointment": {
-      "name": "Termin",
-      "defaultName": "{{type}} Termin"
-    }
   },
   "reminders": {
     "chill": "Entspannt",
@@ -99,8 +71,7 @@
     "all": "Alle",
     "sortSoonest": "Baldigste",
     "sortRecent": "Kürzlich hinzugefügt",
-    "sortName": "Name (A-Z)",
-    "byTemplate": "Nach Vorlage"
+    "sortName": "Name (A-Z)"
   },
   "settings": {
     "title": "Einstellungen",
@@ -206,7 +177,6 @@
       "unlimited_countdowns": "Unbegrenzte Countdowns",
       "unlimited_notes": "Unbegrenzte Notizen pro Ereignis",
       "advanced_reminders": "Erweiterte Erinnerungsvoreinstellungen",
-      "custom_templates": "Benutzerdefinierte Ereignisvorlagen",
       "export_data": "Ihre Daten exportieren",
       "no_ads": "Werbefreie Erfahrung",
       "priority_support": "Prioritätssupport"
@@ -232,12 +202,6 @@
         "bullet2": "Notizen in allen Ereignissen durchsuchen",
         "bullet3": "Rich-Text-Formatierung"
       },
-      "advancedTemplates": {
-        "title": "Pro: Erweiterte Vorlagen",
-        "bullet1": "Hochzeit-, Flug-, Prüfungsvorlagen",
-        "bullet2": "Benutzerdefinierte Vorlagen erstellen",
-        "bullet3": "Vorlagenbearbeitung und -freigabe"
-      },
       "unitControls": {
         "title": "Pro: Anzeigesteuerung",
         "bullet1": "Sekunden ausblenden für klarere Ansicht",
@@ -253,4 +217,3 @@
     }
   }
 }
-

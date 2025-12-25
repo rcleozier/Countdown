@@ -32,8 +32,6 @@
     "selectDate": "Sélectionner une date",
     "selectTime": "Sélectionner l'heure",
     "selectIcon": "Sélectionner une icône",
-    "selectTemplate": "Sélectionner un modèle",
-    "noTemplate": "Aucun modèle",
     "selectReminderPreset": "Préréglage de rappel",
     "customReminders": "Rappels personnalisés"
   },
@@ -43,32 +41,6 @@
     "selectDate": "Sélectionner une date",
     "selectTime": "Sélectionner l'heure",
     "selectIcon": "Sélectionner une icône"
-  },
-  "templates": {
-    "birthday": {
-      "name": "Anniversaire",
-      "defaultName": "Anniversaire de {{name}}"
-    },
-    "trip": {
-      "name": "Voyage",
-      "defaultName": "Voyage à {{destination}}"
-    },
-    "exam": {
-      "name": "Examen",
-      "defaultName": "Examen de {{subject}}"
-    },
-    "wedding": {
-      "name": "Mariage",
-      "defaultName": "Mariage de {{name}}"
-    },
-    "flight": {
-      "name": "Vol",
-      "defaultName": "Vol vers {{destination}}"
-    },
-    "appointment": {
-      "name": "Rendez-vous",
-      "defaultName": "Rendez-vous {{type}}"
-    }
   },
   "reminders": {
     "chill": "Détendu",
@@ -99,8 +71,7 @@
     "all": "Tous",
     "sortSoonest": "Plus proche",
     "sortRecent": "Récemment ajouté",
-    "sortName": "Nom (A-Z)",
-    "byTemplate": "Par modèle"
+    "sortName": "Nom (A-Z)"
   },
   "settings": {
     "title": "Paramètres",
@@ -206,7 +177,6 @@
       "unlimited_countdowns": "Compteurs illimités",
       "unlimited_notes": "Notes illimitées par événement",
       "advanced_reminders": "Préréglages de rappel avancés",
-      "custom_templates": "Modèles d'événements personnalisés",
       "export_data": "Exporter vos données",
       "no_ads": "Expérience sans publicité",
       "priority_support": "Support prioritaire"
@@ -232,12 +202,6 @@
         "bullet2": "Rechercher des notes dans tous les événements",
         "bullet3": "Formatage de texte enrichi"
       },
-      "advancedTemplates": {
-        "title": "Pro : Modèles avancés",
-        "bullet1": "Modèles Mariage, Vol, Examen",
-        "bullet2": "Créer des modèles personnalisés",
-        "bullet3": "Édition et partage de modèles"
-      },
       "unitControls": {
         "title": "Pro : Contrôles d'affichage",
         "bullet1": "Masquer les secondes pour une vue plus claire",
@@ -253,4 +217,3 @@
     }
   }
 }
-

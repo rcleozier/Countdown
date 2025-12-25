@@ -163,16 +163,11 @@ const RemindersScreen = ({ navigation }) => {
       const now = new Date();
       let needsSave = false;
       const rolledEvents = eventsToUse.map(event => {
-        // Debug: Log event dates before roll-forward
-        if (event.reminderPlan && event.reminderPlan.enabled) {
-          console.log(`[ROLL-FORWARD] Before: ${event.name} - date=${event.date}, nextOccurrenceAt=${event.nextOccurrenceAt}`);
-        }
         const rolled = rollForwardIfNeeded(event, now);
         if (rolled !== event) {
           needsSave = true;
           // Rebuild reminders for rolled events since nextOccurrenceAt changed
           rolled.reminders = buildRemindersForEvent(rolled, isPro);
-          console.log(`[ROLL-FORWARD] After: ${rolled.name} - date=${rolled.date}, nextOccurrenceAt=${rolled.nextOccurrenceAt}`);
         }
         return rolled;
       });
@@ -192,17 +187,7 @@ const RemindersScreen = ({ navigation }) => {
       rolledEvents.forEach(event => {
         if (event.reminderPlan && event.reminderPlan.enabled) {
           // Always rebuild reminders to ensure they're based on current nextOccurrenceAt
-          const eventDate = event.nextOccurrenceAt || event.date;
           const eventReminders = buildRemindersForEvent(event, isPro);
-          // Debug: Log reminder dates for upcoming events
-          if (eventReminders.length > 0 && eventDate) {
-            const expectedDate = moment(eventDate);
-            const actualFireAt = moment(eventReminders[0].fireAtISO);
-            console.log(`[REMINDERS LOAD] ${event.name}: eventDate=${eventDate}, nextOccurrenceAt=${event.nextOccurrenceAt}, date=${event.date}, reminderFireAt=${eventReminders[0].fireAtISO}, sameDay=${actualFireAt.isSame(expectedDate, 'day')}`);
-            if (!actualFireAt.isSame(expectedDate, 'day')) {
-              console.warn(`[REMINDERS] ${event.name}: eventDate=${eventDate}, reminderFireAt=${eventReminders[0].fireAtISO}, mismatch!`);
-            }
-          }
           eventReminders.forEach(reminder => {
             const fireAt = moment(reminder.fireAtISO);
             if (!fireAt.isAfter(moment())) {
@@ -216,12 +201,6 @@ const RemindersScreen = ({ navigation }) => {
             }
           });
         }
-      });
-      
-      // Debug: Log all reminder dates
-      console.log(`[REMINDERS] Total reminders: ${reminders.length}`);
-      reminders.slice(0, 10).forEach((r, i) => {
-        console.log(`[REMINDERS] ${i}: ${r.event.name} - fireAt=${r.fireAtISO} (${moment(r.fireAtISO).format('MMM D, YYYY h:mm A')})`);
       });
 
       // Sort by fireAt

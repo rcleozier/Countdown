@@ -133,10 +133,6 @@ export const migrateEvents = async () => {
         migrated.notes = '';
       }
 
-      // Add templateId if missing
-      if (migrated.templateId === undefined) {
-        migrated.templateId = null;
-      }
 
       // Add reminderPresetId if missing (legacy field, kept for compatibility)
       if (migrated.reminderPresetId === undefined) {

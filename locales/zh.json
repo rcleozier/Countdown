@@ -32,8 +32,6 @@
     "selectDate": "选择日期",
     "selectTime": "选择时间",
     "selectIcon": "选择图标",
-    "selectTemplate": "选择模板",
-    "noTemplate": "无模板",
     "selectReminderPreset": "提醒预设",
     "customReminders": "自定义提醒"
   },
@@ -43,32 +41,6 @@
     "selectDate": "选择日期",
     "selectTime": "选择时间",
     "selectIcon": "选择图标"
-  },
-  "templates": {
-    "birthday": {
-      "name": "生日",
-      "defaultName": "{{name}}的生日"
-    },
-    "trip": {
-      "name": "旅行",
-      "defaultName": "前往{{destination}}的旅行"
-    },
-    "exam": {
-      "name": "考试",
-      "defaultName": "{{subject}}考试"
-    },
-    "wedding": {
-      "name": "婚礼",
-      "defaultName": "{{name}}的婚礼"
-    },
-    "flight": {
-      "name": "航班",
-      "defaultName": "前往{{destination}}的航班"
-    },
-    "appointment": {
-      "name": "预约",
-      "defaultName": "{{type}}预约"
-    }
   },
   "notes": {
     "title": "笔记",
@@ -84,8 +56,7 @@
     "all": "全部",
     "sortSoonest": "最近",
     "sortRecent": "最近添加",
-    "sortName": "名称（A-Z）",
-    "byTemplate": "按模板"
+    "sortName": "名称（A-Z）"
   },
   "settings": {
     "title": "设置",
@@ -191,7 +162,6 @@
       "unlimited_countdowns": "无限倒计时",
       "unlimited_notes": "每个事件无限笔记",
       "advanced_reminders": "高级提醒预设",
-      "custom_templates": "自定义事件模板",
       "export_data": "导出您的数据",
       "no_ads": "无广告体验",
       "priority_support": "优先支持"
@@ -216,12 +186,6 @@
         "bullet1": "每个事件无限笔记",
         "bullet2": "在所有事件中搜索笔记",
         "bullet3": "富文本格式"
-      },
-      "advancedTemplates": {
-        "title": "Pro：高级模板",
-        "bullet1": "婚礼、航班、考试模板",
-        "bullet2": "创建自定义模板",
-        "bullet3": "模板编辑和共享"
       },
       "unitControls": {
         "title": "Pro：显示控制",
@@ -279,4 +243,3 @@
     "settingsError": "无法打开设置"
   }
 }
-

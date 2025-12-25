@@ -171,10 +171,6 @@ const SettingsScreen = () => {
         };
         // Build reminders for the event (using the event's actual date)
         event.reminders = buildRemindersForEvent(event, isPro);
-        // Debug: Log reminder dates
-        if (event.reminders.length > 0) {
-          console.log(`[SEED] ${e.name}: eventDate=${eventDate.toISOString()}, firstReminderFireAt=${event.reminders[0].fireAtISO}`);
-        }
         return event;
       });
       const past = [
@@ -325,12 +321,14 @@ const SettingsScreen = () => {
           <View style={[
             styles.card,
             {
-              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              backgroundColor: isPro
+                ? (isDark ? 'rgba(60,196,162,0.05)' : 'rgba(78,158,255,0.03)')
+                : (isDark ? '#1E1E1E' : '#FFFFFF'),
               shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-              borderColor: isPro 
-                ? (isDark ? '#3CC4A2' : '#4E9EFF')
+              borderTopWidth: isPro ? 1 : 0,
+              borderTopColor: isPro
+                ? (isDark ? 'rgba(60,196,162,0.2)' : 'rgba(78,158,255,0.15)')
                 : 'transparent',
-              borderWidth: isPro ? 2 : 0,
             }
           ]}>
             <View style={styles.subscriptionHeader}>
@@ -338,13 +336,13 @@ const SettingsScreen = () => {
                 styles.subscriptionIconContainer,
                 {
                   backgroundColor: isPro
-                    ? (isDark ? 'rgba(60,196,162,0.15)' : 'rgba(78,158,255,0.1)')
+                    ? (isDark ? 'rgba(60,196,162,0.1)' : 'rgba(78,158,255,0.08)')
                     : (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)'),
                 }
               ]}>
                 <Ionicons
                   name={isPro ? "checkmark-circle" : "star"}
-                  size={wp('5%')}
+                  size={isPro ? wp('4%') : wp('5%')}
                   color={isPro 
                     ? (isDark ? '#3CC4A2' : '#4E9EFF')
                     : (isDark ? '#4E9EFF' : '#4A9EFF')
@@ -364,7 +362,7 @@ const SettingsScreen = () => {
                       styles.cardSubtext,
                       { color: isDark ? '#A1A1A1' : '#6B7280', marginTop: wp('1%') }
                     ]}>
-                      No ads • Full access
+                      Recurring countdowns, advanced reminders, no ads
                     </Text>
                     <Text style={[
                       styles.proThankYou,
@@ -392,24 +390,32 @@ const SettingsScreen = () => {
               </View>
             </View>
             {isPro ? (
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  openSubscriptionManagement();
-                }}
-                style={[
-                  styles.proCtaButton,
-                  {
-                    backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
-                    borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
-                  }
-                ]}
-              >
+              <View style={{ marginTop: wp('3%') }}>
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    openSubscriptionManagement();
+                  }}
+                  style={[
+                    styles.proCtaButton,
+                    {
+                      backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
+                      borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
+                    }
+                  ]}
+                >
+                  <Text style={[
+                    styles.proCtaText,
+                    { color: accentColor }
+                  ]}>Manage Subscription</Text>
+                </Pressable>
                 <Text style={[
-                  styles.proCtaText,
-                  { color: accentColor }
-                ]}>Manage Subscription</Text>
-              </Pressable>
+                  styles.proManageSubtext,
+                  { color: isDark ? '#6B7280' : '#9CA3AF' }
+                ]}>
+                  Cancel anytime in Apple ID settings
+                </Text>
+              </View>
             ) : (
               <>
                 <Pressable
@@ -535,55 +541,57 @@ const SettingsScreen = () => {
               { color: isDark ? '#A1A1A1' : '#6B7280' }
             ]}>Actions</Text>
             
-            {/* Restore Purchases */}
-            <Pressable
-              onPress={async () => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setIsRestoring(true);
-                try {
-                  await restore();
-                  Alert.alert(
-                    'Restore Complete',
-                    isPro 
-                      ? 'Your Pro subscription has been restored.'
-                      : 'No active purchases found.',
-                    [{ text: 'OK' }]
-                  );
-                } catch (err) {
-                  Alert.alert(
-                    'Restore Failed',
-                    err.message || 'Could not restore purchases. Please try again.',
-                    [{ text: 'OK' }]
-                  );
-                } finally {
-                  setIsRestoring(false);
-                }
-              }}
-              disabled={isRestoring || purchasesLoading}
-              style={{ marginBottom: wp('3%') }}
-            >
-              <View style={[
-                styles.actionRow,
-                {
-                  paddingVertical: wp('3%'),
-                  paddingHorizontal: wp('4%'),
-                  borderRadius: wp('2.5%'),
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                }
-              ]}>
-                <Ionicons
-                  name="refresh"
-                  size={wp('5%')}
-                  color={isDark ? '#A1A1A1' : '#6B7280'}
-                />
-                <Text style={[
-                  styles.actionText,
-                  { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
+            {/* Restore Purchases - Only show when not Pro */}
+            {!isPro && (
+              <Pressable
+                onPress={async () => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setIsRestoring(true);
+                  try {
+                    await restore();
+                    Alert.alert(
+                      'Restore Complete',
+                      isPro 
+                        ? 'Your Pro subscription has been restored.'
+                        : 'No active purchases found.',
+                      [{ text: 'OK' }]
+                    );
+                  } catch (err) {
+                    Alert.alert(
+                      'Restore Failed',
+                      err.message || 'Could not restore purchases. Please try again.',
+                      [{ text: 'OK' }]
+                    );
+                  } finally {
+                    setIsRestoring(false);
+                  }
+                }}
+                disabled={isRestoring || purchasesLoading}
+                style={{ marginBottom: wp('3%') }}
+              >
+                <View style={[
+                  styles.actionRow,
+                  {
+                    paddingVertical: wp('3%'),
+                    paddingHorizontal: wp('4%'),
+                    borderRadius: wp('2.5%'),
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                  }
                 ]}>
-                  {isRestoring ? 'Restoring...' : 'Restore Purchases'}
-                </Text>
-              </View>
-            </Pressable>
+                  <Ionicons
+                    name="refresh"
+                    size={wp('5%')}
+                    color={isDark ? '#A1A1A1' : '#6B7280'}
+                  />
+                  <Text style={[
+                    styles.actionText,
+                    { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
+                  ]}>
+                    {isRestoring ? 'Restoring...' : 'Restore Purchases'}
+                  </Text>
+                </View>
+              </Pressable>
+            )}
             
             {/* Destructive: Clear All Events */}
             <Pressable
@@ -928,6 +936,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   proCtaSubtext: {
+    fontSize: wp('2.8%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    textAlign: 'center',
+    marginTop: wp('1.5%'),
+  },
+  proManageSubtext: {
     fontSize: wp('2.8%'),
     fontWeight: '400',
     fontFamily: 'System',

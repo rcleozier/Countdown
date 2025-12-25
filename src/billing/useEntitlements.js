@@ -4,7 +4,6 @@ import { usePurchases } from './PurchasesProvider';
 export const FREE_FEATURES = [
   'unlimited_countdowns',
   'basic_reminders', // 1 reminder per event
-  'basic_templates',
   'basic_charts',
   'search_title',
   'dark_mode',
@@ -22,7 +21,6 @@ export const PRO_FEATURES = [
   'notes_overview', // All Notes overview screen
   'long_notes', // 5000 character limit (vs 500 for free)
   'unit_controls', // Hide seconds, show weeks/months
-  'advanced_templates',
   'advanced_analytics',
   'no_ads',
 ];

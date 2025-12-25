@@ -32,8 +32,6 @@
     "selectDate": "Selecionar uma data",
     "selectTime": "Selecionar hora",
     "selectIcon": "Selecionar ícone",
-    "selectTemplate": "Selecionar modelo",
-    "noTemplate": "Sem modelo",
     "selectReminderPreset": "Predefinição de lembrete",
     "customReminders": "Lembretes personalizados"
   },
@@ -43,32 +41,6 @@
     "selectDate": "Selecionar uma data",
     "selectTime": "Selecionar hora",
     "selectIcon": "Selecionar ícone"
-  },
-  "templates": {
-    "birthday": {
-      "name": "Aniversário",
-      "defaultName": "Aniversário de {{name}}"
-    },
-    "trip": {
-      "name": "Viagem",
-      "defaultName": "Viagem para {{destination}}"
-    },
-    "exam": {
-      "name": "Exame",
-      "defaultName": "Exame de {{subject}}"
-    },
-    "wedding": {
-      "name": "Casamento",
-      "defaultName": "Casamento de {{name}}"
-    },
-    "flight": {
-      "name": "Voo",
-      "defaultName": "Voo para {{destination}}"
-    },
-    "appointment": {
-      "name": "Compromisso",
-      "defaultName": "Compromisso {{type}}"
-    }
   },
   "reminders": {
     "chill": "Relaxado",
@@ -99,8 +71,7 @@
     "all": "Todos",
     "sortSoonest": "Mais próximo",
     "sortRecent": "Adicionados recentemente",
-    "sortName": "Nome (A-Z)",
-    "byTemplate": "Por modelo"
+    "sortName": "Nome (A-Z)"
   },
   "settings": {
     "title": "Configurações",
@@ -206,7 +177,6 @@
       "unlimited_countdowns": "Contagens regressivas ilimitadas",
       "unlimited_notes": "Notas ilimitadas por evento",
       "advanced_reminders": "Predefinições de lembrete avançadas",
-      "custom_templates": "Modelos de evento personalizados",
       "export_data": "Exportar seus dados",
       "no_ads": "Experiência sem anúncios",
       "priority_support": "Suporte prioritário"
@@ -232,12 +202,6 @@
         "bullet2": "Pesquisar notas em todos os eventos",
         "bullet3": "Formatação de texto rico"
       },
-      "advancedTemplates": {
-        "title": "Pro: Modelos avançados",
-        "bullet1": "Modelos de Casamento, Voo, Exame",
-        "bullet2": "Criar modelos personalizados",
-        "bullet3": "Edição e compartilhamento de modelos"
-      },
       "unitControls": {
         "title": "Pro: Controles de exibição",
         "bullet1": "Ocultar segundos para visualização mais limpa",
@@ -253,4 +217,3 @@
     }
   }
 }
-

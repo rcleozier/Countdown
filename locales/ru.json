@@ -32,8 +32,6 @@
     "selectDate": "Выберите Дату",
     "selectTime": "Выберите Время",
     "selectIcon": "Выберите Иконку",
-    "selectTemplate": "Выберите Шаблон",
-    "noTemplate": "Без Шаблона",
     "selectReminderPreset": "Пресет Напоминания",
     "customReminders": "Пользовательские Напоминания"
   },
@@ -43,32 +41,6 @@
     "selectDate": "Выберите Дату",
     "selectTime": "Выберите Время",
     "selectIcon": "Выберите Иконку"
-  },
-  "templates": {
-    "birthday": {
-      "name": "День рождения",
-      "defaultName": "День рождения {{name}}"
-    },
-    "trip": {
-      "name": "Поездка",
-      "defaultName": "Поездка в {{destination}}"
-    },
-    "exam": {
-      "name": "Экзамен",
-      "defaultName": "Экзамен по {{subject}}"
-    },
-    "wedding": {
-      "name": "Свадьба",
-      "defaultName": "Свадьба {{name}}"
-    },
-    "flight": {
-      "name": "Рейс",
-      "defaultName": "Рейс в {{destination}}"
-    },
-    "appointment": {
-      "name": "Встреча",
-      "defaultName": "Встреча {{type}}"
-    }
   },
   "notes": {
     "title": "Заметки",
@@ -84,8 +56,7 @@
     "all": "Все",
     "sortSoonest": "Ближайшие",
     "sortRecent": "Недавно добавленные",
-    "sortName": "Имя (А-Я)",
-    "byTemplate": "По Шаблону"
+    "sortName": "Имя (А-Я)"
   },
   "settings": {
     "title": "Настройки",
@@ -191,7 +162,6 @@
       "unlimited_countdowns": "Неограниченные обратные отсчеты",
       "unlimited_notes": "Неограниченные заметки на событие",
       "advanced_reminders": "Расширенные пресеты напоминаний",
-      "custom_templates": "Пользовательские шаблоны событий",
       "export_data": "Экспорт ваших данных",
       "no_ads": "Опыт без рекламы",
       "priority_support": "Приоритетная поддержка"
@@ -216,12 +186,6 @@
         "bullet1": "Неограниченные заметки на событие",
         "bullet2": "Поиск заметок по всем событиям",
         "bullet3": "Форматирование богатого текста"
-      },
-      "advancedTemplates": {
-        "title": "Pro: Расширенные Шаблоны",
-        "bullet1": "Шаблоны Свадьбы, Рейса, Экзамена",
-        "bullet2": "Создать пользовательские шаблоны",
-        "bullet3": "Редактирование и обмен шаблонами"
       },
       "unitControls": {
         "title": "Pro: Элементы Управления Отображением",
@@ -279,4 +243,3 @@
     "settingsError": "Не удалось открыть настройки"
   }
 }
-

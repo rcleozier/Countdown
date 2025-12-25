@@ -36,14 +36,6 @@ const ProUpsellSheet = ({
         t('subscription.upsell.notes.bullet3'),
       ],
     },
-    advanced_templates: {
-      title: t('subscription.upsell.advancedTemplates.title'),
-      bullets: [
-        t('subscription.upsell.advancedTemplates.bullet1'),
-        t('subscription.upsell.advancedTemplates.bullet2'),
-        t('subscription.upsell.advancedTemplates.bullet3'),
-      ],
-    },
     unit_controls: {
       title: t('subscription.upsell.unitControls.title'),
       bullets: [

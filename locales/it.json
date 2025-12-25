@@ -32,8 +32,6 @@
     "selectDate": "Seleziona una Data",
     "selectTime": "Seleziona Ora",
     "selectIcon": "Seleziona Icona",
-    "selectTemplate": "Seleziona Modello",
-    "noTemplate": "Nessun Modello",
     "selectReminderPreset": "Preset Promemoria",
     "customReminders": "Promemoria Personalizzati"
   },
@@ -43,32 +41,6 @@
     "selectDate": "Seleziona una Data",
     "selectTime": "Seleziona Ora",
     "selectIcon": "Seleziona Icona"
-  },
-  "templates": {
-    "birthday": {
-      "name": "Compleanno",
-      "defaultName": "Compleanno di {{name}}"
-    },
-    "trip": {
-      "name": "Viaggio",
-      "defaultName": "Viaggio a {{destination}}"
-    },
-    "exam": {
-      "name": "Esame",
-      "defaultName": "Esame di {{subject}}"
-    },
-    "wedding": {
-      "name": "Matrimonio",
-      "defaultName": "Matrimonio di {{name}}"
-    },
-    "flight": {
-      "name": "Volo",
-      "defaultName": "Volo per {{destination}}"
-    },
-    "appointment": {
-      "name": "Appuntamento",
-      "defaultName": "Appuntamento {{type}}"
-    }
   },
   "notes": {
     "title": "Note",
@@ -84,8 +56,7 @@
     "all": "Tutti",
     "sortSoonest": "Prossimi",
     "sortRecent": "Aggiunti di recente",
-    "sortName": "Nome (A-Z)",
-    "byTemplate": "Per Modello"
+    "sortName": "Nome (A-Z)"
   },
   "settings": {
     "title": "Impostazioni",
@@ -191,7 +162,6 @@
       "unlimited_countdowns": "Conti alla rovescia illimitati",
       "unlimited_notes": "Note illimitate per evento",
       "advanced_reminders": "Preset promemoria avanzati",
-      "custom_templates": "Modelli evento personalizzati",
       "export_data": "Esporta i tuoi dati",
       "no_ads": "Esperienza senza pubblicità",
       "priority_support": "Supporto prioritario"
@@ -216,12 +186,6 @@
         "bullet1": "Note illimitate per evento",
         "bullet2": "Cerca note in tutti gli eventi",
         "bullet3": "Formattazione testo ricco"
-      },
-      "advancedTemplates": {
-        "title": "Pro: Modelli Avanzati",
-        "bullet1": "Modelli Matrimonio, Volo, Esame",
-        "bullet2": "Crea modelli personalizzati",
-        "bullet3": "Modifica e condivisione modelli"
       },
       "unitControls": {
         "title": "Pro: Controlli Visualizzazione",
@@ -279,4 +243,3 @@
     "settingsError": "Impossibile aprire le impostazioni"
   }
 }
-

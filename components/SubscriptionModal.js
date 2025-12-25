@@ -144,7 +144,6 @@ const SubscriptionModal = ({ visible, onClose, onSubscribe }) => {
                 'unlimited_countdowns',
                 'unlimited_notes',
                 'advanced_reminders',
-                'custom_templates',
                 'export_data',
                 'no_ads',
                 'priority_support',

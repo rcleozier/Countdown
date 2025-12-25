@@ -32,8 +32,6 @@
     "selectDate": "तारीख चुनें",
     "selectTime": "समय चुनें",
     "selectIcon": "आइकन चुनें",
-    "selectTemplate": "टेम्प्लेट चुनें",
-    "noTemplate": "कोई टेम्प्लेट नहीं",
     "selectReminderPreset": "अनुस्मारक प्रीसेट",
     "customReminders": "कस्टम अनुस्मारक"
   },
@@ -43,32 +41,6 @@
     "selectDate": "तारीख चुनें",
     "selectTime": "समय चुनें",
     "selectIcon": "आइकन चुनें"
-  },
-  "templates": {
-    "birthday": {
-      "name": "जन्मदिन",
-      "defaultName": "{{name}} का जन्मदिन"
-    },
-    "trip": {
-      "name": "यात्रा",
-      "defaultName": "{{destination}} की यात्रा"
-    },
-    "exam": {
-      "name": "परीक्षा",
-      "defaultName": "{{subject}} परीक्षा"
-    },
-    "wedding": {
-      "name": "शादी",
-      "defaultName": "{{name}} की शादी"
-    },
-    "flight": {
-      "name": "उड़ान",
-      "defaultName": "{{destination}} की उड़ान"
-    },
-    "appointment": {
-      "name": "अपॉइंटमेंट",
-      "defaultName": "{{type}} अपॉइंटमेंट"
-    }
   },
   "reminders": {
     "chill": "आराम",
@@ -99,8 +71,7 @@
     "all": "सभी",
     "sortSoonest": "जल्दी",
     "sortRecent": "हाल ही में जोड़ा गया",
-    "sortName": "नाम (A-Z)",
-    "byTemplate": "टेम्प्लेट के अनुसार"
+    "sortName": "नाम (A-Z)"
   },
   "settings": {
     "title": "सेटिंग्स",
@@ -206,7 +177,6 @@
       "unlimited_countdowns": "असीमित काउंटडाउन",
       "unlimited_notes": "प्रति इवेंट असीमित नोट्स",
       "advanced_reminders": "उन्नत अनुस्मारक प्रीसेट",
-      "custom_templates": "कस्टम इवेंट टेम्प्लेट",
       "export_data": "अपना डेटा निर्यात करें",
       "no_ads": "विज्ञापन-मुक्त अनुभव",
       "priority_support": "प्राथमिकता सहायता"
@@ -219,4 +189,3 @@
     "manage": "सदस्यता प्रबंधित करें"
   }
 }
-

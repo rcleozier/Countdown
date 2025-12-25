@@ -32,8 +32,6 @@
     "selectDate": "Select a Date",
     "selectTime": "Select Time",
     "selectIcon": "Select Icon",
-    "selectTemplate": "Select Template",
-    "noTemplate": "No Template",
     "selectReminderPreset": "Reminder Preset",
     "customReminders": "Custom Reminders"
   },
@@ -43,32 +41,6 @@
     "selectDate": "Select a Date",
     "selectTime": "Select Time",
     "selectIcon": "Select Icon"
-  },
-  "templates": {
-    "birthday": {
-      "name": "Birthday",
-      "defaultName": "{{name}}'s Birthday"
-    },
-    "trip": {
-      "name": "Trip",
-      "defaultName": "Trip to {{destination}}"
-    },
-    "exam": {
-      "name": "Exam",
-      "defaultName": "{{subject}} Exam"
-    },
-    "wedding": {
-      "name": "Wedding",
-      "defaultName": "{{name}}'s Wedding"
-    },
-    "flight": {
-      "name": "Flight",
-      "defaultName": "Flight to {{destination}}"
-    },
-    "appointment": {
-      "name": "Appointment",
-      "defaultName": "{{type}} Appointment"
-    }
   },
   "notes": {
     "title": "Notes",
@@ -85,7 +57,6 @@
     "sortSoonest": "Soonest",
     "sortRecent": "Recently Added",
     "sortName": "Name (A-Z)",
-    "byTemplate": "By Template"
   },
   "settings": {
     "title": "Settings",
@@ -191,7 +162,6 @@
       "unlimited_countdowns": "Unlimited countdowns",
       "unlimited_notes": "Unlimited notes per event",
       "advanced_reminders": "Advanced reminder presets",
-      "custom_templates": "Custom event templates",
       "export_data": "Export your data",
       "no_ads": "Ad-free experience",
       "priority_support": "Priority support"
@@ -216,12 +186,6 @@
         "bullet1": "Unlimited notes per event",
         "bullet2": "Search notes across all events",
         "bullet3": "Rich text formatting"
-      },
-      "advancedTemplates": {
-        "title": "Pro: Advanced Templates",
-        "bullet1": "Wedding, Flight, Exam templates",
-        "bullet2": "Create custom templates",
-        "bullet3": "Template editing and sharing"
       },
       "unitControls": {
         "title": "Pro: Display Controls",

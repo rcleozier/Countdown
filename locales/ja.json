@@ -32,8 +32,6 @@
     "selectDate": "日付を選択",
     "selectTime": "時刻を選択",
     "selectIcon": "アイコンを選択",
-    "selectTemplate": "テンプレートを選択",
-    "noTemplate": "テンプレートなし",
     "selectReminderPreset": "リマインダープリセット",
     "customReminders": "カスタムリマインダー"
   },
@@ -43,32 +41,6 @@
     "selectDate": "日付を選択",
     "selectTime": "時刻を選択",
     "selectIcon": "アイコンを選択"
-  },
-  "templates": {
-    "birthday": {
-      "name": "誕生日",
-      "defaultName": "{{name}}の誕生日"
-    },
-    "trip": {
-      "name": "旅行",
-      "defaultName": "{{destination}}への旅行"
-    },
-    "exam": {
-      "name": "試験",
-      "defaultName": "{{subject}}の試験"
-    },
-    "wedding": {
-      "name": "結婚式",
-      "defaultName": "{{name}}の結婚式"
-    },
-    "flight": {
-      "name": "フライト",
-      "defaultName": "{{destination}}へのフライト"
-    },
-    "appointment": {
-      "name": "予約",
-      "defaultName": "{{type}}の予約"
-    }
   },
   "reminders": {
     "chill": "リラックス",
@@ -99,8 +71,7 @@
     "all": "すべて",
     "sortSoonest": "最も近い",
     "sortRecent": "最近追加",
-    "sortName": "名前（あ-ん）",
-    "byTemplate": "テンプレート別"
+    "sortName": "名前（あ-ん）"
   },
   "settings": {
     "title": "設定",
@@ -206,7 +177,6 @@
       "unlimited_countdowns": "無制限のカウントダウン",
       "unlimited_notes": "イベントごとの無制限のメモ",
       "advanced_reminders": "高度なリマインダープリセット",
-      "custom_templates": "カスタムイベントテンプレート",
       "export_data": "データをエクスポート",
       "no_ads": "広告なしの体験",
       "priority_support": "優先サポート"
@@ -232,12 +202,6 @@
         "bullet2": "すべてのイベントでメモを検索",
         "bullet3": "リッチテキストフォーマット"
       },
-      "advancedTemplates": {
-        "title": "Pro: 高度なテンプレート",
-        "bullet1": "結婚式、フライト、試験テンプレート",
-        "bullet2": "カスタムテンプレートを作成",
-        "bullet3": "テンプレートの編集と共有"
-      },
       "unitControls": {
         "title": "Pro: 表示コントロール",
         "bullet1": "よりクリーンな表示のために秒を非表示",
@@ -253,4 +217,3 @@
     }
   }
 }
-

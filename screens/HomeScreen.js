@@ -39,7 +39,6 @@ import eventIcons from '../util/eventIcons';
 import NotesEditor from '../components/NotesEditor';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
-import { getDefaultEventName } from '../util/eventTemplates';
 import SkeletonCard from '../components/SkeletonCard';
 import FabButton from '../components/FabButton';
 import { useEntitlements } from '../src/billing/useEntitlements';
@@ -319,7 +318,6 @@ const HomeScreen = () => {
           createdAt: createdAt.toISOString(),
           notificationId: null, // Will be set if notifications are enabled
           notes: '',
-          templateId: null,
           reminderPresetId: null,
           reminders: [],
         };
@@ -346,7 +344,6 @@ const HomeScreen = () => {
           createdAt: addDays(now, e.days - 5).toISOString(),
           notificationId: null,
           notes: '',
-          templateId: null,
           reminderPresetId: null,
           reminders: [],
         };
@@ -689,7 +686,6 @@ const HomeScreen = () => {
       createdAt: new Date().toISOString(),
       // New fields
       notes: newNotes.trim() || '',
-      templateId: null, // Templates removed for now, but keeping field for future compatibility
       reminderPresetId: null, // Legacy field
       reminderPlan: reminderPlan,
       reminders: [], // Will be generated and synced
@@ -1806,22 +1802,36 @@ const HomeScreen = () => {
       {/* Icon Picker Modal */}
       <Modal
               animationType="fade"
-              transparent
+              transparent={true}
               visible={iconPickerVisible}
               onRequestClose={() => setIconPickerVisible(false)}
+              statusBarTranslucent={true}
+              presentationStyle="overFullScreen"
             >
-              <View style={[
-                styles.modalContainer,
-                { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-              ]}>
-                <Animated.View style={[
-                  styles.iconModalContent,
-                  {
-                    backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                    shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
-                    transform: [{ scale: iconModalScale }],
+              <Pressable
+                style={[
+                  styles.modalContainer,
+                  { 
+                    backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 10000
                   }
-                ]}>
+                ]}
+                onPress={() => setIconPickerVisible(false)}
+              >
+                <Pressable onPress={(e) => e.stopPropagation()}>
+                  <Animated.View style={[
+                    styles.iconModalContent,
+                    {
+                      backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                      shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                      transform: [{ scale: iconModalScale }],
+                    }
+                  ]}>
                   <Text style={[
                     styles.iconModalTitle,
                     { color: isDark ? '#F3F3F6' : '#111111' }
@@ -1878,7 +1888,8 @@ const HomeScreen = () => {
                     </Text>
                   </TouchableOpacity>
                 </Animated.View>
-              </View>
+                </Pressable>
+              </Pressable>
             </Modal>
       {/* Confetti overlay (re-mounts per key to replay) */}
       {confettiKey > 0 && (
@@ -2039,6 +2050,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: wp("5%"),
+    zIndex: 1000,
   },
   modalContent: {
     width: '100%',
