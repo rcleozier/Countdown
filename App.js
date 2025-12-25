@@ -8,7 +8,8 @@ import * as Sentry from "@sentry/react-native";
 import { requestTrackingPermission } from './util/adPersonalization';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { LocaleProvider } from './context/LocaleContext';
-import { SubscriptionProvider } from './context/SubscriptionContext';
+import { PurchasesProvider } from './src/billing/PurchasesProvider';
+import { AdProvider } from './src/ads/AdProvider';
 import { Analytics } from './util/analytics';
 import { runMigration } from './util/eventMigration';
 
@@ -16,7 +17,6 @@ import HomeScreen from "./screens/HomeScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import AnalyticsScreen from "./screens/AnalyticsScreen";
 import CalendarScreen from "./screens/CalendarScreen";
-import NotesScreen from "./screens/NotesScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -65,31 +65,6 @@ function SettingsScreenStack() {
       }}
     >
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
-      <Stack.Screen 
-        name="NotesScreen" 
-        component={NotesScreen}
-        options={{
-          headerShown: true,
-          headerTitle: 'Notes',
-          headerBackTitle: 'Settings',
-          headerBackTitleVisible: true,
-          headerStyle: {
-            backgroundColor: isDark ? '#121212' : '#F9FAFB',
-          },
-          headerTintColor: isDark ? '#E5E7EB' : '#111111',
-          headerTitleStyle: {
-            fontWeight: '600',
-            fontFamily: 'System',
-            color: isDark ? '#E5E7EB' : '#111111',
-          },
-          headerBackTitleStyle: {
-            fontWeight: '400',
-            fontFamily: 'System',
-            color: isDark ? '#E5E7EB' : '#111111',
-          },
-          headerShadowVisible: false,
-        }}
-      />
     </Stack.Navigator>
   );
 }
@@ -183,11 +158,13 @@ function App() {
 
   return (
     <LocaleProvider>
-      <SubscriptionProvider>
-        <ThemeProvider>
-          <ThemedApp />
-        </ThemeProvider>
-      </SubscriptionProvider>
+      <PurchasesProvider>
+        <AdProvider>
+          <ThemeProvider>
+            <ThemedApp />
+          </ThemeProvider>
+        </AdProvider>
+      </PurchasesProvider>
     </LocaleProvider>
   );
 }

@@ -151,7 +151,7 @@ const HomeScreen = () => {
   
   // New state for templates, reminders, search, filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [filterType, setFilterType] = useState('upcoming');
   const [sortType, setSortType] = useState('soonest');
   
   // Modal animation refs

@@ -24,8 +24,8 @@ import { Analytics } from '../util/analytics';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../context/LocaleContext';
 import { SUPPORTED_LOCALES } from '../util/i18n';
-import { useSubscription } from '../context/SubscriptionContext';
-import SubscriptionModal from '../components/SubscriptionModal';
+import { usePurchases } from '../src/billing/PurchasesProvider';
+import PaywallSheet from '../src/billing/PaywallSheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -35,11 +35,12 @@ const SettingsScreen = () => {
   const [appInfoTapCount, setAppInfoTapCount] = useState(0);
   const appInfo = appConfig.expo;
   const { theme, isDark, toggleTheme } = useTheme();
-  const { locale, setLocale, isRTL, setRTL, t } = useLocale();
-  const { hasActiveSubscription, subscriptionInfo } = useSubscription();
+  const { locale, setLocale, t } = useLocale();
+  const { isPro, restore, isLoading: purchasesLoading } = usePurchases();
   const navigation = useNavigation();
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
   
   // Animation refs for press feedback
   const clearButtonScale = useRef(new Animated.Value(1)).current;
@@ -63,11 +64,6 @@ const SettingsScreen = () => {
     setModalVisible(false);
   };
 
-  // Navigate to notes screen
-  const handleNotesPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate('NotesScreen');
-  };
 
   // Easter egg: Seed data after 7 taps
   const handleAppInfoTap = async () => {
@@ -245,31 +241,6 @@ const SettingsScreen = () => {
             </Animated.View>
           </Pressable>
 
-          {/* Notes */}
-          <Pressable
-            onPressIn={() => handleCardPressIn('notes')}
-            onPressOut={() => handleCardPressOut('notes')}
-            onPress={handleNotesPress}
-          >
-            <Animated.View style={[
-              styles.card,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-                transform: [{ scale: getCardScale('notes') }],
-              }
-            ]}>
-              <Text style={[
-                styles.cardTitle,
-                { color: accentColor }
-              ]}>{t('settings.notes')}</Text>
-              <Text style={[
-                styles.cardSubtext,
-                { color: isDark ? '#A1A1A1' : '#6B7280' }
-              ]}>{t('settings.notesDescription')}</Text>
-            </Animated.View>
-          </Pressable>
-
           {/* Subscription */}
           <Pressable
             onPressIn={() => handleCardPressIn('subscription')}
@@ -285,25 +256,25 @@ const SettingsScreen = () => {
                 backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
                 shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
                 transform: [{ scale: getCardScale('subscription') }],
-                borderColor: hasActiveSubscription 
+                borderColor: isPro 
                   ? (isDark ? '#3CC4A2' : '#4E9EFF')
                   : 'transparent',
-                borderWidth: hasActiveSubscription ? 2 : 0,
+                borderWidth: isPro ? 2 : 0,
               }
             ]}>
               <View style={styles.subscriptionHeader}>
                 <View style={[
                   styles.subscriptionIconContainer,
                   {
-                    backgroundColor: hasActiveSubscription
+                    backgroundColor: isPro
                       ? (isDark ? 'rgba(60,196,162,0.15)' : 'rgba(78,158,255,0.1)')
                       : (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)'),
                   }
                 ]}>
                   <Ionicons
-                    name={hasActiveSubscription ? "checkmark-circle" : "star"}
+                    name={isPro ? "checkmark-circle" : "star"}
                     size={wp('5%')}
-                    color={hasActiveSubscription 
+                    color={isPro 
                       ? (isDark ? '#3CC4A2' : '#4E9EFF')
                       : (isDark ? '#4E9EFF' : '#4A9EFF')
                     }
@@ -314,14 +285,14 @@ const SettingsScreen = () => {
                     styles.cardTitle,
                     { color: accentColor }
                   ]}>
-                    {hasActiveSubscription ? t('subscription.status.active') : t('subscription.title')}
+                    {isPro ? t('subscription.status.active') : t('subscription.title')}
                   </Text>
                   <Text style={[
                     styles.cardSubtext,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
                   ]}>
-                    {hasActiveSubscription 
-                      ? (subscriptionInfo?.isYearly ? t('subscription.plans.yearly.name') : t('subscription.plans.monthly.name'))
+                    {isPro 
+                      ? 'Pro Active'
                       : t('subscription.subtitle')
                     }
                   </Text>
@@ -389,27 +360,6 @@ const SettingsScreen = () => {
                 ios_backgroundColor={isDark ? '#2E2E2E' : '#E5E7EB'}
               />
             </View>
-            {__DEV__ && (
-              <View style={[styles.themeToggleContainer, { marginTop: wp('3%') }]}>
-                <Text style={[
-                  styles.themeLabel,
-                  { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                ]}>{t('settings.rtlToggle')}</Text>
-                <Switch
-                  value={isRTL}
-                  onValueChange={async (value) => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    await setRTL(value);
-                  }}
-                  trackColor={{ 
-                    false: '#E5E7EB', 
-                    true: isDark ? '#2E2E2E' : accentColor 
-                  }}
-                  thumbColor={isDark ? '#3CC4A2' : '#FFFFFF'}
-                  ios_backgroundColor={isDark ? '#2E2E2E' : '#E5E7EB'}
-                />
-              </View>
-            )}
           </View>
 
           {/* Actions */}
@@ -424,6 +374,98 @@ const SettingsScreen = () => {
               styles.cardTitle,
               { color: accentColor }
             ]}>{t('settings.actions')}</Text>
+            
+            {/* Restore Purchases */}
+            <Pressable
+              onPress={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setIsRestoring(true);
+                try {
+                  await restore();
+                  Alert.alert(
+                    'Restore Complete',
+                    isPro 
+                      ? 'Your Pro subscription has been restored.'
+                      : 'No active purchases found.',
+                    [{ text: 'OK' }]
+                  );
+                } catch (err) {
+                  Alert.alert(
+                    'Restore Failed',
+                    err.message || 'Could not restore purchases. Please try again.',
+                    [{ text: 'OK' }]
+                  );
+                } finally {
+                  setIsRestoring(false);
+                }
+              }}
+              disabled={isRestoring || purchasesLoading}
+              style={{ marginBottom: wp('3%') }}
+            >
+              <View style={[
+                styles.actionRow,
+                {
+                  paddingVertical: wp('3%'),
+                  paddingHorizontal: wp('4%'),
+                  borderRadius: wp('2.5%'),
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                }
+              ]}>
+                <Ionicons
+                  name="refresh"
+                  size={wp('5%')}
+                  color={isDark ? '#A1A1A1' : '#6B7280'}
+                />
+                <Text style={[
+                  styles.actionText,
+                  { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
+                ]}>
+                  {isRestoring ? 'Restoring...' : 'Restore Purchases'}
+                </Text>
+              </View>
+            </Pressable>
+            
+            {__DEV__ && (
+              <Pressable
+                onPress={async () => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  // Toggle Pro status for debugging
+                  const cached = await AsyncStorage.getItem('@entitlements_cache');
+                  const data = cached ? JSON.parse(cached) : { isPro: false };
+                  const newProStatus = !data.isPro;
+                  await AsyncStorage.setItem('@entitlements_cache', JSON.stringify({
+                    ...data,
+                    isPro: newProStatus,
+                    timestamp: Date.now(),
+                  }));
+                  Alert.alert('Debug', `Pro status toggled to ${newProStatus}. Restart app to see changes.`);
+                }}
+                style={{ marginBottom: wp('3%') }}
+              >
+                <View style={[
+                  styles.actionRow,
+                  {
+                    paddingVertical: wp('3%'),
+                    paddingHorizontal: wp('4%'),
+                    borderRadius: wp('2.5%'),
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                  }
+                ]}>
+                  <Ionicons
+                    name="bug"
+                    size={wp('5%')}
+                    color={isDark ? '#A1A1A1' : '#6B7280'}
+                  />
+                  <Text style={[
+                    styles.actionText,
+                    { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
+                  ]}>
+                    Debug: Toggle Pro ({isPro ? 'ON' : 'OFF'})
+                  </Text>
+                </View>
+              </Pressable>
+            )}
+            
             <Pressable
               onPressIn={handleClearPressIn}
               onPressOut={handleClearPressOut}
@@ -578,13 +620,10 @@ const SettingsScreen = () => {
           </Modal>
 
           {/* Subscription Modal */}
-          <SubscriptionModal
+          <PaywallSheet
             visible={subscriptionModalVisible}
             onClose={() => setSubscriptionModalVisible(false)}
-            onSubscribe={(status) => {
-              console.log('Subscription activated:', status);
-              // Handle successful subscription
-            }}
+            feature="settings"
           />
         </ScrollView>
       </SafeAreaView>
@@ -732,6 +771,15 @@ const styles = StyleSheet.create({
   },
   subscriptionTextContainer: {
     flex: 1,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionText: {
+    fontSize: wp('4%'),
+    fontWeight: '500',
+    fontFamily: 'System',
   },
 });
 
