@@ -44,6 +44,7 @@ import FabButton from '../components/FabButton';
 import { useEntitlements } from '../src/billing/useEntitlements';
 import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from '../components/ProUpsellInline';
+import ProBadge from '../components/ProBadge';
 import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
 import { isPresetPro, getPresetDescription } from '../util/reminderPresets';
 import { syncScheduledReminders } from '../util/reminderScheduler';
@@ -1404,10 +1405,17 @@ const HomeScreen = () => {
 
               {/* Reminders Section */}
               <View style={styles.modalSection}>
-                <Text style={[
-                  styles.modalSectionLabel,
-                  { color: isDark ? '#A1A1A1' : '#6B7280', marginBottom: wp('1%') }
-                ]}>Reminders</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: wp('1%') }}>
+                  <Text style={[
+                    styles.modalSectionLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>Reminders</Text>
+                  {(reminderPreset === 'standard' || reminderPreset === 'intense') && (
+                    <View style={{ marginLeft: wp('2%') }}>
+                      <ProBadge size="small" />
+                    </View>
+                  )}
+                </View>
                 
                 <Text style={[
                   styles.modalSectionSubLabel,
@@ -1542,10 +1550,17 @@ const HomeScreen = () => {
 
               {/* Recurrence Section */}
               <View style={styles.modalSection}>
-                <Text style={[
-                  styles.modalSectionLabel,
-                  { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>Repeats</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={[
+                    styles.modalSectionLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>Repeats</Text>
+                  {recurrence !== RECURRENCE_TYPES.NONE && (
+                    <View style={{ marginLeft: wp('2%') }}>
+                      <ProBadge size="small" />
+                    </View>
+                  )}
+                </View>
                 <TouchableOpacity
                   onPress={() => {
                     if (!isPro) {
@@ -1799,98 +1814,6 @@ const HomeScreen = () => {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Icon Picker Modal */}
-      <Modal
-              animationType="fade"
-              transparent={true}
-              visible={iconPickerVisible}
-              onRequestClose={() => setIconPickerVisible(false)}
-              statusBarTranslucent={true}
-              presentationStyle="overFullScreen"
-            >
-              <Pressable
-                style={[
-                  styles.modalContainer,
-                  { 
-                    backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 10000
-                  }
-                ]}
-                onPress={() => setIconPickerVisible(false)}
-              >
-                <Pressable onPress={(e) => e.stopPropagation()}>
-                  <Animated.View style={[
-                    styles.iconModalContent,
-                    {
-                      backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                      shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
-                      transform: [{ scale: iconModalScale }],
-                    }
-                  ]}>
-                  <Text style={[
-                    styles.iconModalTitle,
-                    { color: isDark ? '#F3F3F6' : '#111111' }
-                  ]}>{t('create.selectIcon')}</Text>
-                  <View style={[
-                    styles.iconModalDivider,
-                    { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
-                  ]} />
-                  <ScrollView 
-                    style={styles.iconModalScroll}
-                    contentContainerStyle={styles.iconModalScrollContent}
-                    showsVerticalScrollIndicator={false}
-                    bounces={true}
-                  >
-                    <View style={styles.iconList}>
-                      {eventIcons.map((icon, index) => (
-                        <IconItem
-                          key={`${icon}-${index}`}
-                          icon={icon}
-                          isSelected={newIcon === icon}
-                          isDark={isDark}
-                          onPress={() => {
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                            setNewIcon(icon);
-                            setIconPickerVisible(false);
-                          }}
-                        />
-                      ))}
-                    </View>
-                  </ScrollView>
-                  <TouchableOpacity
-                    onPress={() => setIconPickerVisible(false)}
-                    style={{
-                      backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                      height: 48,
-                      borderRadius: wp('3%'),
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      paddingVertical: 12,
-                      paddingHorizontal: 16,
-                      marginTop: wp('2%'),
-                    }}
-                  >
-                    <Text 
-                      allowFontScaling={false}
-                      style={{
-                        color: isDark ? '#FFFFFF' : '#000000',
-                        fontSize: 16,
-                        fontWeight: '600',
-                        textAlign: 'center',
-                      }}
-                    >
-                      Cancel
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
-                </Pressable>
-              </Pressable>
-            </Modal>
       {/* Confetti overlay (re-mounts per key to replay) */}
       {confettiKey > 0 && (
         <ConfettiCannon
@@ -2110,6 +2033,17 @@ const styles = StyleSheet.create({
     fontSize: wp('3.5%'), // Slightly smaller
     fontWeight: '600', // Semibold
     fontFamily: 'System',
+  },
+  iconPickerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    paddingHorizontal: wp('5%'),
   },
   iconModalContent: {
     width: '100%',

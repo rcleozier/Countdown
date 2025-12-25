@@ -25,7 +25,9 @@ import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from './ProUpsellInline';
 import LockRow from './LockRow';
 import ReminderPresetExplainer from './ReminderPresetExplainer';
-import { getPresetDescription, REMINDER_PRESETS } from '../util/reminderPresets';
+import { getPresetDescription, REMINDER_PRESETS, isPresetPro } from '../util/reminderPresets';
+import ProBadge from './ProBadge';
+import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import eventIcons from '../util/eventIcons';
@@ -136,6 +138,9 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [editName, setEditName] = useState(event.name);
   const [editIcon, setEditIcon] = useState(event.icon);
   const [editNotes, setEditNotes] = useState(event.notes || '');
+  const [editReminderPreset, setEditReminderPreset] = useState(event.reminderPlan?.preset || 'off');
+  const [editRecurrence, setEditRecurrence] = useState(event.recurrence || RECURRENCE_TYPES.NONE);
+  const [recurrencePickerVisible, setRecurrencePickerVisible] = useState(false);
   const [tempSelectedDate, setTempSelectedDate] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date(event.date));
   const [selectedHour, setSelectedHour] = useState(moment(event.date).hour());
@@ -278,22 +283,38 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       return;
     }
     
+    // Validate preset selection - ensure free users can't use Pro presets
+    let finalPreset = editReminderPreset;
+    if (!isPro && isPresetPro(editReminderPreset)) {
+      // Fallback to 'simple' if free user tries to use Pro preset
+      finalPreset = 'simple';
+    }
+    
     const updatedEvent = {
       ...event,
       name: editName,
       icon: editIcon,
       date: combinedDateTime.toISOString(),
       notes: editNotes.trim() || '',
-      // Preserve recurrence fields
-      recurrence: event.recurrence || RECURRENCE_TYPES.NONE,
+      // Update reminder plan
+      reminderPlan: {
+        preset: finalPreset,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        enabled: finalPreset !== 'off',
+      },
+      // Update recurrence fields
+      recurrence: editRecurrence,
       // If recurring, update nextOccurrenceAt and preserve originalDateAt
-      nextOccurrenceAt: event.recurrence && event.recurrence !== RECURRENCE_TYPES.NONE 
+      nextOccurrenceAt: editRecurrence && editRecurrence !== RECURRENCE_TYPES.NONE 
         ? combinedDateTime.toISOString() 
-        : (event.nextOccurrenceAt || combinedDateTime.toISOString()),
-      originalDateAt: event.recurrence && event.recurrence !== RECURRENCE_TYPES.NONE
+        : combinedDateTime.toISOString(),
+      originalDateAt: editRecurrence && editRecurrence !== RECURRENCE_TYPES.NONE
         ? (event.originalDateAt || event.date)
         : undefined,
     };
+    
+    // Rebuild reminders for the updated event
+    updatedEvent.reminders = buildRemindersForEvent(updatedEvent, isPro);
     
     onEdit(updatedEvent);
     setEditModalVisible(false);
@@ -993,6 +1014,112 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 transform: [{ scale: modalScale }],
               }
             ]}>
+              {/* Icon Picker Overlay - Inside edit modal */}
+              {iconPickerVisible && (
+                <View style={[
+                  styles.iconPickerOverlay,
+                  {
+                    backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
+                  }
+                ]}>
+                  <Pressable
+                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+                    onPress={() => setIconPickerVisible(false)}
+                  >
+                    <Pressable onPress={(e) => e.stopPropagation()}>
+                      <Animated.View style={[
+                        {
+                          width: '100%',
+                          maxWidth: wp('90%'),
+                          maxHeight: hp('75%'),
+                          borderRadius: wp('5%'),
+                          paddingHorizontal: wp('5%'),
+                          paddingTop: wp('6%'),
+                          paddingBottom: wp('6%'),
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 1,
+                          shadowRadius: 16,
+                          elevation: 8,
+                          backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                          shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                          transform: [{ scale: iconModalScale }],
+                        }
+                      ]}>
+                        <Text style={[
+                          {
+                            fontSize: wp('4.5%'),
+                            fontWeight: '600',
+                            fontFamily: 'System',
+                            textAlign: 'center',
+                            marginBottom: wp('4%'),
+                            color: isDark ? '#F3F4F6' : '#111111',
+                          }
+                        ]}>Select Icon</Text>
+                        <View style={[
+                          {
+                            height: 1,
+                            marginBottom: wp('3%'),
+                            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+                          }
+                        ]} />
+                        <ScrollView 
+                          style={{ maxHeight: hp('55%') }}
+                          contentContainerStyle={{ paddingBottom: wp('5%') }}
+                          showsVerticalScrollIndicator={false}
+                          bounces={true}
+                        >
+                          <View style={{
+                            flexDirection: "row",
+                            flexWrap: "wrap",
+                            justifyContent: "flex-start",
+                            gap: wp('2.5%'),
+                          }}>
+                            {eventIcons.map((icon, index) => (
+                              <IconItem
+                                key={`${icon}-${index}`}
+                                icon={icon}
+                                isSelected={editIcon === icon}
+                                isDark={isDark}
+                                onPress={() => {
+                                  setEditIcon(icon);
+                                  setIconPickerVisible(false);
+                                }}
+                              />
+                            ))}
+                          </View>
+                        </ScrollView>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setIconPickerVisible(false);
+                          }}
+                          style={{
+                            backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                            height: 48,
+                            borderRadius: wp('3%'),
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            paddingVertical: 12,
+                            paddingHorizontal: 16,
+                            marginTop: wp('2%'),
+                          }}
+                        >
+                          <Text 
+                            allowFontScaling={false}
+                            style={{
+                              color: isDark ? '#FFFFFF' : '#000000',
+                              fontSize: 16,
+                              fontWeight: '600',
+                              textAlign: 'center',
+                            }}
+                          >
+                            Cancel
+                          </Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    </Pressable>
+                  </Pressable>
+                </View>
+              )}
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={(e) => e.stopPropagation()}
@@ -1345,6 +1472,240 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               </View>
             </View>
 
+              {/* Reminders Section */}
+              <View style={styles.modalSection}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: wp('1%') }}>
+                  <Text style={[
+                    styles.modalSectionLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>Reminders</Text>
+                  {(editReminderPreset === 'standard' || editReminderPreset === 'intense') && (
+                    <View style={{ marginLeft: wp('2%') }}>
+                      <ProBadge size="small" />
+                    </View>
+                  )}
+                </View>
+                
+                <Text style={[
+                  styles.modalSectionSubLabel,
+                  { color: isDark ? '#6B7280' : '#9CA3AF' }
+                ]}>Notify me</Text>
+                
+                {/* Preset Buttons - 2x2 Grid */}
+                <View style={styles.reminderButtonsGrid}>
+                  {['off', 'simple', 'standard', 'intense'].map((preset) => {
+                    const isProPreset = isPresetPro(preset);
+                    const isLocked = !isPro && isProPreset;
+                    const isActive = editReminderPreset === preset;
+
+                    return (
+                      <TouchableOpacity
+                        key={preset}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          if (isLocked) {
+                            setPaywallFeature('reminders_presets');
+                            setPaywallVisible(true);
+                            return;
+                          }
+                          setEditReminderPreset(preset);
+                        }}
+                        style={[
+                          styles.reminderButton,
+                          {
+                            backgroundColor: isActive
+                              ? (isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)')
+                              : (isDark ? '#2B2B2B' : '#F9FAFB'),
+                            borderColor: isActive
+                              ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                              : (isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB'),
+                            borderWidth: isActive ? 2 : 1,
+                            opacity: isLocked ? 0.6 : 1,
+                          }
+                        ]}
+                      >
+                        <View style={styles.reminderButtonContent}>
+                          <Text style={[
+                            styles.reminderButtonLabel,
+                            {
+                              color: isActive
+                                ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                                : (isDark ? '#F5F5F5' : '#111111'),
+                              fontWeight: isActive ? '600' : '500',
+                            }
+                          ]}>
+                            {preset.charAt(0).toUpperCase() + preset.slice(1)}
+                          </Text>
+                          {isLocked && (
+                            <Ionicons
+                              name="lock-closed"
+                              size={wp('3%')}
+                              color={isDark ? '#6B7280' : '#9CA3AF'}
+                            />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+                
+                {/* Description */}
+                <View style={{ marginTop: wp('2%'), marginBottom: wp('1%') }}>
+                  <Text style={[
+                    styles.reminderDescription,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>
+                    {(() => {
+                      if (!editReminderPreset || editReminderPreset === 'off') {
+                        return 'No notifications scheduled';
+                      }
+                      return getPresetDescription(editReminderPreset) || 'Reminders enabled';
+                    })()}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Recurrence Section */}
+              <View style={styles.modalSection}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={[
+                    styles.modalSectionLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>Repeats</Text>
+                  {editRecurrence !== RECURRENCE_TYPES.NONE && (
+                    <View style={{ marginLeft: wp('2%') }}>
+                      <ProBadge size="small" />
+                    </View>
+                  )}
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!isPro) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setPaywallFeature('recurring_countdowns');
+                      setPaywallVisible(true);
+                      return;
+                    }
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setRecurrencePickerVisible(true);
+                  }}
+                  style={[
+                    styles.iconButton,
+                    {
+                      backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                      borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                      opacity: !isPro ? 0.6 : 1,
+                    }
+                  ]}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <Text style={[
+                      styles.iconButtonText,
+                      { color: isDark ? '#F5F5F5' : '#111111' }
+                    ]}>
+                      {editRecurrence === RECURRENCE_TYPES.NONE ? 'None' : getRecurrenceLabel(editRecurrence)}
+                    </Text>
+                    {!isPro && (
+                      <Ionicons
+                        name="lock-closed"
+                        size={wp('3%')}
+                        color={isDark ? '#6B7280' : '#9CA3AF'}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              </View>
+
+              {/* Recurrence Picker Modal */}
+              <Modal
+                animationType="slide"
+                transparent
+                visible={recurrencePickerVisible}
+                onRequestClose={() => setRecurrencePickerVisible(false)}
+              >
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => setRecurrencePickerVisible(false)}
+                  style={[
+                    styles.modalContainer,
+                    { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+                  ]}
+                >
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={(e) => e.stopPropagation()}
+                    style={[
+                      styles.recurrencePickerContent,
+                      {
+                        backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                        shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+                      }
+                    ]}
+                  >
+                    <Text style={[
+                      styles.modalTitle,
+                      { color: isDark ? '#F5F5F5' : '#111111' }
+                    ]}>Select Recurrence</Text>
+                    <ScrollView>
+                      {Object.values(RECURRENCE_TYPES).map((type) => (
+                        <TouchableOpacity
+                          key={type}
+                          onPress={() => {
+                            setEditRecurrence(type);
+                            setRecurrencePickerVisible(false);
+                          }}
+                          style={[
+                            styles.recurrenceOption,
+                            {
+                              backgroundColor: editRecurrence === type
+                                ? (isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)')
+                                : 'transparent',
+                              borderColor: editRecurrence === type
+                                ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                                : 'transparent',
+                            }
+                          ]}
+                        >
+                          <Text style={[
+                            styles.recurrenceOptionText,
+                            {
+                              color: editRecurrence === type
+                                ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                                : (isDark ? '#F5F5F5' : '#111111'),
+                              fontWeight: editRecurrence === type ? '600' : '400',
+                            }
+                          ]}>
+                            {type === RECURRENCE_TYPES.NONE ? 'None' : getRecurrenceLabel(type)}
+                          </Text>
+                          {editRecurrence === type && (
+                            <Ionicons
+                              name="checkmark"
+                              size={wp('4%')}
+                              color={isDark ? '#4E9EFF' : '#4A9EFF'}
+                            />
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                    <TouchableOpacity
+                      onPress={() => setRecurrencePickerVisible(false)}
+                      style={[
+                        styles.button,
+                        {
+                          backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                          marginTop: wp('2%'),
+                        }
+                      ]}
+                    >
+                      <Text style={[
+                        styles.buttonText,
+                        { color: isDark ? '#E5E7EB' : '#111111' }
+                      ]}>Cancel</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              </Modal>
+
               {/* Footer Buttons */}
               <View style={styles.modalFooter}>
                 <TouchableOpacity
@@ -1517,110 +1878,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
         </View>
       </Modal>
 
-      {/* Icon Picker Modal */}
-      <Modal
-        animationType="fade"
-        transparent
-        visible={iconPickerVisible}
-        onRequestClose={() => {
-          setIconPickerVisible(false);
-        }}
-      >
-        <View style={[
-          styles.modalOverlay,
-          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-        ]}>
-          <Animated.View style={[
-            {
-              width: '100%',
-              maxWidth: wp('90%'),
-              maxHeight: hp('75%'),
-              borderRadius: wp('5%'),
-              paddingHorizontal: wp('5%'),
-              paddingTop: wp('6%'),
-              paddingBottom: wp('6%'),
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 1,
-              shadowRadius: 16,
-              elevation: 8,
-              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
-              transform: [{ scale: iconModalScale }],
-            }
-          ]}>
-            <Text style={[
-              {
-                fontSize: wp('4.5%'),
-                fontWeight: '600',
-                fontFamily: 'System',
-                textAlign: 'center',
-                marginBottom: wp('4%'),
-                color: isDark ? '#F3F4F6' : '#111111',
-              }
-            ]}>Select Icon</Text>
-            <View style={[
-              {
-                height: 1,
-                marginBottom: wp('3%'),
-                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-              }
-            ]} />
-            <ScrollView 
-              style={{ maxHeight: hp('55%') }}
-              contentContainerStyle={{ paddingBottom: wp('5%') }}
-              showsVerticalScrollIndicator={false}
-              bounces={true}
-            >
-              <View style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                justifyContent: "flex-start",
-                gap: wp('2.5%'),
-              }}>
-                {eventIcons.map((icon, index) => (
-                  <IconItem
-                    key={`${icon}-${index}`}
-                    icon={icon}
-                    isSelected={editIcon === icon}
-                    isDark={isDark}
-                    onPress={() => {
-                      setEditIcon(icon);
-                      setIconPickerVisible(false);
-                    }}
-                  />
-                ))}
-              </View>
-            </ScrollView>
-            <TouchableOpacity
-              onPress={() => {
-                setIconPickerVisible(false);
-              }}
-              style={{
-                backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                height: 48,
-                borderRadius: wp('3%'),
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                marginTop: wp('2%'),
-              }}
-            >
-              <Text 
-                allowFontScaling={false}
-                style={{
-                  color: isDark ? '#FFFFFF' : '#000000',
-                  fontSize: 16,
-                  fontWeight: '600',
-                  textAlign: 'center',
-                }}
-              >
-                Cancel
-              </Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-      </Modal>
 
       {/* Paywall Sheet */}
       <PaywallSheet
@@ -2420,6 +2677,80 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
     fontStyle: 'italic',
     marginLeft: wp('0.5%'),
+  },
+  modalSectionSubLabel: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    marginBottom: wp('2%'),
+  },
+  reminderButtonsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: wp('2%'),
+    marginBottom: wp('2%'),
+  },
+  reminderButton: {
+    flex: 1,
+    minWidth: '45%',
+    maxWidth: '48%',
+    paddingVertical: wp('2.4%'),
+    paddingHorizontal: wp('2%'),
+    borderRadius: wp('2.5%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: wp('14%'),
+  },
+  reminderButtonContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    gap: wp('0.5%'),
+  },
+  reminderButtonLabel: {
+    fontSize: wp('3.15%'),
+    fontFamily: 'System',
+    textAlign: 'center',
+    lineHeight: wp('3.8%'),
+  },
+  reminderDescription: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    lineHeight: wp('4.5%'),
+  },
+  recurrencePickerContent: {
+    width: '85%',
+    maxWidth: wp('90%'),
+    borderRadius: wp('4%'),
+    padding: wp('5%'),
+    borderWidth: 1,
+  },
+  recurrenceOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: wp('3.5%'),
+    paddingHorizontal: wp('4%'),
+    borderRadius: wp('2.5%'),
+    marginBottom: wp('2%'),
+    borderWidth: 1,
+  },
+  recurrenceOptionText: {
+    fontSize: wp('4%'),
+    fontWeight: '500',
+    fontFamily: 'System',
+  },
+  iconPickerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    paddingHorizontal: wp('5%'),
   },
 });
 
