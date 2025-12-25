@@ -1,13 +1,27 @@
-import * as StoreReview from 'expo-store-review';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const REVIEW_REQUEST_KEY = 'last_review_request';
 const MIN_EVENTS_FOR_REVIEW = 3;
 const MIN_DAYS_BETWEEN_REVIEWS = 15;
 
+// Safely get StoreReview module (may not be available in dev/Expo Go)
+const getStoreReview = () => {
+  try {
+    // Dynamically require to avoid issues in environments where it's not available
+    // eslint-disable-next-line global-require
+    return require('expo-store-review');
+  } catch (error) {
+    console.warn('expo-store-review not available:', error);
+    return null;
+  }
+};
+
 export const ReviewManager = {
   async shouldRequestReview() {
     try {
+      const StoreReview = getStoreReview();
+      if (!StoreReview) return false;
+
       // Check if the app is available for review
       const isAvailable = await StoreReview.isAvailableAsync();
       if (!isAvailable) return false;
@@ -34,6 +48,9 @@ export const ReviewManager = {
 
   async requestReview() {
     try {
+      const StoreReview = getStoreReview();
+      if (!StoreReview) return false;
+
       const shouldRequest = await this.shouldRequestReview();
       if (shouldRequest) {
         await StoreReview.requestReview();

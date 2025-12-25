@@ -28,10 +28,18 @@ import { Ionicons } from '@expo/vector-icons';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../context/LocaleContext';
 import { ReviewManager } from '../util/reviewManager';
 import { ENABLE_ADS, USE_TEST_ADS } from '../util/config';
 import { AD_UNIT_IDS } from '../util/adConfig';
 import eventIcons from '../util/eventIcons';
+import TemplatePicker from '../components/TemplatePicker';
+import ReminderPresetSelector from '../components/ReminderPresetSelector';
+import NotesEditor from '../components/NotesEditor';
+import SearchBar from '../components/SearchBar';
+import FilterBar from '../components/FilterBar';
+import { getPresetReminders } from '../util/reminderPresets';
+import { getDefaultEventName } from '../util/eventTemplates';
 
 const IconItem = ({ icon, isSelected, onPress, isDark }) => {
   const iconScale = useRef(new Animated.Value(1)).current;
@@ -132,6 +140,14 @@ const HomeScreen = () => {
   const [newIcon, setNewIcon] = useState("💻");
   const [confettiKey, setConfettiKey] = useState(0);
   const { theme, isDark } = useTheme();
+  const { t } = useLocale();
+  
+  // New state for templates, reminders, search, filters
+  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+  const [selectedReminderPresetId, setSelectedReminderPresetId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('all');
+  const [sortType, setSortType] = useState('soonest');
   
   // Modal animation refs
   const modalScale = useRef(new Animated.Value(0.95)).current;
@@ -210,6 +226,10 @@ const HomeScreen = () => {
           date: eventDate.toISOString(),
           createdAt: createdAt.toISOString(),
           notificationId: null, // Will be set if notifications are enabled
+          notes: '',
+          templateId: null,
+          reminderPresetId: null,
+          reminders: [],
         };
       });
       
@@ -233,6 +253,10 @@ const HomeScreen = () => {
           date: eventDate.toISOString(),
           createdAt: addDays(now, e.days - 5).toISOString(),
           notificationId: null,
+          notes: '',
+          templateId: null,
+          reminderPresetId: null,
+          reminders: [],
         };
       });
       
@@ -275,7 +299,41 @@ const HomeScreen = () => {
     saveCountdowns();
   }, [countdowns]);
 
-  // Sort & filter upcoming
+  // Search, filter, and sort logic
+  const filteredAndSortedCountdowns = React.useMemo(() => {
+    let filtered = [...countdowns];
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(event => {
+        const nameMatch = event.name?.toLowerCase().includes(query);
+        const notesMatch = event.notes?.toLowerCase().includes(query);
+        return nameMatch || notesMatch;
+      });
+    }
+    
+    // Apply type filter
+    const now = new Date();
+    if (filterType === 'upcoming') {
+      filtered = filtered.filter(event => new Date(event.date) > now);
+    } else if (filterType === 'past') {
+      filtered = filtered.filter(event => new Date(event.date) <= now);
+    }
+    
+    // Apply sort
+    if (sortType === 'soonest') {
+      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else if (sortType === 'recent') {
+      filtered.sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+    } else if (sortType === 'name') {
+      filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    }
+    
+    return filtered;
+  }, [countdowns, searchQuery, filterType, sortType]);
+  
+  // For backward compatibility
   const sortedCountdowns = [...countdowns].sort(
     (a, b) => new Date(a.date) - new Date(b.date)
   );
@@ -447,17 +505,45 @@ const HomeScreen = () => {
     combinedDateTime.setSeconds(0);
     combinedDateTime.setMilliseconds(0);
     if (combinedDateTime <= new Date()) {
-      Alert.alert("Invalid Date/Time", "Please select a date and time in the future.");
+      Alert.alert(t('common.error'), t('create.invalidDateTime'));
       return;
     }
-    const notificationId = await scheduleNotificationIfFuture(newName, combinedDateTime);
+    
+    // Get reminders from preset if selected
+    let reminders = [];
+    if (selectedReminderPresetId) {
+      reminders = getPresetReminders(selectedReminderPresetId);
+    }
+    
+    // Schedule notifications for reminders
+    const notificationIds = [];
+    for (const reminder of reminders) {
+      const reminderDate = new Date(combinedDateTime);
+      if (reminder.unit === 'days') {
+        reminderDate.setDate(reminderDate.getDate() - reminder.offset);
+      } else if (reminder.unit === 'weeks') {
+        reminderDate.setDate(reminderDate.getDate() - (reminder.offset * 7));
+      } else if (reminder.unit === 'months') {
+        reminderDate.setMonth(reminderDate.getMonth() - reminder.offset);
+      }
+      if (reminderDate > new Date()) {
+        const notifId = await scheduleNotificationIfFuture(newName, reminderDate);
+        if (notifId) notificationIds.push(notifId);
+      }
+    }
+    
     const newCountdown = {
       id: generateGUID(),
       name: newName,
       date: combinedDateTime.toISOString(),
       icon: newIcon,
-      notificationId,
+      notificationId: notificationIds.length > 0 ? notificationIds[0] : null,
       createdAt: new Date().toISOString(),
+      // New fields
+      notes: '',
+      templateId: selectedTemplateId,
+      reminderPresetId: selectedReminderPresetId,
+      reminders: reminders,
     };
     setCountdowns((prev) => [...prev, newCountdown]);
     setNewName("");
@@ -465,6 +551,8 @@ const HomeScreen = () => {
     setSelectedDate(new Date());
     setSelectedHour(9);
     setSelectedMinute(0);
+    setSelectedTemplateId(null);
+    setSelectedReminderPresetId(null);
     setModalVisible(false);
     
     // Haptic feedback for successful creation
@@ -670,9 +758,9 @@ const HomeScreen = () => {
 
       {isLoading ? (
         <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-          <Text style={[styles.loadingText, { color: theme.colors.text }]}>Loading...</Text>
+          <Text style={[styles.loadingText, { color: theme.colors.text }]}>{t('common.loading')}</Text>
         </View>
-      ) : upcomingEvents.length === 0 ? (
+      ) : filteredAndSortedCountdowns.length === 0 && !searchQuery && filterType === 'all' ? (
         <LinearGradient
           colors={isDark ? ['#121212', '#1C1C1C'] : ['#F9FAFB', '#FFFFFF']}
           style={styles.emptyContainer}
@@ -697,7 +785,7 @@ const HomeScreen = () => {
             <Text style={[
               styles.emptyText,
               { color: isDark ? '#E5E7EB' : '#111111' }
-            ]}>Ready to start counting?</Text>
+            ]}>{t('home.emptyTitle')}</Text>
             
             {/* CTA Button */}
             <Pressable
@@ -748,8 +836,15 @@ const HomeScreen = () => {
         </LinearGradient>
       ) : (
         <>
+        <SearchBar onSearch={setSearchQuery} />
+        <FilterBar 
+          filterType={filterType}
+          onFilterChange={setFilterType}
+          sortType={sortType}
+          onSortChange={setSortType}
+        />
         <FlatList
-          data={upcomingEvents}
+          data={filteredAndSortedCountdowns}
           keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
@@ -799,11 +894,30 @@ const HomeScreen = () => {
               <Text style={[
                 styles.modalTitle,
                 { color: isDark ? '#F5F5F5' : '#111111' }
-              ]}>Create New Countdown</Text>
+              ]}>{t('create.title')}</Text>
+              
+              {/* Template Picker */}
+              <TemplatePicker
+                selectedTemplateId={selectedTemplateId}
+                onSelect={(templateId) => {
+                  setSelectedTemplateId(templateId);
+                  if (templateId) {
+                    const template = require('../util/eventTemplates').TEMPLATES[templateId];
+                    if (template) {
+                      setNewIcon(template.icon);
+                      // Set default reminder preset
+                      if (template.defaultReminderPreset) {
+                        setSelectedReminderPresetId(template.defaultReminderPreset);
+                      }
+                    }
+                  }
+                }}
+                onSkip={() => setSelectedTemplateId(null)}
+              />
               
               {/* Countdown Name Input */}
               <TextInput
-                placeholder="Countdown Name"
+                placeholder={t('create.namePlaceholder')}
                 placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
                 value={newName}
                 onChangeText={setNewName}
@@ -821,11 +935,17 @@ const HomeScreen = () => {
                 ]}
               />
 
+              {/* Reminder Preset Selector */}
+              <ReminderPresetSelector
+                selectedPresetId={selectedReminderPresetId}
+                onSelect={setSelectedReminderPresetId}
+              />
+
             {/* Date Label + Button */}
             <Text style={[
               styles.iconLabel,
               { color: isDark ? '#A1A1A1' : '#6B7280' }
-            ]}>Date</Text>
+            ]}>{t('create.selectDate')}</Text>
             <TouchableOpacity
               style={[
                 styles.iconButton,
@@ -866,7 +986,7 @@ const HomeScreen = () => {
                   <Text style={[
                     styles.modalTitle,
                     { color: isDark ? '#F5F5F5' : '#111111' }
-                  ]}>Select a Date</Text>
+                  ]}>{t('create.selectDate')}</Text>
                   <Calendar
                     key={theme.name}
                     style={styles.calendar}
@@ -908,7 +1028,7 @@ const HomeScreen = () => {
                       <Text style={[
                         styles.buttonText,
                         { color: isDark ? '#E5E7EB' : '#111111' }
-                      ]}>Cancel</Text>
+                      ]}>{t('common.cancel')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[
@@ -963,7 +1083,7 @@ const HomeScreen = () => {
             >
               <View style={[styles.timePickerOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
                 <View style={[styles.timePickerContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Time</Text>
+                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>{t('create.selectTime')}</Text>
                   <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                     <Picker
                       selectedValue={selectedHour}
@@ -1022,7 +1142,7 @@ const HomeScreen = () => {
                 styles.iconButtonText,
                 { color: isDark ? '#F5F5F5' : '#111111' }
               ]}>
-                {newIcon ? `Icon: ${newIcon}` : "Select Icon"}
+                {newIcon ? `${t('create.selectIcon')}: ${newIcon}` : t('create.selectIcon')}
               </Text>
             </TouchableOpacity>
 
@@ -1048,7 +1168,7 @@ const HomeScreen = () => {
                   <Text style={[
                     styles.iconModalTitle,
                     { color: isDark ? '#F3F4F6' : '#111111' }
-                  ]}>Select Icon</Text>
+                  ]}>{t('create.selectIcon')}</Text>
                   <View style={[
                     styles.iconModalDivider,
                     { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
@@ -1134,7 +1254,7 @@ const HomeScreen = () => {
                   }
                 ]}
               >
-                <Text style={styles.buttonTextSave}>Save Countdown</Text>
+                <Text style={styles.buttonTextSave}>{t('common.save')}</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>

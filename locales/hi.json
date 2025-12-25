@@ -1,0 +1,206 @@
+{
+  "common": {
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "add": "जोड़ें",
+    "close": "बंद करें",
+    "confirm": "पुष्टि करें",
+    "yes": "हाँ",
+    "no": "नहीं",
+    "ok": "ठीक",
+    "search": "खोजें",
+    "filter": "फ़िल्टर",
+    "sort": "क्रमबद्ध करें",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफल"
+  },
+  "home": {
+    "title": "काउंटडाउन",
+    "emptyTitle": "अभी तक कोई काउंटडाउन नहीं",
+    "emptySubtitle": "अपना पहला काउंटडाउन बनाने के लिए + बटन पर टैप करें",
+    "createButton": "नया काउंटडाउन बनाएं",
+    "upcoming": "आगामी",
+    "past": "बीता हुआ",
+    "all": "सभी"
+  },
+  "create": {
+    "title": "काउंटडाउन बनाएं",
+    "namePlaceholder": "इवेंट का नाम",
+    "selectDate": "तारीख चुनें",
+    "selectTime": "समय चुनें",
+    "selectIcon": "आइकन चुनें",
+    "selectTemplate": "टेम्प्लेट चुनें",
+    "noTemplate": "कोई टेम्प्लेट नहीं",
+    "selectReminderPreset": "अनुस्मारक प्रीसेट",
+    "customReminders": "कस्टम अनुस्मारक"
+  },
+  "edit": {
+    "title": "काउंटडाउन संपादित करें",
+    "namePlaceholder": "इवेंट का नाम",
+    "selectDate": "तारीख चुनें",
+    "selectTime": "समय चुनें",
+    "selectIcon": "आइकन चुनें"
+  },
+  "templates": {
+    "birthday": {
+      "name": "जन्मदिन",
+      "defaultName": "{{name}} का जन्मदिन"
+    },
+    "trip": {
+      "name": "यात्रा",
+      "defaultName": "{{destination}} की यात्रा"
+    },
+    "exam": {
+      "name": "परीक्षा",
+      "defaultName": "{{subject}} परीक्षा"
+    },
+    "wedding": {
+      "name": "शादी",
+      "defaultName": "{{name}} की शादी"
+    },
+    "flight": {
+      "name": "उड़ान",
+      "defaultName": "{{destination}} की उड़ान"
+    },
+    "appointment": {
+      "name": "अपॉइंटमेंट",
+      "defaultName": "{{type}} अपॉइंटमेंट"
+    }
+  },
+  "reminders": {
+    "chill": "आराम",
+    "standard": "मानक",
+    "intense": "तीव्र",
+    "custom": "कस्टम",
+    "daysBefore": "{{count}} दिन पहले",
+    "daysBefore_plural": "{{count}} दिन पहले",
+    "weeksBefore": "{{count}} सप्ताह पहले",
+    "weeksBefore_plural": "{{count}} सप्ताह पहले",
+    "monthsBefore": "{{count}} महीना पहले",
+    "monthsBefore_plural": "{{count}} महीने पहले",
+    "addReminder": "अनुस्मारक जोड़ें",
+    "removeReminder": "हटाएं",
+    "noReminders": "कोई अनुस्मारक सेट नहीं"
+  },
+  "notes": {
+    "title": "नोट्स",
+    "addNote": "नोट जोड़ें",
+    "editNote": "नोट संपादित करें",
+    "placeholder": "इस इवेंट के लिए नोट जोड़ें...",
+    "empty": "अभी तक कोई नोट नहीं",
+    "autosave": "सहेजा जा रहा है..."
+  },
+  "filters": {
+    "upcoming": "आगामी",
+    "past": "बीता हुआ",
+    "all": "सभी",
+    "sortSoonest": "जल्दी",
+    "sortRecent": "हाल ही में जोड़ा गया",
+    "sortName": "नाम (A-Z)",
+    "byTemplate": "टेम्प्लेट के अनुसार"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "language": "भाषा",
+    "theme": "थीम",
+    "light": "हल्का",
+    "dark": "अंधेरा",
+    "clearAll": "सभी इवेंट साफ़ करें",
+    "clearConfirm": "क्या आप वाकई सभी इवेंट साफ़ करना चाहते हैं?",
+    "clearConfirmTitle": "साफ़ करने की पुष्टि करें",
+    "clearConfirmMessage": "क्या आप वाकई सभी इवेंट साफ़ करना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।",
+    "version": "संस्करण",
+    "rtlToggle": "RTL मोड (केवल डेव)",
+    "appInfo": "ऐप जानकारी",
+    "notes": "नोट्स",
+    "notesDescription": "अपने नोट्स देखें और प्रबंधित करें",
+    "actions": "क्रियाएं"
+  },
+  "time": {
+    "now": "अभी",
+    "today": "आज",
+    "tomorrow": "कल",
+    "yesterday": "कल",
+    "daysFromNow": "{{count}} दिन में",
+    "daysFromNow_plural": "{{count}} दिनों में",
+    "daysAgo": "{{count}} दिन पहले",
+    "daysAgo_plural": "{{count}} दिन पहले",
+    "hours": "{{count}} घंटा",
+    "hours_plural": "{{count}} घंटे",
+    "minutes": "{{count}} मिनट",
+    "minutes_plural": "{{count}} मिनट"
+  },
+  "analytics": {
+    "title": "विश्लेषण",
+    "total": "कुल इवेंट",
+    "totalEvents": "कुल इवेंट",
+    "upcoming": "आगामी",
+    "past": "बीता हुआ",
+    "pastEvents": "बीते हुए इवेंट",
+    "nextEvent": "अगला इवेंट",
+    "upcomingByMonth": "महीने के अनुसार आगामी",
+    "eventsByDayOfWeek": "सप्ताह के दिन के अनुसार इवेंट",
+    "days": {
+      "sun": "रवि",
+      "mon": "सोम",
+      "tue": "मंगल",
+      "wed": "बुध",
+      "thu": "गुरु",
+      "fri": "शुक्र",
+      "sat": "शनि"
+    }
+  },
+  "calendar": {
+    "title": "कैलेंडर",
+    "noEvents": "इस तारीख पर कोई इवेंट नहीं"
+  },
+  "past": {
+    "title": "बीते हुए इवेंट",
+    "empty": "कोई बीता हुआ इवेंट नहीं"
+  },
+  "delete": {
+    "confirm": "काउंटडाउन हटाएं",
+    "message": "क्या आप वाकई \"{{name}}\" को हटाना चाहते हैं?",
+    "cannotUndo": "इस क्रिया को पूर्ववत नहीं किया जा सकता।"
+  },
+  "subscription": {
+    "title": "Pro में अपग्रेड करें",
+    "subtitle": "सभी प्रीमियम सुविधाएं अनलॉक करें और अपने काउंटडाउन अनुभव को बढ़ाएं",
+    "subscribe": "सब्सक्राइब करें",
+    "processing": "प्रसंस्करण...",
+    "restorePurchases": "खरीदारी पुनर्स्थापित करें",
+    "mostPopular": "सबसे लोकप्रिय",
+    "savings": "बचत",
+    "perMonth": "प्रति महीने",
+    "legal": "खरीदारी की पुष्टि पर भुगतान आपके Apple ID खाते में चार्ज किया जाएगा। वर्तमान अवधि के अंत से कम से कम 24 घंटे पहले ऑटो-रीन्यू बंद नहीं होने तक सदस्यता स्वचालित रूप से नवीनीकृत होती है।",
+    "plans": {
+      "monthly": {
+        "name": "मासिक",
+        "description": "मासिक बिल"
+      },
+      "yearly": {
+        "name": "वार्षिक",
+        "description": "वार्षिक बिल"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "असीमित काउंटडाउन",
+      "unlimited_notes": "प्रति इवेंट असीमित नोट्स",
+      "advanced_reminders": "उन्नत अनुस्मारक प्रीसेट",
+      "custom_templates": "कस्टम इवेंट टेम्प्लेट",
+      "export_data": "अपना डेटा निर्यात करें",
+      "no_ads": "विज्ञापन-मुक्त अनुभव",
+      "priority_support": "प्राथमिकता सहायता"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "expired": "समाप्त",
+      "none": "कोई सक्रिय सदस्यता नहीं"
+    },
+    "manage": "सदस्यता प्रबंधित करें"
+  }
+}
+

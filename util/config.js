@@ -1,11 +1,17 @@
 // Global app configuration
 
-// Toggle ads on/off. Set to false when developing locally (e.g., Expo Go),
-// and true before building for the App Store/Play Store.
-export const ENABLE_ADS = true;
-// When ads are enabled during development, use Google test ad units
-// Set to true for safe local testing; set to false before publishing
-export const USE_TEST_ADS = false;
+// Disable ads in local development
+// __DEV__ is a React Native global that's true in development mode
+// This will automatically disable ads when running locally (Expo Go, dev builds, etc.)
+const isDevelopment = typeof __DEV__ !== 'undefined' && __DEV__;
+
+// Ads are automatically disabled in development/local environments
+// To test ads in development, manually set this to true (ads will use test units)
+export const ENABLE_ADS = !isDevelopment;
+
+// Use Google test ad units when in development (only applies if ENABLE_ADS is manually set to true)
+// In production builds, this will be false and real ads will be used
+export const USE_TEST_ADS = isDevelopment;
 
 export default {
   ENABLE_ADS,

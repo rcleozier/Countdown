@@ -15,6 +15,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-nat
 import { Analytics } from '../util/analytics';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../context/LocaleContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import Svg, { G, Text as SvgText, Path, Rect, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
@@ -27,6 +28,7 @@ const AnalyticsScreen = () => {
   const [dayOfWeekLabels, setDayOfWeekLabels] = useState([]);
   const [dayOfWeekCounts, setDayOfWeekCounts] = useState([]);
   const { theme, isDark } = useTheme();
+  const { t } = useLocale();
   
   // Animation values for count-up effect
   const totalAnim = useRef(new Animated.Value(0)).current;
@@ -92,7 +94,15 @@ const AnalyticsScreen = () => {
       setMonthlyCounts(buckets);
 
       // Events by day of week
-      const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayLabels = [
+        t('analytics.days.sun'),
+        t('analytics.days.mon'),
+        t('analytics.days.tue'),
+        t('analytics.days.wed'),
+        t('analytics.days.thu'),
+        t('analytics.days.fri'),
+        t('analytics.days.sat')
+      ];
       const dayCounts = Array(7).fill(0);
       allEvents.forEach((e) => {
         const dayIndex = moment(e.date).day();
@@ -326,7 +336,7 @@ const AnalyticsScreen = () => {
           <View style={styles.summarySection}>
             <View style={styles.statsGrid}>
               <StatCard 
-                title="Total Events" 
+                title={t('analytics.totalEvents')} 
                 value={stats.total} 
                 icon="calendar" 
                 color={accentColor}
@@ -334,7 +344,7 @@ const AnalyticsScreen = () => {
                 index={0}
               />
               <StatCard 
-                title="Upcoming" 
+                title={t('analytics.upcoming')} 
                 value={stats.upcoming} 
                 icon="time" 
                 color={successColor}
@@ -342,7 +352,7 @@ const AnalyticsScreen = () => {
                 index={1}
               />
               <StatCard 
-                title="Past Events" 
+                title={t('analytics.pastEvents')} 
                 value={stats.past} 
                 icon="checkmark-circle" 
                 color={warningColor}
@@ -362,7 +372,7 @@ const AnalyticsScreen = () => {
                 style={styles.sectionIcon}
               />
               <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
-                Upcoming by Month
+                {t('analytics.upcomingByMonth')}
               </Text>
             </View>
             <View style={[
@@ -391,7 +401,7 @@ const AnalyticsScreen = () => {
                 style={styles.sectionIcon}
               />
               <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
-                Events by Day of Week
+                {t('analytics.eventsByDayOfWeek')}
               </Text>
             </View>
             <View style={[
@@ -434,7 +444,7 @@ const AnalyticsScreen = () => {
                   styles.nextEventSectionTitle,
                   { color: accentColor }
                 ]}>
-                  Next Event
+                  {t('analytics.nextEvent')}
                 </Text>
               </View>
               

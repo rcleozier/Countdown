@@ -1,0 +1,206 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "ok": "OK",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "home": {
+    "title": "Cuenta Regresiva",
+    "emptyTitle": "Aún no hay cuenta regresiva",
+    "emptySubtitle": "Toca el botón + para crear tu primera cuenta regresiva",
+    "createButton": "Crear Nueva Cuenta Regresiva",
+    "upcoming": "Próximos",
+    "past": "Pasados",
+    "all": "Todos"
+  },
+  "create": {
+    "title": "Crear Cuenta Regresiva",
+    "namePlaceholder": "Nombre del evento",
+    "selectDate": "Seleccionar Fecha",
+    "selectTime": "Seleccionar Hora",
+    "selectIcon": "Seleccionar Icono",
+    "selectTemplate": "Seleccionar Plantilla",
+    "noTemplate": "Sin Plantilla",
+    "selectReminderPreset": "Preajuste de Recordatorio",
+    "customReminders": "Recordatorios Personalizados"
+  },
+  "edit": {
+    "title": "Editar Cuenta Regresiva",
+    "namePlaceholder": "Nombre del evento",
+    "selectDate": "Seleccionar Fecha",
+    "selectTime": "Seleccionar Hora",
+    "selectIcon": "Seleccionar Icono"
+  },
+  "templates": {
+    "birthday": {
+      "name": "Cumpleaños",
+      "defaultName": "Cumpleaños de {{name}}"
+    },
+    "trip": {
+      "name": "Viaje",
+      "defaultName": "Viaje a {{destination}}"
+    },
+    "exam": {
+      "name": "Examen",
+      "defaultName": "Examen de {{subject}}"
+    },
+    "wedding": {
+      "name": "Boda",
+      "defaultName": "Boda de {{name}}"
+    },
+    "flight": {
+      "name": "Vuelo",
+      "defaultName": "Vuelo a {{destination}}"
+    },
+    "appointment": {
+      "name": "Cita",
+      "defaultName": "Cita de {{type}}"
+    }
+  },
+  "reminders": {
+    "chill": "Relajado",
+    "standard": "Estándar",
+    "intense": "Intenso",
+    "custom": "Personalizado",
+    "daysBefore": "{{count}} día antes",
+    "daysBefore_plural": "{{count}} días antes",
+    "weeksBefore": "{{count}} semana antes",
+    "weeksBefore_plural": "{{count}} semanas antes",
+    "monthsBefore": "{{count}} mes antes",
+    "monthsBefore_plural": "{{count}} meses antes",
+    "addReminder": "Agregar Recordatorio",
+    "removeReminder": "Eliminar",
+    "noReminders": "No hay recordatorios configurados"
+  },
+  "notes": {
+    "title": "Notas",
+    "addNote": "Agregar nota",
+    "editNote": "Editar nota",
+    "placeholder": "Agregar una nota para este evento...",
+    "empty": "Aún no hay notas",
+    "autosave": "Guardando..."
+  },
+  "filters": {
+    "upcoming": "Próximos",
+    "past": "Pasados",
+    "all": "Todos",
+    "sortSoonest": "Próximos",
+    "sortRecent": "Agregados Recientemente",
+    "sortName": "Nombre (A-Z)",
+    "byTemplate": "Por Plantilla"
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": "Idioma",
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "clearAll": "Borrar Todos los Eventos",
+    "clearConfirm": "¿Estás seguro de que quieres borrar todos los eventos?",
+    "clearConfirmTitle": "Confirmar Borrado",
+    "clearConfirmMessage": "¿Estás seguro de que quieres borrar todos los eventos? Esta acción no se puede deshacer.",
+    "version": "Versión",
+    "rtlToggle": "Modo RTL (Solo Dev)",
+    "appInfo": "Información de la App",
+    "notes": "Notas",
+    "notesDescription": "Ver y gestionar tus notas",
+    "actions": "Acciones"
+  },
+  "time": {
+    "now": "ahora",
+    "today": "hoy",
+    "tomorrow": "mañana",
+    "yesterday": "ayer",
+    "daysFromNow": "en {{count}} día",
+    "daysFromNow_plural": "en {{count}} días",
+    "daysAgo": "hace {{count}} día",
+    "daysAgo_plural": "hace {{count}} días",
+    "hours": "{{count}} hora",
+    "hours_plural": "{{count}} horas",
+    "minutes": "{{count}} minuto",
+    "minutes_plural": "{{count}} minutos"
+  },
+  "analytics": {
+    "title": "Análisis",
+    "total": "Total de Eventos",
+    "totalEvents": "Total de Eventos",
+    "upcoming": "Próximos",
+    "past": "Pasados",
+    "pastEvents": "Eventos Pasados",
+    "nextEvent": "Próximo Evento",
+    "upcomingByMonth": "Próximos por Mes",
+    "eventsByDayOfWeek": "Eventos por Día de la Semana",
+    "days": {
+      "sun": "Dom",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb"
+    }
+  },
+  "calendar": {
+    "title": "Calendario",
+    "noEvents": "No hay eventos en esta fecha"
+  },
+  "past": {
+    "title": "Eventos Pasados",
+    "empty": "No hay eventos pasados"
+  },
+  "delete": {
+    "confirm": "Eliminar Cuenta Regresiva",
+    "message": "¿Estás seguro de que quieres eliminar \"{{name}}\"?",
+    "cannotUndo": "Esta acción no se puede deshacer."
+  },
+  "subscription": {
+    "title": "Actualizar a Pro",
+    "subtitle": "Desbloquea todas las funciones premium y mejora tu experiencia de cuenta regresiva",
+    "subscribe": "Suscribirse",
+    "processing": "Procesando...",
+    "restorePurchases": "Restaurar Compras",
+    "mostPopular": "Más Popular",
+    "savings": "ahorro",
+    "perMonth": "por mes",
+    "legal": "El pago se cargará a tu cuenta de Apple ID en la confirmación de la compra. La suscripción se renueva automáticamente a menos que la renovación automática se desactive al menos 24 horas antes del final del período actual.",
+    "plans": {
+      "monthly": {
+        "name": "Mensual",
+        "description": "Facturado mensualmente"
+      },
+      "yearly": {
+        "name": "Anual",
+        "description": "Facturado anualmente"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "Cuentas regresivas ilimitadas",
+      "unlimited_notes": "Notas ilimitadas por evento",
+      "advanced_reminders": "Preajustes de recordatorio avanzados",
+      "custom_templates": "Plantillas de evento personalizadas",
+      "export_data": "Exporta tus datos",
+      "no_ads": "Experiencia sin anuncios",
+      "priority_support": "Soporte prioritario"
+    },
+    "status": {
+      "active": "Activa",
+      "expired": "Expirada",
+      "none": "No hay suscripción activa"
+    },
+    "manage": "Gestionar Suscripción"
+  }
+}
+

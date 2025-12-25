@@ -22,6 +22,10 @@ import {
 import appConfig from '../app.json';
 import { Analytics } from '../util/analytics';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../context/LocaleContext';
+import { SUPPORTED_LOCALES } from '../util/i18n';
+import { useSubscription } from '../context/SubscriptionContext';
+import SubscriptionModal from '../components/SubscriptionModal';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 
@@ -30,7 +34,11 @@ const SettingsScreen = () => {
   const [appInfoTapCount, setAppInfoTapCount] = useState(0);
   const appInfo = appConfig.expo;
   const { theme, isDark, toggleTheme } = useTheme();
+  const { locale, setLocale, isRTL, setRTL, t } = useLocale();
+  const { hasActiveSubscription, subscriptionInfo } = useSubscription();
   const navigation = useNavigation();
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
+  const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false);
   
   // Animation refs for press feedback
   const clearButtonScale = useRef(new Animated.Value(1)).current;
@@ -228,11 +236,11 @@ const SettingsScreen = () => {
               <Text style={[
                 styles.cardTitle,
                 { color: accentColor }
-              ]}>App Info</Text>
+              ]}>{t('settings.appInfo')}</Text>
               <Text style={[
                 styles.cardSubtext,
                 { color: isDark ? '#A1A1A1' : '#6B7280' }
-              ]}>Version {appInfo.version}</Text>
+              ]}>{t('settings.version')} {appInfo.version}</Text>
             </Animated.View>
           </Pressable>
 
@@ -253,11 +261,99 @@ const SettingsScreen = () => {
               <Text style={[
                 styles.cardTitle,
                 { color: accentColor }
-              ]}>Notes</Text>
+              ]}>{t('settings.notes')}</Text>
               <Text style={[
                 styles.cardSubtext,
                 { color: isDark ? '#A1A1A1' : '#6B7280' }
-              ]}>View and manage your notes</Text>
+              ]}>{t('settings.notesDescription')}</Text>
+            </Animated.View>
+          </Pressable>
+
+          {/* Subscription */}
+          <Pressable
+            onPressIn={() => handleCardPressIn('subscription')}
+            onPressOut={() => handleCardPressOut('subscription')}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setSubscriptionModalVisible(true);
+            }}
+          >
+            <Animated.View style={[
+              styles.card,
+              {
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+                transform: [{ scale: getCardScale('subscription') }],
+                borderColor: hasActiveSubscription 
+                  ? (isDark ? '#3CC4A2' : '#4E9EFF')
+                  : 'transparent',
+                borderWidth: hasActiveSubscription ? 2 : 0,
+              }
+            ]}>
+              <View style={styles.subscriptionHeader}>
+                <View style={[
+                  styles.subscriptionIconContainer,
+                  {
+                    backgroundColor: hasActiveSubscription
+                      ? (isDark ? 'rgba(60,196,162,0.15)' : 'rgba(78,158,255,0.1)')
+                      : (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)'),
+                  }
+                ]}>
+                  <Ionicons
+                    name={hasActiveSubscription ? "checkmark-circle" : "star"}
+                    size={wp('5%')}
+                    color={hasActiveSubscription 
+                      ? (isDark ? '#3CC4A2' : '#4E9EFF')
+                      : (isDark ? '#4E9EFF' : '#4A9EFF')
+                    }
+                  />
+                </View>
+                <View style={styles.subscriptionTextContainer}>
+                  <Text style={[
+                    styles.cardTitle,
+                    { color: accentColor }
+                  ]}>
+                    {hasActiveSubscription ? t('subscription.status.active') : t('subscription.title')}
+                  </Text>
+                  <Text style={[
+                    styles.cardSubtext,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>
+                    {hasActiveSubscription 
+                      ? (subscriptionInfo?.isYearly ? t('subscription.plans.yearly.name') : t('subscription.plans.monthly.name'))
+                      : t('subscription.subtitle')
+                    }
+                  </Text>
+                </View>
+              </View>
+            </Animated.View>
+          </Pressable>
+
+          {/* Language */}
+          <Pressable
+            onPressIn={() => handleCardPressIn('language')}
+            onPressOut={() => handleCardPressOut('language')}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setLanguageModalVisible(true);
+            }}
+          >
+            <Animated.View style={[
+              styles.card,
+              {
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+                transform: [{ scale: getCardScale('language') }],
+              }
+            ]}>
+              <Text style={[
+                styles.cardTitle,
+                { color: accentColor }
+              ]}>{t('settings.language')}</Text>
+              <Text style={[
+                styles.cardSubtext,
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
+              ]}>{SUPPORTED_LOCALES[locale]?.name || locale}</Text>
             </Animated.View>
           </Pressable>
 
@@ -272,12 +368,12 @@ const SettingsScreen = () => {
             <Text style={[
               styles.cardTitle,
               { color: accentColor }
-            ]}>Appearance</Text>
+            ]}>{t('settings.theme')}</Text>
             <View style={styles.themeToggleContainer}>
               <Text style={[
                 styles.themeLabel,
                 { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-              ]}>Dark Theme</Text>
+              ]}>{isDark ? t('settings.dark') : t('settings.light')}</Text>
               <Switch
                 value={isDark}
                 onValueChange={() => {
@@ -292,6 +388,27 @@ const SettingsScreen = () => {
                 ios_backgroundColor={isDark ? '#2E2E2E' : '#E5E7EB'}
               />
             </View>
+            {__DEV__ && (
+              <View style={[styles.themeToggleContainer, { marginTop: wp('3%') }]}>
+                <Text style={[
+                  styles.themeLabel,
+                  { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                ]}>{t('settings.rtlToggle')}</Text>
+                <Switch
+                  value={isRTL}
+                  onValueChange={async (value) => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    await setRTL(value);
+                  }}
+                  trackColor={{ 
+                    false: '#E5E7EB', 
+                    true: isDark ? '#2E2E2E' : accentColor 
+                  }}
+                  thumbColor={isDark ? '#3CC4A2' : '#FFFFFF'}
+                  ios_backgroundColor={isDark ? '#2E2E2E' : '#E5E7EB'}
+                />
+              </View>
+            )}
           </View>
 
           {/* Actions */}
@@ -305,7 +422,7 @@ const SettingsScreen = () => {
             <Text style={[
               styles.cardTitle,
               { color: accentColor }
-            ]}>Actions</Text>
+            ]}>{t('settings.actions')}</Text>
             <Pressable
               onPressIn={handleClearPressIn}
               onPressOut={handleClearPressOut}
@@ -320,7 +437,7 @@ const SettingsScreen = () => {
                   opacity: clearButtonOpacity,
                 }
               ]}>
-                <Text style={styles.clearButtonText}>Clear All Events</Text>
+                <Text style={styles.clearButtonText}>{t('settings.clearAll')}</Text>
               </Animated.View>
             </Pressable>
           </View>
@@ -351,12 +468,12 @@ const SettingsScreen = () => {
                 <Text style={[
                   styles.modalTitle,
                   { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                ]}>Confirm Clear</Text>
+                ]}>{t('settings.clearConfirmTitle')}</Text>
                 <Text style={[
                   styles.modalMessage,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>
-                  Are you sure you want to clear all events? This action cannot be undone.
+                  {t('settings.clearConfirmMessage')}
                 </Text>
                 <View style={styles.modalButtonContainer}>
                   <TouchableOpacity
@@ -371,7 +488,7 @@ const SettingsScreen = () => {
                     <Text style={[
                       styles.modalButtonText,
                       { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                    ]}>Cancel</Text>
+                    ]}>{t('common.cancel')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={clearEvents}
@@ -382,12 +499,92 @@ const SettingsScreen = () => {
                       }
                     ]}
                   >
-                    <Text style={styles.modalButtonText}>Confirm</Text>
+                    <Text style={styles.modalButtonText}>{t('common.confirm')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
           </Modal>
+
+          {/* Language Selection Modal */}
+          <Modal
+            animationType="fade"
+            transparent
+            visible={languageModalVisible}
+            onRequestClose={() => setLanguageModalVisible(false)}
+          >
+            <View style={[
+              styles.modalOverlay,
+              { backgroundColor: isDark ? 'rgba(0,0,0,0.75)' : 'rgba(0,0,0,0.5)' }
+            ]}>
+              <View style={[
+                styles.modalContent,
+                {
+                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                }
+              ]}>
+                <Text style={[
+                  styles.modalTitle,
+                  { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                ]}>{t('settings.language')}</Text>
+                {Object.entries(SUPPORTED_LOCALES).map(([code, localeData]) => (
+                  <TouchableOpacity
+                    key={code}
+                    onPress={async () => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      await setLocale(code);
+                      setLanguageModalVisible(false);
+                    }}
+                    style={[
+                      styles.languageOption,
+                      {
+                        backgroundColor: locale === code
+                          ? (isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.1)')
+                          : 'transparent',
+                        borderColor: locale === code
+                          ? (isDark ? '#3CC4A2' : '#4E9EFF')
+                          : 'transparent',
+                      }
+                    ]}
+                  >
+                    <Text style={[
+                      styles.languageOptionText,
+                      { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                    ]}>{localeData.name}</Text>
+                    {locale === code && (
+                      <Text style={{ color: isDark ? '#3CC4A2' : '#4E9EFF' }}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity
+                  onPress={() => setLanguageModalVisible(false)}
+                  style={[
+                    styles.modalButton,
+                    {
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                      marginTop: wp('3%'),
+                    }
+                  ]}
+                >
+                  <Text style={[
+                    styles.modalButtonText,
+                    { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                  ]}>{t('common.close')}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          {/* Subscription Modal */}
+          <SubscriptionModal
+            visible={subscriptionModalVisible}
+            onClose={() => setSubscriptionModalVisible(false)}
+            onSubscribe={(status) => {
+              console.log('Subscription activated:', status);
+              // Handle successful subscription
+            }}
+          />
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -504,6 +701,36 @@ const styles = StyleSheet.create({
     fontSize: wp('3.5%'),
     fontWeight: '600',
     fontFamily: 'System',
+  },
+  languageOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: wp('3.5%'),
+    paddingHorizontal: wp('4%'),
+    borderRadius: wp('2.5%'),
+    marginBottom: wp('2%'),
+    borderWidth: 1,
+  },
+  languageOptionText: {
+    fontSize: wp('4%'),
+    fontWeight: '500',
+    fontFamily: 'System',
+  },
+  subscriptionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  subscriptionIconContainer: {
+    width: wp('10%'),
+    height: wp('10%'),
+    borderRadius: wp('5%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: wp('3%'),
+  },
+  subscriptionTextContainer: {
+    flex: 1,
   },
 });
 

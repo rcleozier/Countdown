@@ -7,7 +7,10 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Sentry from "@sentry/react-native";
 import { requestTrackingPermission } from './util/adPersonalization';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { LocaleProvider } from './context/LocaleContext';
+import { SubscriptionProvider } from './context/SubscriptionContext';
 import { Analytics } from './util/analytics';
+import { runMigration } from './util/eventMigration';
 
 import HomeScreen from "./screens/HomeScreen";
 import PastScreen from "./screens/PastScreen";
@@ -21,12 +24,19 @@ const Tab = createBottomTabNavigator();
 
 // Remove static background color - will use theme instead
 
-Sentry.init({
-  dsn: "https://531c4f371af6391fafb7536af1588b12@o4505802780966912.ingest.us.sentry.io/4508982047866880",
-  // Adds more context data to events (IP address, cookies, user, etc.)
-  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
-  sendDefaultPii: true,
-});
+// Initialize Sentry only in production builds
+if (!__DEV__) {
+  try {
+    Sentry.init({
+      dsn: "https://531c4f371af6391fafb7536af1588b12@o4505802780966912.ingest.us.sentry.io/4508982047866880",
+      // Adds more context data to events (IP address, cookies, user, etc.)
+      // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+      sendDefaultPii: true,
+    });
+  } catch (error) {
+    console.warn('Sentry initialization failed:', error);
+  }
+}
 
 function HomeScreenStack() {
   const { theme } = useTheme();
@@ -187,13 +197,20 @@ function App() {
   useEffect(() => {
     requestTrackingPermission();
     Analytics.initialize();
+    // Run data migration on app start
+    runMigration();
   }, []);
 
   return (
-    <ThemeProvider>
-      <ThemedApp />
-    </ThemeProvider>
+    <LocaleProvider>
+      <SubscriptionProvider>
+        <ThemeProvider>
+          <ThemedApp />
+        </ThemeProvider>
+      </SubscriptionProvider>
+    </LocaleProvider>
   );
 }
 
-export default Sentry.wrap(App);
+// Wrap with Sentry only in production
+export default __DEV__ ? App : Sentry.wrap(App);

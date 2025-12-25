@@ -1,0 +1,206 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "home": {
+    "title": "Countdowns",
+    "emptyTitle": "No countdowns yet",
+    "emptySubtitle": "Tap the + button to create your first countdown",
+    "createButton": "Create New Countdown",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "all": "All"
+  },
+  "create": {
+    "title": "Create Countdown",
+    "namePlaceholder": "Event name",
+    "selectDate": "Select a Date",
+    "selectTime": "Select Time",
+    "selectIcon": "Select Icon",
+    "selectTemplate": "Select Template",
+    "noTemplate": "No Template",
+    "selectReminderPreset": "Reminder Preset",
+    "customReminders": "Custom Reminders"
+  },
+  "edit": {
+    "title": "Edit Countdown",
+    "namePlaceholder": "Event name",
+    "selectDate": "Select a Date",
+    "selectTime": "Select Time",
+    "selectIcon": "Select Icon"
+  },
+  "templates": {
+    "birthday": {
+      "name": "Birthday",
+      "defaultName": "{{name}}'s Birthday"
+    },
+    "trip": {
+      "name": "Trip",
+      "defaultName": "Trip to {{destination}}"
+    },
+    "exam": {
+      "name": "Exam",
+      "defaultName": "{{subject}} Exam"
+    },
+    "wedding": {
+      "name": "Wedding",
+      "defaultName": "{{name}}'s Wedding"
+    },
+    "flight": {
+      "name": "Flight",
+      "defaultName": "Flight to {{destination}}"
+    },
+    "appointment": {
+      "name": "Appointment",
+      "defaultName": "{{type}} Appointment"
+    }
+  },
+  "reminders": {
+    "chill": "Chill",
+    "standard": "Standard",
+    "intense": "Intense",
+    "custom": "Custom",
+    "daysBefore": "{{count}} day before",
+    "daysBefore_plural": "{{count}} days before",
+    "weeksBefore": "{{count}} week before",
+    "weeksBefore_plural": "{{count}} weeks before",
+    "monthsBefore": "{{count}} month before",
+    "monthsBefore_plural": "{{count}} months before",
+    "addReminder": "Add Reminder",
+    "removeReminder": "Remove",
+    "noReminders": "No reminders set"
+  },
+  "notes": {
+    "title": "Notes",
+    "addNote": "Add note",
+    "editNote": "Edit note",
+    "placeholder": "Add a note for this event...",
+    "empty": "No notes yet",
+    "autosave": "Saving..."
+  },
+  "filters": {
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "all": "All",
+    "sortSoonest": "Soonest",
+    "sortRecent": "Recently Added",
+    "sortName": "Name (A-Z)",
+    "byTemplate": "By Template"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "clearAll": "Clear All Events",
+    "clearConfirm": "Are you sure you want to clear all events?",
+    "clearConfirmTitle": "Confirm Clear",
+    "clearConfirmMessage": "Are you sure you want to clear all events? This action cannot be undone.",
+    "version": "Version",
+    "rtlToggle": "RTL Mode (Dev Only)",
+    "appInfo": "App Info",
+    "notes": "Notes",
+    "notesDescription": "View and manage your notes",
+    "actions": "Actions"
+  },
+  "time": {
+    "now": "now",
+    "today": "today",
+    "tomorrow": "tomorrow",
+    "yesterday": "yesterday",
+    "daysFromNow": "in {{count}} day",
+    "daysFromNow_plural": "in {{count}} days",
+    "daysAgo": "{{count}} day ago",
+    "daysAgo_plural": "{{count}} days ago",
+    "hours": "{{count}} hour",
+    "hours_plural": "{{count}} hours",
+    "minutes": "{{count}} minute",
+    "minutes_plural": "{{count}} minutes"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "total": "Total Events",
+    "totalEvents": "Total Events",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "pastEvents": "Past Events",
+    "nextEvent": "Next Event",
+    "upcomingByMonth": "Upcoming by Month",
+    "eventsByDayOfWeek": "Events by Day of Week",
+    "days": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    }
+  },
+  "calendar": {
+    "title": "Calendar",
+    "noEvents": "No events on this date"
+  },
+  "past": {
+    "title": "Past Events",
+    "empty": "No past events"
+  },
+  "delete": {
+    "confirm": "Delete Countdown",
+    "message": "Are you sure you want to delete \"{{name}}\"?",
+    "cannotUndo": "This action cannot be undone."
+  },
+  "subscription": {
+    "title": "Upgrade to Pro",
+    "subtitle": "Unlock all premium features and enhance your countdown experience",
+    "subscribe": "Subscribe",
+    "processing": "Processing...",
+    "restorePurchases": "Restore Purchases",
+    "mostPopular": "Most Popular",
+    "savings": "savings",
+    "perMonth": "per month",
+    "legal": "Payment will be charged to your Apple ID account at the confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.",
+    "plans": {
+      "monthly": {
+        "name": "Monthly",
+        "description": "Billed monthly"
+      },
+      "yearly": {
+        "name": "Yearly",
+        "description": "Billed annually"
+      }
+    },
+    "features": {
+      "unlimited_countdowns": "Unlimited countdowns",
+      "unlimited_notes": "Unlimited notes per event",
+      "advanced_reminders": "Advanced reminder presets",
+      "custom_templates": "Custom event templates",
+      "export_data": "Export your data",
+      "no_ads": "Ad-free experience",
+      "priority_support": "Priority support"
+    },
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "none": "No active subscription"
+    },
+    "manage": "Manage Subscription"
+  }
+}
+

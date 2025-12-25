@@ -1,12 +1,16 @@
 {
   "cli": {
     "appVersionSource": "remote",
-    "version": ">= 3.4.1"
+    "version": ">= 3.4.1",
+    "promptToConfigurePushNotifications": false
   },
   "build": {
     "development": {
-      "node": "18.19.0",
+      "node": "20.19.4",
       "developmentClient": false,
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
       "ios": {
         "resourceClass": "m-medium"
       },
@@ -16,9 +20,12 @@
       "channel": "development"
     },
     "preview": {
-      "node": "18.19.0",
+      "node": "20.19.4",
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
       "ios": {
         "resourceClass": "m-medium"
       },
@@ -28,10 +35,9 @@
       "channel": "preview"
     },
     "production": {
-      "node": "18.19.0",
+      "node": "20.19.4",
       "autoIncrement": true,
       "ios": {
-        "image": "macos-sonoma-14.6-xcode-16.0",
         "resourceClass": "m-medium"
       },
       "channel": "production"
