@@ -97,7 +97,10 @@ const IconItem = ({ icon, isSelected, onPress, isDark }) => {
             useNativeDriver: true,
           }),
         ]).start();
-        setTimeout(() => onPress(), 150);
+        // Call the callback immediately
+        if (onPress) {
+          onPress();
+        }
       }}
     >
       <Animated.View style={[
@@ -1841,6 +1844,7 @@ const HomeScreen = () => {
                           isSelected={newIcon === icon}
                           isDark={isDark}
                           onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             setNewIcon(icon);
                             setIconPickerVisible(false);
                           }}

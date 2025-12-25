@@ -30,6 +30,7 @@ import { runNotificationRecovery } from '../util/notificationRecovery';
 import { rollForwardIfNeeded } from '../util/recurrence';
 import * as Haptics from 'expo-haptics';
 import BottomSheet from '../components/BottomSheet';
+import Pill from '../components/Pill';
 
 const FREE_REMINDERS_MAX_DAYS = 7;
 const FREE_REMINDERS_MAX_COUNT = 10;
@@ -117,7 +118,6 @@ const RemindersScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
   const [allReminders, setAllReminders] = useState([]);
   const [filter, setFilter] = useState('all'); // 'all', 'today', 'week', 'enabled'
-  const [groupBy, setGroupBy] = useState('date'); // 'date' | 'event'
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationPermission, setNotificationPermission] = useState(null);
   const { theme, isDark } = useTheme();
@@ -163,9 +163,16 @@ const RemindersScreen = ({ navigation }) => {
       const now = new Date();
       let needsSave = false;
       const rolledEvents = eventsToUse.map(event => {
+        // Debug: Log event dates before roll-forward
+        if (event.reminderPlan && event.reminderPlan.enabled) {
+          console.log(`[ROLL-FORWARD] Before: ${event.name} - date=${event.date}, nextOccurrenceAt=${event.nextOccurrenceAt}`);
+        }
         const rolled = rollForwardIfNeeded(event, now);
         if (rolled !== event) {
           needsSave = true;
+          // Rebuild reminders for rolled events since nextOccurrenceAt changed
+          rolled.reminders = buildRemindersForEvent(rolled, isPro);
+          console.log(`[ROLL-FORWARD] After: ${rolled.name} - date=${rolled.date}, nextOccurrenceAt=${rolled.nextOccurrenceAt}`);
         }
         return rolled;
       });
@@ -184,7 +191,18 @@ const RemindersScreen = ({ navigation }) => {
       const reminders = [];
       rolledEvents.forEach(event => {
         if (event.reminderPlan && event.reminderPlan.enabled) {
-          const eventReminders = event.reminders || buildRemindersForEvent(event);
+          // Always rebuild reminders to ensure they're based on current nextOccurrenceAt
+          const eventDate = event.nextOccurrenceAt || event.date;
+          const eventReminders = buildRemindersForEvent(event, isPro);
+          // Debug: Log reminder dates for upcoming events
+          if (eventReminders.length > 0 && eventDate) {
+            const expectedDate = moment(eventDate);
+            const actualFireAt = moment(eventReminders[0].fireAtISO);
+            console.log(`[REMINDERS LOAD] ${event.name}: eventDate=${eventDate}, nextOccurrenceAt=${event.nextOccurrenceAt}, date=${event.date}, reminderFireAt=${eventReminders[0].fireAtISO}, sameDay=${actualFireAt.isSame(expectedDate, 'day')}`);
+            if (!actualFireAt.isSame(expectedDate, 'day')) {
+              console.warn(`[REMINDERS] ${event.name}: eventDate=${eventDate}, reminderFireAt=${eventReminders[0].fireAtISO}, mismatch!`);
+            }
+          }
           eventReminders.forEach(reminder => {
             const fireAt = moment(reminder.fireAtISO);
             if (!fireAt.isAfter(moment())) {
@@ -199,13 +217,19 @@ const RemindersScreen = ({ navigation }) => {
           });
         }
       });
+      
+      // Debug: Log all reminder dates
+      console.log(`[REMINDERS] Total reminders: ${reminders.length}`);
+      reminders.slice(0, 10).forEach((r, i) => {
+        console.log(`[REMINDERS] ${i}: ${r.event.name} - fireAt=${r.fireAtISO} (${moment(r.fireAtISO).format('MMM D, YYYY h:mm A')})`);
+      });
 
       // Sort by fireAt
       reminders.sort((a, b) => moment(a.fireAtISO).diff(moment(b.fireAtISO)));
       setAllReminders(reminders);
 
-      // Sync scheduled notifications in background
-      syncScheduledReminders(eventsToUse, isPro).catch(err => {
+      // Sync scheduled notifications in background (use rolledEvents, not eventsToUse)
+      syncScheduledReminders(rolledEvents, isPro).catch(err => {
         console.error('Error syncing reminders:', err);
       });
     } catch (error) {
@@ -279,22 +303,20 @@ const RemindersScreen = ({ navigation }) => {
     ? moment(nextReminder.fireAtISO).fromNow()
     : null;
 
-  // Group reminders by date or event
+  // Group reminders by date (always chronological)
   const groupedReminders = displayReminders.reduce((groups, reminder) => {
     const fireAt = moment(reminder.fireAtISO);
     const now = moment();
-    let groupKey = groupBy === 'event' ? (reminder.event.name || t('reminders.event')) : undefined;
+    let groupKey;
 
-    if (groupBy === 'date') {
-      if (fireAt.isSame(now, 'day')) {
-        groupKey = t('reminders.today');
-      } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
-        groupKey = t('reminders.tomorrow');
-      } else {
-        groupKey = fireAt.format('dddd, MMM D');
-      }
+    if (fireAt.isSame(now, 'day')) {
+      groupKey = t('reminders.today');
+    } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
+      groupKey = t('reminders.tomorrow');
     } else {
-      groupKey = groupKey || t('reminders.event');
+      // Use the actual date as the group key for upcoming reminders
+      // This ensures each date gets its own group instead of lumping all into "UPCOMING"
+      groupKey = fireAt.format('YYYY-MM-DD');
     }
 
     if (!groups[groupKey]) {
@@ -304,10 +326,37 @@ const RemindersScreen = ({ navigation }) => {
     return groups;
   }, {});
 
-  const groupedArray = Object.entries(groupedReminders).map(([date, reminders]) => ({
-    date,
-    reminders,
-  }));
+  // Sort groups: TODAY, TOMORROW, then UPCOMING (with dates sorted chronologically)
+  const groupedArray = Object.entries(groupedReminders)
+    .map(([date, reminders]) => ({
+      date,
+      reminders: reminders.sort((a, b) => moment(a.fireAtISO).diff(moment(b.fireAtISO))),
+    }))
+    .sort((a, b) => {
+      const now = moment();
+      const todayKey = t('reminders.today');
+      const tomorrowKey = t('reminders.tomorrow');
+      
+      // Special handling for TODAY and TOMORROW
+      if (a.date === todayKey) return -1;
+      if (b.date === todayKey) return 1;
+      if (a.date === tomorrowKey) return -1;
+      if (b.date === tomorrowKey) return 1;
+      
+      // For date strings (YYYY-MM-DD), sort chronologically
+      if (a.date.match(/^\d{4}-\d{2}-\d{2}$/) && b.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return moment(a.date).diff(moment(b.date));
+      }
+      
+      // Fallback: compare as dates
+      const dateA = moment(a.date);
+      const dateB = moment(b.date);
+      if (dateA.isValid() && dateB.isValid()) {
+        return dateA.diff(dateB);
+      }
+      
+      return 0;
+    });
 
   // Toggle reminder enabled state (Pro only)
   const toggleReminderEnabled = async (reminder) => {
@@ -371,33 +420,6 @@ const RemindersScreen = ({ navigation }) => {
     }
   };
 
-  const bulkToggleReminders = async (enabled) => {
-    if (!isPro) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      setPaywallVisible(true);
-      return;
-    }
-    try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      const updatedEvents = events.map(event => {
-        const updatedReminders = (event.reminders || []).map(r => ({ ...r, enabled }));
-        return {
-          ...event,
-          reminders: updatedReminders,
-          reminderPlan: {
-            ...(event.reminderPlan || {}),
-            enabled,
-          },
-        };
-      });
-      await AsyncStorage.setItem('countdowns', JSON.stringify(updatedEvents));
-      await loadReminders();
-      await syncScheduledReminders(updatedEvents, isPro);
-    } catch (error) {
-      console.error('Error toggling reminders:', error);
-      Alert.alert(t('common.error'), t('reminders.updateErrorPlural'));
-    }
-  };
 
   // Open settings for notification permissions
   const openSettings = async () => {
@@ -487,21 +509,41 @@ const RemindersScreen = ({ navigation }) => {
     );
   };
 
-  const renderGroup = ({ item: group }) => (
-    <View style={styles.group}>
-      <Text style={[
-        styles.groupHeader,
-        { color: isDark ? '#A1A1A1' : '#6B7280' }
-      ]}>
-        {group.date}
-      </Text>
-      {group.reminders.map((reminder, index) => (
-        <View key={reminder.id || index}>
-          {renderReminderItem({ item: reminder })}
-        </View>
-      ))}
-    </View>
-  );
+  const renderGroup = ({ item: group }) => {
+    // Format header based on group date
+    let headerText = group.date;
+    const todayKey = t('reminders.today');
+    const tomorrowKey = t('reminders.tomorrow');
+    
+    if (group.date === todayKey || group.date === tomorrowKey) {
+      // Keep TODAY and TOMORROW as-is
+      headerText = group.date;
+    } else if (group.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      // Format date string (YYYY-MM-DD) as readable date
+      const date = moment(group.date);
+      headerText = date.format('dddd, MMM D');
+    } else if (group.reminders.length > 0) {
+      // Fallback: use first reminder's date
+      const firstDate = moment(group.reminders[0].fireAtISO);
+      headerText = firstDate.format('dddd, MMM D');
+    }
+    
+    return (
+      <View style={styles.group}>
+        <Text style={[
+          styles.groupHeader,
+          { color: isDark ? '#A1A1A1' : '#6B7280' }
+        ]}>
+          {headerText}
+        </Text>
+        {group.reminders.map((reminder, index) => (
+          <View key={reminder.id || index}>
+            {renderReminderItem({ item: reminder })}
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   return (
     <LinearGradient colors={backgroundGradient} style={styles.container}>
@@ -635,79 +677,67 @@ const RemindersScreen = ({ navigation }) => {
             })}
           </ScrollView>
 
-          {/* Pro-only controls */}
+          {/* Search bar (Pro only, moved under filters) */}
           {isPro && (
-            <>
-              <View style={styles.proControls}>
-                <TextInput
-                  placeholder={t('reminders.searchPlaceholder')}
-                  placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  style={[
-                    styles.searchInput,
-                    {
-                      backgroundColor: isDark ? '#111827' : '#F3F4F6',
-                      color: isDark ? '#FFFFFF' : '#0F172A',
-                      borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                    }
-                  ]}
-                />
-                <View style={styles.groupToggleRow}>
-                  <Text style={[styles.groupLabel, { color: isDark ? '#A1A1A1' : '#475569' }]}>Group by</Text>
-                  <View style={styles.groupTogglePills}>
-                    {['date', 'event'].map(mode => (
-                      <Pill
-                        key={mode}
-                        label={mode === 'date' ? t('reminders.date') : t('reminders.event')}
-                        active={groupBy === mode}
-                        onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          setGroupBy(mode);
-                        }}
-                      />
-                    ))}
-                  </View>
-                </View>
-                <View style={styles.bulkRow}>
-                  <TouchableOpacity
-                    style={[styles.bulkButton, { backgroundColor: accentColor }]}
-                    onPress={() => bulkToggleReminders(true)}
-                  >
-                    <Ionicons name="notifications" size={wp('4%')} color="#FFFFFF" />
-                    <Text style={styles.bulkButtonText}>Enable all reminders</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.bulkButton,
-                      { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#E5E7EB' }
-                    ]}
-                    onPress={() => bulkToggleReminders(false)}
-                  >
-                    <Ionicons name="notifications-off" size={wp('4%')} color={isDark ? '#E5E7EB' : '#374151'} />
-                    <Text style={[styles.bulkButtonText, { color: isDark ? '#E5E7EB' : '#111827' }]}>
-                      Disable all reminders
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </>
+            <TextInput
+              placeholder="Search reminders"
+              placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={[
+                styles.searchInput,
+                {
+                  backgroundColor: isDark ? '#111827' : '#F3F4F6',
+                  color: isDark ? '#FFFFFF' : '#0F172A',
+                  borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                  marginTop: wp('3%'),
+                  marginBottom: wp('2%'),
+                }
+              ]}
+            />
           )}
+
 
           {/* Reminders List */}
           {groupedArray.length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons
                 name="notifications-off-outline"
-                size={wp('15%')}
+                size={wp('12%')}
                 color={isDark ? '#6B7280' : '#9CA3AF'}
               />
               <Text style={[
-                styles.emptyText,
+                styles.emptyTitle,
+                { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+              ]}>
+                No reminders yet
+              </Text>
+              <Text style={[
+                styles.emptySubtext,
                 { color: isDark ? '#A1A1A1' : '#6B7280' }
               ]}>
-                No reminders yet. Add one from an event.
+                Add reminders from any event to get notified.
               </Text>
+              <TouchableOpacity
+                style={[
+                  styles.emptyActionButton,
+                  {
+                    backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
+                    borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
+                  }
+                ]}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  navigation.navigate('Home', { screen: 'HomeScreen' });
+                }}
+              >
+                <Text style={[
+                  styles.emptyActionText,
+                  { color: accentColor }
+                ]}>
+                  View events
+                </Text>
+              </TouchableOpacity>
             </View>
           ) : (
             <>
@@ -929,12 +959,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: wp('20%'),
+    paddingHorizontal: wp('6%'),
   },
-  emptyText: {
-    fontSize: wp('4%'),
-    fontWeight: '500',
+  emptyTitle: {
+    fontSize: wp('5%'),
+    fontWeight: '600',
     fontFamily: 'System',
-    marginTop: wp('3%'),
+    marginTop: wp('4%'),
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: wp('3.8%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    marginTop: wp('2%'),
+    textAlign: 'center',
+    lineHeight: wp('5.5%'),
+  },
+  emptyActionButton: {
+    marginTop: wp('4%'),
+    paddingHorizontal: wp('5%'),
+    paddingVertical: wp('3%'),
+    borderRadius: wp('2.5%'),
+    borderWidth: 1,
+  },
+  emptyActionText: {
+    fontSize: wp('3.8%'),
+    fontWeight: '600',
+    fontFamily: 'System',
   },
   upsellCard: {
     flexDirection: 'row',
@@ -1071,52 +1123,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'System',
   },
-  proControls: {
-    gap: wp('3%'),
-    marginBottom: wp('4%'),
-  },
   searchInput: {
     paddingHorizontal: wp('4%'),
     paddingVertical: wp('3%'),
     borderRadius: wp('2.5%'),
     borderWidth: 1,
     fontSize: wp('3.8%'),
-    fontFamily: 'System',
-  },
-  groupToggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: wp('3%'),
-  },
-  groupLabel: {
-    fontSize: wp('3.6%'),
-    fontWeight: '600',
-    fontFamily: 'System',
-  },
-  groupTogglePills: {
-    flexDirection: 'row',
-    gap: wp('2%'),
-  },
-  bulkRow: {
-    flexDirection: 'row',
-    gap: wp('2%'),
-    flexWrap: 'wrap',
-  },
-  bulkButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: wp('2%'),
-    paddingHorizontal: wp('4%'),
-    paddingVertical: wp('3%'),
-    borderRadius: wp('2.5%'),
-    minWidth: '48%',
-    justifyContent: 'center',
-  },
-  bulkButtonText: {
-    color: '#FFFFFF',
-    fontSize: wp('3.6%'),
-    fontWeight: '600',
     fontFamily: 'System',
   },
 });

@@ -9,7 +9,8 @@
       "node": "20.19.4",
       "developmentClient": false,
       "env": {
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "SENTRY_ALLOW_FAILURE": "true"
       },
       "ios": {
         "resourceClass": "m-medium"
@@ -24,7 +25,8 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "SENTRY_ALLOW_FAILURE": "true"
       },
       "ios": {
         "resourceClass": "m-medium"
@@ -37,6 +39,10 @@
     "production": {
       "node": "20.19.4",
       "autoIncrement": true,
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "SENTRY_ALLOW_FAILURE": "true"
+      },
       "ios": {
         "resourceClass": "m-medium"
       },

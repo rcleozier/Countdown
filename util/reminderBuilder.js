@@ -41,6 +41,11 @@ export const buildRemindersForEvent = (event, isPro = false) => {
   const eventDate = moment(event.nextOccurrenceAt || event.date);
   const now = moment();
   
+  // Debug: Log if event date seems wrong
+  if (eventDate.isBefore(now) || eventDate.isSame(now, 'day')) {
+    console.log(`[REMINDER BUILDER] Event ${event.name}: eventDate=${eventDate.toISOString()}, now=${now.toISOString()}, nextOccurrenceAt=${event.nextOccurrenceAt}, date=${event.date}`);
+  }
+  
   // If event is in the past, no reminders
   if (eventDate.isBefore(now)) {
     return [];

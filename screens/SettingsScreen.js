@@ -31,6 +31,8 @@ import PaywallSheet from '../src/billing/PaywallSheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
+import { syncScheduledReminders } from '../util/reminderScheduler';
 
 const SettingsScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -151,17 +153,29 @@ const SettingsScreen = () => {
         { name: "Party", icon: "🎉", days: 45 },
       ].map((e, i) => {
         const eventDate = addDays(now, e.days);
+        // Set time to 9:00 AM for the event
+        eventDate.setHours(9, 0, 0, 0);
         const minAgo = 1;
         const maxAgo = Math.max(e.days - 1, 1);
         const daysAgo = Math.floor(Math.random() * (maxAgo - minAgo + 1)) + minAgo;
         const createdAt = addDays(now, -daysAgo);
-        return {
+        const event = {
           id: `upcoming-${i}`,
           name: e.name,
           icon: e.icon,
           date: eventDate.toISOString(),
           createdAt: createdAt.toISOString(),
+          nextOccurrenceAt: eventDate.toISOString(),
+          recurrence: 'none',
+          reminderPlan: createDefaultReminderPlan('simple'),
         };
+        // Build reminders for the event (using the event's actual date)
+        event.reminders = buildRemindersForEvent(event, isPro);
+        // Debug: Log reminder dates
+        if (event.reminders.length > 0) {
+          console.log(`[SEED] ${e.name}: eventDate=${eventDate.toISOString()}, firstReminderFireAt=${event.reminders[0].fireAtISO}`);
+        }
+        return event;
       });
       const past = [
         { name: "Dentist", icon: "🦷", days: -2 },
@@ -171,13 +185,21 @@ const SettingsScreen = () => {
         { name: "Interview", icon: "💼", days: -20 },
         { name: "Housewarming", icon: "🏠", days: -30 },
         { name: "Concert", icon: "🎤", days: -45 },
-      ].map((e, i) => ({
-        id: `past-${i}`,
-        name: e.name,
-        icon: e.icon,
-        date: addDays(now, e.days).toISOString(),
-        createdAt: addDays(now, e.days - 5).toISOString(),
-      }));
+      ].map((e, i) => {
+        const eventDate = addDays(now, e.days);
+        const event = {
+          id: `past-${i}`,
+          name: e.name,
+          icon: e.icon,
+          date: eventDate.toISOString(),
+          createdAt: addDays(now, e.days - 5).toISOString(),
+          nextOccurrenceAt: eventDate.toISOString(),
+          recurrence: 'none',
+          reminderPlan: createDefaultReminderPlan('off'), // Past events don't need reminders
+        };
+        event.reminders = buildRemindersForEvent(event, isPro);
+        return event;
+      });
       const notes = [
         { text: "Buy cake for Mom's birthday!", date: addDays(now, 2).toISOString() },
         { text: "Pack baseball glove for the game.", date: addDays(now, 4).toISOString() },
@@ -187,8 +209,13 @@ const SettingsScreen = () => {
         { text: "Register for marathon.", date: addDays(now, 25).toISOString() },
         { text: "Plan party playlist.", date: addDays(now, 40).toISOString() },
       ];
-      await AsyncStorage.setItem("countdowns", JSON.stringify([...upcoming, ...past]));
+      const allEvents = [...upcoming, ...past];
+      await AsyncStorage.setItem("countdowns", JSON.stringify(allEvents));
       await AsyncStorage.setItem("notes", JSON.stringify(notes));
+      
+      // Schedule notifications for events with reminders
+      await syncScheduledReminders(allEvents, isPro);
+      
       Alert.alert("Seeded!", "App data has been reset and seeded with test data.");
     } catch (error) {
       Alert.alert("Error", "Failed to seed test data.");
