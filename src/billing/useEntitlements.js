@@ -27,6 +27,18 @@ export const PRO_FEATURES = [
   'no_ads',
 ];
 
+// Feature limits configuration
+export const FEATURE_LIMITS = {
+  notes: {
+    free: 100,
+    pro: 5000,
+  },
+  reminders: {
+    free: 1, // Single reminder only
+    pro: -1, // Unlimited
+  },
+};
+
 export const useEntitlements = () => {
   const purchases = usePurchases();
 
@@ -40,6 +52,22 @@ export const useEntitlements = () => {
     return purchases.isPro;
   };
 
+  const canUse = (featureName) => {
+    return hasFeature(featureName);
+  };
+
+  const getLimit = (featureName) => {
+    if (!FEATURE_LIMITS[featureName]) {
+      return null;
+    }
+
+    if (purchases.isPro) {
+      return FEATURE_LIMITS[featureName].pro;
+    }
+
+    return FEATURE_LIMITS[featureName].free;
+  };
+
   return {
     isPro: purchases.isPro,
     isLoading: purchases.isLoading,
@@ -50,5 +78,7 @@ export const useEntitlements = () => {
     offerings: purchases.offerings,
     error: purchases.error,
     hasFeature,
+    canUse,
+    getLimit,
   };
 };

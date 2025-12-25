@@ -19,6 +19,9 @@ import { useTheme } from '../context/ThemeContext';
 import { useEntitlements } from '../src/billing/useEntitlements';
 import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from './ProUpsellInline';
+import LockRow from './LockRow';
+import ReminderPresetExplainer from './ReminderPresetExplainer';
+import { formatRemindersForDisplay, REMINDER_PRESETS } from '../util/reminderPresets';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import eventIcons from '../util/eventIcons';
@@ -131,7 +134,8 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [selectedMinute, setSelectedMinute] = useState(moment(event.date).minute());
   const [inputFocused, setInputFocused] = useState({});
   const [paywallVisible, setPaywallVisible] = useState(false);
-  const { isPro } = useEntitlements();
+  const [reminderExplainerVisible, setReminderExplainerVisible] = useState(false);
+  const { isPro, getLimit } = useEntitlements();
   
   // Modal animation refs
   const modalScale = useRef(new Animated.Value(0.95)).current;
@@ -413,22 +417,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     }
                   })()}
                 </Text>
-                {event.notes && event.notes.trim() && (
-                  <Text 
-                    style={[
-                      styles.notesPreview,
-                      {
-                        color: isDark ? '#6B7280' : '#9CA3AF',
-                        fontSize: wp('3%'),
-                        marginTop: wp('1%'),
-                      }
-                    ]}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    Notes: {event.notes.trim()}
-                  </Text>
-                )}
               </View>
             </View>
             {/* Action buttons */}
@@ -636,12 +624,24 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     Expired
                   </Text>
                 ) : (
-                  <Text style={[
-                    styles.detailsCountdown,
-                    { color: accentColor }
-                  ]}>
-                    {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
-                  </Text>
+                  <>
+                    <Text style={[
+                      styles.detailsCountdown,
+                      { color: accentColor }
+                    ]}>
+                      {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+                    </Text>
+                    <Text style={[
+                      styles.detailsHumanized,
+                      { color: isDark ? '#6B7280' : '#9CA3AF', marginLeft: wp('6.5%'), marginTop: wp('1%') }
+                    ]}>
+                      {timeLeft.days === 0 
+                        ? 'Ends today'
+                        : timeLeft.days === 1
+                        ? 'Ends tomorrow'
+                        : `Ends in ${timeLeft.days} days`}
+                    </Text>
+                  </>
                 )}
               </View>
 
@@ -670,38 +670,154 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 </View>
               )}
 
-              {/* Notes */}
-              {event.notes && event.notes.trim() && (
-                <View style={styles.detailsSection}>
-                  <View style={styles.detailsRow}>
+              {/* Notes Section - Always visible */}
+              <View style={styles.detailsSection}>
+                <View style={styles.detailsRow}>
+                  <Ionicons
+                    name="document-text-outline"
+                    size={wp('4.5%')}
+                    color={isDark ? '#6B7280' : '#9CA3AF'}
+                  />
+                  <Text style={[
+                    styles.detailsLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>
+                    Notes
+                  </Text>
+                </View>
+                {event.notes && event.notes.trim() ? (
+                  <>
+                    <View style={[
+                      styles.detailsNotesContainer,
+                      {
+                        backgroundColor: isDark ? '#2A2A2A' : '#F9FAFB',
+                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB',
+                      }
+                    ]}>
+                      <Text 
+                        style={[
+                          styles.detailsNotesText,
+                          { color: isDark ? '#F5F5F5' : '#111111' }
+                        ]}
+                        numberOfLines={3}
+                      >
+                        {event.notes}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setDetailsModalVisible(false);
+                        setTimeout(() => handleOpenEditModal(), 300);
+                      }}
+                      style={styles.viewEditButton}
+                    >
+                      <Text style={[
+                        styles.viewEditText,
+                        { color: accentColor }
+                      ]}>
+                        View / Edit
+                      </Text>
+                    </TouchableOpacity>
+                    {!isPro && event.notes.length >= 80 && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          setPaywallVisible(true);
+                        }}
+                        style={styles.notesUpsellLink}
+                      >
+                        <Text style={[
+                          styles.notesUpsellLinkText,
+                          { color: isDark ? '#6B7280' : '#9CA3AF' }
+                        ]}>
+                          Upgrade for longer notes
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setDetailsModalVisible(false);
+                      setTimeout(() => handleOpenEditModal(), 300);
+                    }}
+                    style={[
+                      styles.addNoteButton,
+                      {
+                        backgroundColor: isDark ? '#2A2A2A' : '#F9FAFB',
+                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB',
+                      }
+                    ]}
+                  >
                     <Ionicons
-                      name="document-text-outline"
-                      size={wp('4.5%')}
+                      name="add-circle-outline"
+                      size={wp('4%')}
                       color={isDark ? '#6B7280' : '#9CA3AF'}
                     />
                     <Text style={[
-                      styles.detailsLabel,
-                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+                      styles.addNoteText,
+                      { color: isDark ? '#6B7280' : '#9CA3AF' }
                     ]}>
-                      Notes
+                      Add note
                     </Text>
-                  </View>
-                  <View style={[
-                    styles.detailsNotesContainer,
-                    {
-                      backgroundColor: isDark ? '#2A2A2A' : '#F9FAFB',
-                      borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB',
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Reminders Section */}
+              <View style={styles.detailsSection}>
+                <View style={styles.detailsRow}>
+                  <Ionicons
+                    name="notifications-outline"
+                    size={wp('4.5%')}
+                    color={isDark ? '#6B7280' : '#9CA3AF'}
+                  />
+                  <Text style={[
+                    styles.detailsLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>
+                    Reminders
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setReminderExplainerVisible(true);
+                    }}
+                    style={styles.infoButton}
+                  >
+                    <Ionicons
+                      name="information-circle-outline"
+                      size={wp('4%')}
+                      color={isDark ? '#6B7280' : '#9CA3AF'}
+                    />
+                  </TouchableOpacity>
+                </View>
+                {event.reminderPresetId ? (
+                  <Text style={[
+                    styles.detailsValue,
+                    { color: isDark ? '#FFFFFF' : '#1A1A1A', marginLeft: wp('6.5%') }
+                  ]}>
+                    {formatRemindersForDisplay(event.reminderPresetId) || 'Custom reminders'}
+                  </Text>
+                ) : event.reminders && event.reminders.length > 0 ? (
+                  <Text style={[
+                    styles.detailsValue,
+                    { color: isDark ? '#FFFFFF' : '#1A1A1A', marginLeft: wp('6.5%') }
+                  ]}>
+                    {event.reminders.length} reminder{event.reminders.length > 1 ? 's' : ''} set
+                  </Text>
+                ) : (
+                  <Text style={[
+                    styles.detailsValue,
+                    { 
+                      color: isDark ? '#6B7280' : '#9CA3AF',
+                      fontStyle: 'italic',
+                      marginLeft: wp('6.5%')
                     }
                   ]}>
-                    <Text style={[
-                      styles.detailsNotesText,
-                      { color: isDark ? '#F5F5F5' : '#111111' }
-                    ]}>
-                      {event.notes}
-                    </Text>
-                  </View>
-                </View>
-              )}
+                    No reminders set
+                  </Text>
+                )}
+              </View>
 
               {/* Action Buttons */}
               <View style={styles.detailsActions}>
@@ -760,6 +876,12 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           </Animated.View>
         </View>
       </Modal>
+
+      {/* Reminder Preset Explainer */}
+      <ReminderPresetExplainer
+        visible={reminderExplainerVisible}
+        onClose={() => setReminderExplainerVisible(false)}
+      />
 
       {/* Confirmation Modal */}
       <Modal
@@ -1318,12 +1440,17 @@ const styles = StyleSheet.create({
     marginTop: wp('0.5%'),
     lineHeight: wp('4.5%'),
   },
+  notesPreviewContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: wp('0.5%'),
+  },
   notesPreview: {
     fontSize: wp('3%'),
     fontWeight: '400',
     fontFamily: 'System',
     fontStyle: 'italic',
-    marginTop: wp('0.5%'),
+    flex: 1,
   },
   countdownText: {
     fontWeight: "600",
@@ -1732,6 +1859,52 @@ const styles = StyleSheet.create({
     fontSize: wp('4%'),
     fontWeight: '600',
     fontFamily: 'System',
+  },
+  detailsHumanized: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    fontStyle: 'italic',
+  },
+  viewEditButton: {
+    marginTop: wp('2%'),
+    marginLeft: wp('6.5%'),
+  },
+  viewEditText: {
+    fontSize: wp('3.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
+  notesUpsellLink: {
+    marginTop: wp('1%'),
+    marginLeft: wp('6.5%'),
+  },
+  notesUpsellLinkText: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    fontStyle: 'italic',
+    textDecorationLine: 'underline',
+  },
+  addNoteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: wp('4%'),
+    borderRadius: wp('2.5%'),
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    marginLeft: wp('6.5%'),
+    marginTop: wp('1%'),
+  },
+  addNoteText: {
+    fontSize: wp('3.5%'),
+    fontWeight: '500',
+    fontFamily: 'System',
+    marginLeft: wp('2%'),
+  },
+  infoButton: {
+    marginLeft: wp('2%'),
+    padding: wp('1%'),
   },
 });
 

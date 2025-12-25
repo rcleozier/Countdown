@@ -42,6 +42,8 @@ import FabButton from '../components/FabButton';
 import { useEntitlements } from '../src/billing/useEntitlements';
 import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from '../components/ProUpsellInline';
+import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
+import { syncScheduledReminders } from '../util/reminderScheduler';
 
 const IconItem = ({ icon, isSelected, onPress, isDark }) => {
   const iconScale = useRef(new Animated.Value(1)).current;
@@ -151,7 +153,7 @@ const HomeScreen = () => {
   
   // New state for templates, reminders, search, filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [filterType, setFilterType] = useState('upcoming');
   const [sortType, setSortType] = useState('soonest');
   
   // Modal animation refs
@@ -533,46 +535,26 @@ const HomeScreen = () => {
       return;
     }
     
-    // No reminders by default (can be added later via Pro feature)
-    let reminders = [];
-    
-    // Schedule notification for the main event time
-    const mainNotificationId = await scheduleNotificationIfFuture(newName, combinedDateTime);
-    
-    // Schedule notifications for reminders (if any)
-    const notificationIds = [];
-    if (mainNotificationId) {
-      notificationIds.push(mainNotificationId);
-    }
-    
-    for (const reminder of reminders) {
-      const reminderDate = new Date(combinedDateTime);
-      if (reminder.unit === 'days') {
-        reminderDate.setDate(reminderDate.getDate() - reminder.offset);
-      } else if (reminder.unit === 'weeks') {
-        reminderDate.setDate(reminderDate.getDate() - (reminder.offset * 7));
-      } else if (reminder.unit === 'months') {
-        reminderDate.setMonth(reminderDate.getMonth() - reminder.offset);
-      }
-      if (reminderDate > new Date()) {
-        const notifId = await scheduleNotificationIfFuture(newName, reminderDate);
-        if (notifId) notificationIds.push(notifId);
-      }
-    }
+    // Create default reminder plan (none by default)
+    const reminderPlan = createDefaultReminderPlan('none');
     
     const newCountdown = {
       id: generateGUID(),
       name: newName,
       date: combinedDateTime.toISOString(),
       icon: newIcon,
-      notificationId: mainNotificationId, // Main event notification
+      notificationId: null, // Will be scheduled via reminder sync
       createdAt: new Date().toISOString(),
       // New fields
       notes: newNotes.trim() || '',
       templateId: null, // Templates removed for now, but keeping field for future compatibility
-      reminderPresetId: null, // Reminder presets removed
-      reminders: reminders,
+      reminderPresetId: null, // Legacy field
+      reminderPlan: reminderPlan,
+      reminders: [], // Will be generated and synced
     };
+    
+    // Generate reminders from plan
+    newCountdown.reminders = buildRemindersForEvent(newCountdown);
     setCountdowns((prev) => [...prev, newCountdown]);
     setNewName("");
     setNewIcon("💻");
@@ -605,27 +587,61 @@ const HomeScreen = () => {
   };
 
   const editCountdown = async (updatedEvent) => {
+    // Regenerate reminders if date or reminderPlan changed
+    const existingEvent = countdowns.find(e => e.id === updatedEvent.id);
+    const dateChanged = existingEvent && existingEvent.date !== updatedEvent.date;
+    const planChanged = existingEvent && 
+      JSON.stringify(existingEvent.reminderPlan) !== JSON.stringify(updatedEvent.reminderPlan);
+    
+    if (dateChanged || planChanged) {
+      // Regenerate reminders from reminderPlan
+      updatedEvent.reminders = buildRemindersForEvent(updatedEvent);
+    } else if (!updatedEvent.reminders) {
+      // Ensure reminders exist
+      updatedEvent.reminders = buildRemindersForEvent(updatedEvent);
+    }
+    
+    // Ensure reminderPlan exists
+    if (!updatedEvent.reminderPlan) {
+      updatedEvent.reminderPlan = createDefaultReminderPlan('none');
+    }
+    
     try {
-      // Cancel old notification if it exists
-      const existingEvent = countdowns.find(item => item.id === updatedEvent.id);
-      if (existingEvent && existingEvent.notificationId) {
-        await Notifications.cancelScheduledNotificationAsync(existingEvent.notificationId).catch(() => {});
+      // Cancel old reminders for this event
+      if (existingEvent) {
+        // Cancel all reminder notifications
+        if (existingEvent.reminders && Array.isArray(existingEvent.reminders)) {
+          for (const reminder of existingEvent.reminders) {
+            if (reminder.notificationId) {
+              try {
+                await Notifications.cancelScheduledNotificationAsync(reminder.notificationId);
+              } catch (error) {
+                console.warn('Could not cancel reminder notification:', error);
+              }
+            }
+          }
+        }
+        // Cancel legacy main notification if exists
+        if (existingEvent.notificationId) {
+          await Notifications.cancelScheduledNotificationAsync(existingEvent.notificationId).catch(() => {});
+        }
       }
 
-      // Schedule new notification
-      const notificationId = await scheduleNotificationIfFuture(updatedEvent.name, new Date(updatedEvent.date));
-
-      // Update the countdown with new notification ID
+      // Update the countdown (reminders already regenerated above)
       const finalUpdatedEvent = {
         ...updatedEvent,
-        notificationId,
+        notificationId: null, // Legacy field, reminders handle notifications now
       };
 
-      setCountdowns((prev) => 
-        prev.map((item) => 
-          item.id === updatedEvent.id ? finalUpdatedEvent : item
-        )
+      const updatedCountdowns = countdowns.map((item) => 
+        item.id === updatedEvent.id ? finalUpdatedEvent : item
       );
+      setCountdowns(updatedCountdowns);
+
+      // Sync scheduled reminders after edit
+      syncScheduledReminders(updatedCountdowns, isPro).catch(err => {
+        console.error('Error syncing reminders after edit:', err);
+      });
 
       // Haptic feedback for successful edit
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -645,12 +661,30 @@ const HomeScreen = () => {
   const deleteCountdown = async (id) => {
     setCountdowns((prev) => {
       const countdownToDelete = prev.find((item) => item.id === id);
-      if (countdownToDelete && countdownToDelete.notificationId) {
-        try {
-          Notifications.cancelScheduledNotificationAsync(countdownToDelete.notificationId);
-          console.log('Notification cancelled for:', countdownToDelete.name);
-        } catch (error) {
-          console.warn('Could not cancel notification:', error);
+      
+      // Cancel all reminders for this event
+      if (countdownToDelete) {
+        // Cancel main notification if exists
+        if (countdownToDelete.notificationId) {
+          try {
+            Notifications.cancelScheduledNotificationAsync(countdownToDelete.notificationId);
+            console.log('Notification cancelled for:', countdownToDelete.name);
+          } catch (error) {
+            console.warn('Could not cancel notification:', error);
+          }
+        }
+        
+        // Cancel all reminder notifications
+        if (countdownToDelete.reminders && Array.isArray(countdownToDelete.reminders)) {
+          countdownToDelete.reminders.forEach(reminder => {
+            if (reminder.notificationId) {
+              try {
+                Notifications.cancelScheduledNotificationAsync(reminder.notificationId);
+              } catch (error) {
+                console.warn('Could not cancel reminder notification:', error);
+              }
+            }
+          });
         }
       }
       

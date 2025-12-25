@@ -17,6 +17,7 @@ import HomeScreen from "./screens/HomeScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import AnalyticsScreen from "./screens/AnalyticsScreen";
 import CalendarScreen from "./screens/CalendarScreen";
+import RemindersScreen from "./screens/RemindersScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -101,9 +102,11 @@ function ThemedApp() {
             let iconName;
 
             if (route.name === "Home") {
-              iconName = focused ? "time" : "time-outline";
+              iconName = focused ? "home" : "home-outline";
             } else if (route.name === "Calendar") {
               iconName = focused ? "calendar-number" : "calendar-number-outline";
+            } else if (route.name === "Reminders") {
+              iconName = focused ? "notifications" : "notifications-outline";
             } else if (route.name === "Analytics") {
               iconName = focused ? "trending-up" : "trending-up-outline";
             } else if (route.name === "Settings") {
@@ -140,6 +143,7 @@ function ThemedApp() {
       >
         <Tab.Screen name="Home" component={HomeScreenStack} />
         <Tab.Screen name="Calendar" component={CalendarScreen} />
+        <Tab.Screen name="Reminders" component={RemindersScreen} />
         <Tab.Screen name="Analytics" component={AnalyticsScreen} />
         <Tab.Screen name="Settings" component={SettingsScreenStack} />
       </Tab.Navigator>
