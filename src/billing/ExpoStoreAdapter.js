@@ -237,9 +237,9 @@ export class ExpoStoreAdapter {
         ...(available || []),
       ];
 
-      // Find subscription purchases (monthly or yearly)
+      // Find subscription purchases (monthly only)
       const subscriptionPurchases = allPurchases.filter(p => 
-        p.productId && (p.productId.includes('monthly') || p.productId.includes('yearly'))
+        p.productId && p.productId.includes('monthly')
       );
 
       if (subscriptionPurchases.length > 0) {
@@ -253,17 +253,10 @@ export class ExpoStoreAdapter {
           await InAppPurchases.finishTransactionAsync(latestPurchase, true);
         }
 
-        // For subscriptions, calculate expiration
-        // Monthly: 1 month from purchase
-        // Yearly: 1 year from purchase
+        // Calculate expiration: 1 month from purchase
         const purchaseDate = new Date(latestPurchase.purchaseTime);
         const expirationDate = new Date(purchaseDate);
-        
-        if (latestPurchase.productId.includes('yearly')) {
-          expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-        } else {
-          expirationDate.setMonth(expirationDate.getMonth() + 1);
-        }
+        expirationDate.setMonth(expirationDate.getMonth() + 1);
 
         return {
           isPremium: true,

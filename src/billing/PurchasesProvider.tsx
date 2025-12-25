@@ -6,11 +6,10 @@ import { Analytics } from '../../util/analytics';
 const ENTITLEMENTS_CACHE_KEY = '@entitlements_cache';
 const ENTITLEMENT_ID = 'pro';
 
-// Product IDs - should match what's configured in App Store Connect / Google Play Console
-const PRODUCT_IDS = {
-  monthly: 'com.chronox.app.pro.monthly',
-  yearly: 'com.chronox.app.pro.yearly',
-};
+// Product ID - should match what's configured in App Store Connect / Google Play Console
+// iOS: com.chronox.app.pro.monthly (configured in App Store Connect)
+// Android: (to be configured in Google Play Console)
+const PRODUCT_ID = 'com.chronox.app.pro.monthly';
 
 type PurchasesPackage = {
   productId: string;
@@ -23,10 +22,6 @@ type PurchasesPackage = {
 
 type Offerings = {
   monthly?: {
-    identifier: string;
-    product: PurchasesPackage;
-  };
-  annual?: {
     identifier: string;
     product: PurchasesPackage;
   };
@@ -129,12 +124,9 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const entitlements = await storeAdapter.getEntitlements();
       await saveCachedEntitlements(entitlements);
 
-      // Load products/offerings
-      const productIds = Object.values(PRODUCT_IDS);
-      const products = await storeAdapter.getProducts(productIds);
-
-      const monthly = products.find(p => p.productId === PRODUCT_IDS.monthly);
-      const yearly = products.find(p => p.productId === PRODUCT_IDS.yearly);
+      // Load product/offering
+      const products = await storeAdapter.getProducts([PRODUCT_ID]);
+      const monthly = products.find(p => p.productId === PRODUCT_ID);
 
       setOfferings({
         monthly: monthly ? {
@@ -146,17 +138,6 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             price: monthly.price,
             priceString: monthly.price,
             currencyCode: monthly.currencyCode,
-          },
-        } : undefined,
-        annual: yearly ? {
-          identifier: 'yearly',
-          product: {
-            identifier: yearly.productId,
-            title: yearly.title,
-            description: yearly.description,
-            price: yearly.price,
-            priceString: yearly.price,
-            currencyCode: yearly.currencyCode,
           },
         } : undefined,
       });
@@ -173,15 +154,8 @@ export const PurchasesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setIsLoading(true);
       setError(undefined);
 
-      // Map package identifier to product ID
-      let productId: string | undefined;
-      if (pkgId === 'monthly' || pkgId === PRODUCT_IDS.monthly) {
-        productId = PRODUCT_IDS.monthly;
-      } else if (pkgId === 'yearly' || pkgId === 'annual' || pkgId === PRODUCT_IDS.yearly) {
-        productId = PRODUCT_IDS.yearly;
-      } else {
-        productId = pkgId || PRODUCT_IDS.monthly;
-      }
+      // Use the single product ID
+      const productId = PRODUCT_ID;
 
       Analytics.trackEvent('purchase_started', {
         product: productId,

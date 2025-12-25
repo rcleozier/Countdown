@@ -86,7 +86,6 @@ const PaywallSheet: React.FC<PaywallSheetProps> = ({ visible, onClose, feature }
   };
 
   const monthlyPkg = offerings?.monthly;
-  const annualPkg = offerings?.annual;
 
   return (
     <BottomSheet visible={visible} onClose={onClose} showHandle={true}>
@@ -123,71 +122,26 @@ const PaywallSheet: React.FC<PaywallSheetProps> = ({ visible, onClose, feature }
           </View>
         </View>
 
-        {/* Pricing Options */}
-        {monthlyPkg || annualPkg ? (
-          <View style={styles.pricingContainer}>
-            {annualPkg && (
-              <TouchableOpacity
-                style={[
-                  styles.pricingOption,
-                  {
-                    backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6',
-                    borderColor: isDark ? '#3CC4A2' : '#4E9EFF',
-                    borderWidth: 2,
-                  }
-                ]}
-                onPress={() => handlePurchase(annualPkg.identifier)}
-                disabled={isPurchasing || isRestoring}
-              >
-                <View style={styles.pricingHeader}>
-                  <Text style={[styles.pricingTitle, { color: theme.colors.text }]}>
-                    Annual
-                  </Text>
-                  {annualPkg.product.priceString && (
-                    <Text style={[styles.pricingPrice, { color: theme.colors.text }]}>
-                      {annualPkg.product.priceString}
-                    </Text>
-                  )}
-                </View>
-                {annualPkg.product.description && (
-                  <Text style={[styles.pricingDescription, { color: theme.colors.textSecondary }]}>
-                    {annualPkg.product.description}
-                  </Text>
-                )}
-              </TouchableOpacity>
+        {/* Purchase Button */}
+        {monthlyPkg ? (
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              {
+                backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+              }
+            ]}
+            onPress={() => handlePurchase(monthlyPkg.identifier)}
+            disabled={isPurchasing || isRestoring || isLoading}
+          >
+            {isPurchasing ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <View style={styles.buttonContent}>
+                <Text style={styles.primaryButtonText}>Subscribe for {monthlyPkg.product.priceString}/month</Text>
+              </View>
             )}
-
-            {monthlyPkg && (
-              <TouchableOpacity
-                style={[
-                  styles.pricingOption,
-                  {
-                    backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6',
-                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                    borderWidth: 1,
-                  }
-                ]}
-                onPress={() => handlePurchase(monthlyPkg.identifier)}
-                disabled={isPurchasing || isRestoring}
-              >
-                <View style={styles.pricingHeader}>
-                  <Text style={[styles.pricingTitle, { color: theme.colors.text }]}>
-                    Monthly
-                  </Text>
-                  {monthlyPkg.product.priceString && (
-                    <Text style={[styles.pricingPrice, { color: theme.colors.text }]}>
-                      {monthlyPkg.product.priceString}
-                    </Text>
-                  )}
-                </View>
-                {monthlyPkg.product.description && (
-                  <Text style={[styles.pricingDescription, { color: theme.colors.textSecondary }]}>
-                    {monthlyPkg.product.description}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            )}
-          </View>
+          </TouchableOpacity>
         ) : (
           <TouchableOpacity
             style={[
@@ -285,32 +239,8 @@ const styles = StyleSheet.create({
     marginLeft: wp('3%'),
     flex: 1,
   },
-  pricingContainer: {
-    marginBottom: wp('4%'),
-    gap: wp('3%'),
-  },
-  pricingOption: {
-    padding: wp('4%'),
-    borderRadius: wp('3%'),
-    marginBottom: wp('2%'),
-  },
-  pricingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  buttonContent: {
     alignItems: 'center',
-    marginBottom: wp('1%'),
-  },
-  pricingTitle: {
-    fontSize: wp('4.5%'),
-    fontWeight: '600',
-  },
-  pricingPrice: {
-    fontSize: wp('4.5%'),
-    fontWeight: '700',
-  },
-  pricingDescription: {
-    fontSize: wp('3.5%'),
-    marginTop: wp('1%'),
   },
   primaryButton: {
     width: '100%',

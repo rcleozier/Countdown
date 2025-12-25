@@ -8,7 +8,6 @@ export interface EntitlementInfo {
   refresh: () => Promise<void>;
   offerings?: {
     monthly?: Package;
-    annual?: Package;
   };
   error?: string;
 }
@@ -27,6 +26,5 @@ export interface Package {
 
 export interface Offerings {
   monthly?: Package;
-  annual?: Package;
 }
 

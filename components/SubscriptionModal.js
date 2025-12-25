@@ -12,7 +12,7 @@ import {
 import { useSubscription } from '../context/SubscriptionContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../context/LocaleContext';
-import { getAllPlans } from '../util/subscriptionPlans';
+import { SUBSCRIPTION_PLAN } from '../util/subscriptionPlans';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -22,10 +22,8 @@ const SubscriptionModal = ({ visible, onClose, onSubscribe }) => {
   const { isPurchasing, purchaseSubscription, hasActiveSubscription, restorePurchases } = useSubscription();
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
-  const [selectedPlan, setSelectedPlan] = useState('yearly');
-  const plans = getAllPlans();
+  const plan = SUBSCRIPTION_PLAN;
   const modalScale = useRef(new Animated.Value(0.95)).current;
-  const selectedPlanScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (visible) {
@@ -41,33 +39,10 @@ const SubscriptionModal = ({ visible, onClose, onSubscribe }) => {
     }
   }, [visible]);
 
-  const handlePlanSelect = (planId) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSelectedPlan(planId);
-    
-    Animated.sequence([
-      Animated.timing(selectedPlanScale, {
-        toValue: 0.98,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.spring(selectedPlanScale, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 300,
-        friction: 10,
-      }),
-    ]).start();
-  };
-
   const handleSubscribe = async () => {
     if (isPurchasing) return;
     
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const plan = plans.find(p => p.id === selectedPlan);
-    
-    if (!plan) return;
-    
     const result = await purchaseSubscription(plan.productId);
     
     if (result.success) {
@@ -191,82 +166,40 @@ const SubscriptionModal = ({ visible, onClose, onSubscribe }) => {
               ))}
             </View>
 
-            {/* Plan Selection */}
+            {/* Plan Pricing */}
             <View style={styles.plansContainer}>
-              {plans.map((plan) => (
-                <Pressable
-                  key={plan.id}
-                  onPress={() => handlePlanSelect(plan.id)}
-                  style={({ pressed }) => [
-                    styles.planCard,
-                    {
-                      backgroundColor: selectedPlan === plan.id
-                        ? (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)')
-                        : (isDark ? '#2A2A2A' : '#F9FAFB'),
-                      borderColor: selectedPlan === plan.id
-                        ? (isDark ? '#3CC4A2' : '#4E9EFF')
-                        : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
-                      borderWidth: selectedPlan === plan.id ? 2 : 1,
-                      opacity: pressed ? 0.8 : 1,
-                    }
-                  ]}
-                >
-                  {plan.popular && (
-                    <View style={[
-                      styles.popularBadge,
-                      {
-                        backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
-                      }
-                    ]}>
-                      <Text style={styles.popularBadgeText}>
-                        {t('subscription.mostPopular')}
-                      </Text>
-                    </View>
-                  )}
-                  
-                  <View style={styles.planHeader}>
-                    <Text style={[
-                      styles.planName,
-                      { color: isDark ? '#F5F5F5' : '#111111' }
-                    ]}>
-                      {plan.name}
-                    </Text>
-                    {plan.savings && (
-                      <Text style={[
-                        styles.planSavings,
-                        { color: isDark ? '#3CC4A2' : '#4E9EFF' }
-                      ]}>
-                        {plan.savings} {t('subscription.savings')}
-                      </Text>
-                    )}
-                  </View>
-                  
-                  <View style={styles.planPricing}>
-                    <Text style={[
-                      styles.planPrice,
-                      { color: isDark ? '#F5F5F5' : '#111111' }
-                    ]}>
-                      {plan.price}
-                    </Text>
-                    <Text style={[
-                      styles.planPricePerMonth,
-                      { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>
-                      {plan.pricePerMonth} {t('subscription.perMonth')}
-                    </Text>
-                  </View>
-                  
-                  {selectedPlan === plan.id && (
-                    <View style={styles.selectedIndicator}>
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={24}
-                        color={isDark ? '#3CC4A2' : '#4E9EFF'}
-                      />
-                    </View>
-                  )}
-                </Pressable>
-              ))}
+              <View style={[
+                styles.planCard,
+                {
+                  backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
+                  borderColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                  borderWidth: 2,
+                }
+              ]}>
+                <View style={styles.planHeader}>
+                  <Text style={[
+                    styles.planName,
+                    { color: isDark ? '#F5F5F5' : '#111111' }
+                  ]}>
+                    {t('subscription.plans.monthly.name') || 'Monthly'}
+                  </Text>
+                </View>
+                
+                <View style={styles.planPricing}>
+                  <Text style={[
+                    styles.planPrice,
+                    { color: isDark ? '#F5F5F5' : '#111111' }
+                  ]}>
+                    {plan.price}
+                  </Text>
+                  <Text style={[
+                    styles.planPricePerMonth,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>
+                    {t('subscription.perMonth') || 'per month'}
+                  </Text>
+                </View>
+              </View>
             </View>
 
             {/* Subscribe Button */}
