@@ -22,7 +22,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import CountdownItem from "../components/CountdownItem";
 import { Calendar } from "react-native-calendars";
-import { Picker } from '@react-native-picker/picker';
 import moment from "moment";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import * as Notifications from 'expo-notifications';
@@ -152,6 +151,8 @@ const HomeScreen = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedHour, setSelectedHour] = useState(9);
   const [selectedMinute, setSelectedMinute] = useState(0);
+  const [PickerModule, setPickerModule] = useState(null);
+  const [notificationPermission, setNotificationPermission] = useState('undetermined');
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("💻");
   const [newNotes, setNewNotes] = useState("");
@@ -460,6 +461,27 @@ const HomeScreen = () => {
     setTempSelectedDate(null);
     setCalendarModalVisible(true);
   };
+
+  // Lazy load Picker component to avoid NativeEventEmitter error
+  useEffect(() => {
+    if (timePickerVisible && !PickerModule) {
+      // Use setTimeout to ensure native modules are ready
+      const timer = setTimeout(() => {
+        try {
+          import('@react-native-picker/picker').then((module) => {
+            // Handle both default and named exports
+            const Picker = module.default || module.Picker;
+            setPickerModule({ Picker });
+          }).catch((error) => {
+            console.error('Failed to load Picker:', error);
+          });
+        } catch (error) {
+          console.error('Error importing Picker:', error);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [timePickerVisible, PickerModule]);
 
   const handleOpenTimePicker = () => {
     setTimePickerVisible(true);
@@ -777,6 +799,12 @@ const HomeScreen = () => {
             shouldSetBadge: false,
           }),
         });
+
+        // Cache current notification permission for UI
+        const permStatus = await Notifications.getPermissionsAsync();
+        if (permStatus?.status) {
+          setNotificationPermission(permStatus.status);
+        }
         
         // Check if this is a new user and seed data
         const stored = await AsyncStorage.getItem("countdowns");
@@ -1207,27 +1235,33 @@ const HomeScreen = () => {
               <View style={[styles.timePickerOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
                 <View style={[styles.timePickerContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
                   <Text style={[styles.modalTitle, { color: theme.colors.text }]}>{t('create.selectTime')}</Text>
-                  <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                    <Picker
-                      selectedValue={selectedHour}
-                      style={{ width: wp('25%') }}
-                      onValueChange={(itemValue) => setSelectedHour(itemValue)}
-                    >
-                      {[...Array(24).keys()].map((h) => (
-                        <Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
-                      ))}
-                    </Picker>
-                    <Text style={{ fontSize: wp('6%'), marginHorizontal: wp('2%') }}>:</Text>
-                    <Picker
-                      selectedValue={selectedMinute}
-                      style={{ width: wp('25%') }}
-                      onValueChange={(itemValue) => setSelectedMinute(itemValue)}
-                    >
-                      {[...Array(60).keys()].map((m) => (
-                        <Picker.Item key={m} label={m.toString().padStart(2, '0')} value={m} />
-                      ))}
-                    </Picker>
-                  </View>
+                  {PickerModule ? (
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                      <PickerModule.Picker
+                        selectedValue={selectedHour}
+                        style={{ width: wp('25%') }}
+                        onValueChange={(itemValue) => setSelectedHour(itemValue)}
+                      >
+                        {[...Array(24).keys()].map((h) => (
+                          <PickerModule.Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
+                        ))}
+                      </PickerModule.Picker>
+                      <Text style={{ fontSize: wp('6%'), marginHorizontal: wp('2%') }}>:</Text>
+                      <PickerModule.Picker
+                        selectedValue={selectedMinute}
+                        style={{ width: wp('25%') }}
+                        onValueChange={(itemValue) => setSelectedMinute(itemValue)}
+                      >
+                        {[...Array(60).keys()].map((m) => (
+                          <PickerModule.Picker.Item key={m} label={m.toString().padStart(2, '0')} value={m} />
+                        ))}
+                      </PickerModule.Picker>
+                    </View>
+                  ) : (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                      <Text style={{ color: theme.colors.text }}>Loading time picker...</Text>
+                    </View>
+                  )}
                   <View style={styles.timePickerButtonContainer}>
                     <TouchableOpacity
                       style={[styles.button, { backgroundColor: theme.colors.border }]}
@@ -1260,77 +1294,92 @@ const HomeScreen = () => {
                 
                 {/* Preset Buttons - 2x2 Grid */}
                 <View style={styles.reminderButtonsGrid}>
-                {['off', 'simple', 'standard', 'intense'].map((preset) => {
-                  const isProPreset = isPresetPro(preset);
-                  const isLocked = !isPro && isProPreset;
-                  const isActive = reminderPreset === preset;
-                  
-                  return (
-                    <TouchableOpacity
-                      key={preset}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        if (isLocked) {
-                          // Show paywall for Pro presets
-                          setPaywallFeature('Standard & Intense Reminders');
-                          setPaywallVisible(true);
-                          // Don't change selection
-                          return;
-                        }
-                        setReminderPreset(preset);
-                      }}
-                      style={[
-                        styles.reminderButton,
-                        {
-                          backgroundColor: isActive
-                            ? (isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)')
-                            : (isDark ? '#2B2B2B' : '#F9FAFB'),
-                          borderColor: isActive
-                            ? (isDark ? '#4E9EFF' : '#4A9EFF')
-                            : (isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB'),
-                          borderWidth: isActive ? 2 : 1,
-                          opacity: isLocked ? 0.6 : 1,
-                        }
-                      ]}
-                    >
-                      <View style={styles.reminderButtonContent}>
-                        <Text style={[
-                          styles.reminderButtonLabel,
-                          {
-                            color: isActive
-                              ? (isDark ? '#4E9EFF' : '#4A9EFF')
-                              : (isDark ? '#F5F5F5' : '#111111'),
-                            fontWeight: isActive ? '600' : '500',
+                  {['off', 'simple', 'standard', 'intense'].map((preset) => {
+                    const isProPreset = isPresetPro(preset);
+                    const isLocked = !isPro && isProPreset;
+                    const isActive = reminderPreset === preset;
+
+                    return (
+                      <TouchableOpacity
+                        key={preset}
+                        onPress={() => {
+                          try {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            if (isLocked) {
+                              // Show paywall for Pro presets
+                              setPaywallFeature('reminders_presets');
+                              setPaywallVisible(true);
+                              // Don't change selection
+                              return;
+                            }
+                            setReminderPreset(preset);
+                          } catch (error) {
+                            console.error('Error handling reminder preset selection:', error);
+                            Alert.alert('Error', 'Something went wrong. Please try again.');
                           }
-                        ]}>
-                          {preset.charAt(0).toUpperCase() + preset.slice(1)}
-                        </Text>
-                        {isLocked && (
-                          <View style={styles.reminderButtonLock}>
-                            <Ionicons
-                              name="lock-closed"
-                              size={wp('3%')}
-                              color={isDark ? '#6B7280' : '#9CA3AF'}
-                            />
-                            <ProBadge size="small" />
-                          </View>
-                        )}
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
+                        }}
+                        style={[
+                          styles.reminderButton,
+                          {
+                            backgroundColor: isActive
+                              ? (isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)')
+                              : (isDark ? '#2B2B2B' : '#F9FAFB'),
+                            borderColor: isActive
+                              ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                              : (isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB'),
+                            borderWidth: isActive ? 2 : 1,
+                            opacity: isLocked ? 0.6 : 1,
+                          }
+                        ]}
+                      >
+                        <View style={styles.reminderButtonContent}>
+                          <Text style={[
+                            styles.reminderButtonLabel,
+                            {
+                              color: isActive
+                                ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                                : (isDark ? '#F5F5F5' : '#111111'),
+                              fontWeight: isActive ? '600' : '500',
+                            }
+                          ]}>
+                            {preset.charAt(0).toUpperCase() + preset.slice(1)}
+                          </Text>
+                          {isLocked && (
+                            <View style={styles.reminderButtonLock}>
+                              <Ionicons
+                                name="lock-closed"
+                                size={wp('3%')}
+                                color={isDark ? '#6B7280' : '#9CA3AF'}
+                              />
+                              <ProBadge size="small" />
+                            </View>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
                 
                 {/* Description */}
-                <Text style={[
-                  styles.reminderDescription,
-                  { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>
-                  {reminderPreset === 'off' 
-                    ? 'No notifications scheduled'
-                    : getPresetDescription(reminderPreset)
-                  }
-                </Text>
+                <View style={{ marginTop: wp('2%'), marginBottom: wp('1%') }}>
+                  <Text style={[
+                    styles.reminderDescription,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>
+                    {(() => {
+                      if (!reminderPreset || reminderPreset === 'off') {
+                        return 'No notifications scheduled';
+                      }
+                      try {
+                        const description = getPresetDescription(reminderPreset);
+                        return description || 'Reminders enabled';
+                      } catch (error) {
+                        console.error('Error getting preset description:', error);
+                        return 'Reminders enabled';
+                      }
+                    })()}
+                  </Text>
+                </View>
                 
                 {/* Notification Permission Warning */}
                 {reminderPreset !== 'off' && notificationPermission !== 'granted' && (
@@ -1974,32 +2023,37 @@ const styles = StyleSheet.create({
   reminderButton: {
     flex: 1,
     minWidth: '45%',
-    paddingVertical: wp('3%'),
-    paddingHorizontal: wp('3%'),
+    maxWidth: '48%',
+    paddingVertical: wp('2.4%'),
+    paddingHorizontal: wp('2%'),
     borderRadius: wp('2.5%'),
     alignItems: 'center',
     justifyContent: 'center',
+    height: wp('14%'),
   },
   reminderButtonContent: {
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+    gap: wp('0.5%'),
   },
   reminderButtonLabel: {
-    fontSize: wp('3.5%'),
+    fontSize: wp('3.15%'),
     fontFamily: 'System',
+    textAlign: 'center',
+    lineHeight: wp('3.8%'),
   },
   reminderButtonLock: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: wp('1%'),
-    gap: wp('1%'),
+    marginTop: wp('0.3%'),
+    gap: wp('0.6%'),
   },
   reminderDescription: {
     fontSize: wp('3%'),
     fontWeight: '400',
     fontFamily: 'System',
-    marginTop: wp('1%'),
-    fontStyle: 'italic',
+    lineHeight: wp('4.5%'),
   },
   permissionWarning: {
     flexDirection: 'row',

@@ -9,6 +9,7 @@ import {
   ScrollView,
   Linking,
   Alert,
+  TextInput,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -28,10 +29,15 @@ import { syncScheduledReminders } from '../util/reminderScheduler';
 import * as Haptics from 'expo-haptics';
 import Pill from '../components/Pill';
 
+const FREE_REMINDERS_MAX_DAYS = 7;
+const FREE_REMINDERS_MAX_COUNT = 10;
+
 const RemindersScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
   const [allReminders, setAllReminders] = useState([]);
   const [filter, setFilter] = useState('all'); // 'all', 'today', 'week', 'enabled'
+  const [groupBy, setGroupBy] = useState('date'); // 'date' | 'event'
+  const [searchQuery, setSearchQuery] = useState('');
   const [notificationPermission, setNotificationPermission] = useState(null);
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
@@ -57,6 +63,10 @@ const RemindersScreen = ({ navigation }) => {
         if (event.reminderPlan && event.reminderPlan.enabled) {
           const eventReminders = event.reminders || buildRemindersForEvent(event);
           eventReminders.forEach(reminder => {
+            const fireAt = moment(reminder.fireAtISO);
+            if (!fireAt.isAfter(moment())) {
+              return; // Skip past reminders
+            }
             if (reminder.enabled || isPro) {
               reminders.push({
                 ...reminder,
@@ -105,6 +115,16 @@ const RemindersScreen = ({ navigation }) => {
     }, [isPro])
   );
 
+  const limitRemindersForFree = useCallback((reminders) => {
+    const now = moment();
+    const cutoff = now.clone().add(FREE_REMINDERS_MAX_DAYS, 'days').endOf('day');
+    const withinWindow = reminders.filter(r => {
+      const fireAt = moment(r.fireAtISO);
+      return fireAt.isSameOrBefore(cutoff);
+    });
+    return withinWindow.slice(0, FREE_REMINDERS_MAX_COUNT);
+  }, []);
+
   // Filter reminders
   const filteredReminders = allReminders.filter(reminder => {
     const fireAt = moment(reminder.fireAtISO);
@@ -122,10 +142,13 @@ const RemindersScreen = ({ navigation }) => {
       return reminder.enabled;
     }
     return true; // 'all'
+  }).filter(reminder => {
+    if (!isPro || !searchQuery.trim()) return true;
+    return reminder.event.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
   });
 
   // Limit for free users
-  const displayReminders = isPro ? filteredReminders : filteredReminders.slice(0, 10);
+  const displayReminders = isPro ? filteredReminders : limitRemindersForFree(filteredReminders);
 
   // Get next reminder time
   const nextReminder = allReminders.find(r => r.enabled && moment(r.fireAtISO).isAfter(moment()));
@@ -133,18 +156,22 @@ const RemindersScreen = ({ navigation }) => {
     ? moment(nextReminder.fireAtISO).fromNow()
     : null;
 
-  // Group reminders by date
+  // Group reminders by date or event
   const groupedReminders = displayReminders.reduce((groups, reminder) => {
     const fireAt = moment(reminder.fireAtISO);
     const now = moment();
-    let groupKey;
+    let groupKey = groupBy === 'event' ? (reminder.event.name || 'Event') : undefined;
 
-    if (fireAt.isSame(now, 'day')) {
-      groupKey = 'Today';
-    } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
-      groupKey = 'Tomorrow';
+    if (groupBy === 'date') {
+      if (fireAt.isSame(now, 'day')) {
+        groupKey = 'Today';
+      } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
+        groupKey = 'Tomorrow';
+      } else {
+        groupKey = fireAt.format('dddd, MMM D');
+      }
     } else {
-      groupKey = fireAt.format('dddd, MMM D');
+      groupKey = groupKey || 'Event';
     }
 
     if (!groups[groupKey]) {
@@ -221,6 +248,34 @@ const RemindersScreen = ({ navigation }) => {
     }
   };
 
+  const bulkToggleReminders = async (enabled) => {
+    if (!isPro) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setPaywallVisible(true);
+      return;
+    }
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const updatedEvents = events.map(event => {
+        const updatedReminders = (event.reminders || []).map(r => ({ ...r, enabled }));
+        return {
+          ...event,
+          reminders: updatedReminders,
+          reminderPlan: {
+            ...(event.reminderPlan || {}),
+            enabled,
+          },
+        };
+      });
+      await AsyncStorage.setItem('countdowns', JSON.stringify(updatedEvents));
+      await loadReminders();
+      await syncScheduledReminders(updatedEvents, isPro);
+    } catch (error) {
+      console.error('Error toggling reminders:', error);
+      Alert.alert('Error', 'Failed to update reminders');
+    }
+  };
+
   // Open settings for notification permissions
   const openSettings = async () => {
     try {
@@ -245,9 +300,11 @@ const RemindersScreen = ({ navigation }) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          // Navigate to event details - would need to pass event reference
-          // For now, just show haptic feedback
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          navigation.navigate('Home', {
+            screen: 'HomeScreen',
+            params: { focusEventId: reminder.event.id },
+          });
         }}
         style={[
           styles.reminderItem,
@@ -388,6 +445,33 @@ const RemindersScreen = ({ navigation }) => {
             </View>
           )}
 
+          {/* Inline upgrade card for non-pro */}
+          {!isPro && (
+            <TouchableOpacity
+              onPress={() => setPaywallVisible(true)}
+              style={[
+                styles.inlineUpsell,
+                {
+                  backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.08)',
+                  borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
+                }
+              ]}
+            >
+              <View style={styles.inlineUpsellLeft}>
+                <Ionicons name="lock-closed" size={wp('5%')} color={accentColor} />
+              </View>
+              <View style={styles.inlineUpsellTextWrap}>
+                <Text style={[styles.inlineUpsellTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
+                  Unlock full reminder schedule
+                </Text>
+                <Text style={[styles.inlineUpsellSubtitle, { color: isDark ? '#A1A1A1' : '#475569' }]}>
+                  Get full filters, search, grouping, and unlimited upcoming reminders.
+                </Text>
+              </View>
+              <ProBadge />
+            </TouchableOpacity>
+          )}
+
           {/* Filters */}
           <View style={styles.filters}>
             <Pill
@@ -398,31 +482,98 @@ const RemindersScreen = ({ navigation }) => {
                 setFilter('all');
               }}
             />
-            <Pill
-              label="Today"
-              active={filter === 'today'}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setFilter('today');
-              }}
-            />
-            <Pill
-              label="This Week"
-              active={filter === 'week'}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setFilter('week');
-              }}
-            />
-            <Pill
-              label="Enabled"
-              active={filter === 'enabled'}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setFilter('enabled');
-              }}
-            />
+            {['today', 'week', 'enabled'].map(key => {
+              const labelMap = {
+                today: 'Today',
+                week: 'This Week',
+                enabled: 'Enabled',
+              };
+              const locked = !isPro;
+              const active = filter === key;
+              return (
+                <TouchableOpacity
+                  key={key}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    if (locked) {
+                      setPaywallVisible(true);
+                      return;
+                    }
+                    setFilter(key);
+                  }}
+                  style={{ flexDirection: 'row', alignItems: 'center' }}
+                  disabled={false}
+                >
+                  <Pill
+                    label={labelMap[key]}
+                    active={active}
+                    onPress={null}
+                    rightIcon={locked ? <Ionicons name="lock-closed" size={wp('3.8%')} color={accentColor} /> : null}
+                  />
+                  {locked && <ProBadge style={{ marginLeft: wp('1%') }} />}
+                </TouchableOpacity>
+              );
+            })}
           </View>
+
+          {/* Pro-only controls */}
+          {isPro && (
+            <>
+              <View style={styles.proControls}>
+                <TextInput
+                  placeholder="Search reminders by event"
+                  placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  style={[
+                    styles.searchInput,
+                    {
+                      backgroundColor: isDark ? '#111827' : '#F3F4F6',
+                      color: isDark ? '#FFFFFF' : '#0F172A',
+                      borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                    }
+                  ]}
+                />
+                <View style={styles.groupToggleRow}>
+                  <Text style={[styles.groupLabel, { color: isDark ? '#A1A1A1' : '#475569' }]}>Group by</Text>
+                  <View style={styles.groupTogglePills}>
+                    {['date', 'event'].map(mode => (
+                      <Pill
+                        key={mode}
+                        label={mode === 'date' ? 'Date' : 'Event'}
+                        active={groupBy === mode}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          setGroupBy(mode);
+                        }}
+                      />
+                    ))}
+                  </View>
+                </View>
+                <View style={styles.bulkRow}>
+                  <TouchableOpacity
+                    style={[styles.bulkButton, { backgroundColor: accentColor }]}
+                    onPress={() => bulkToggleReminders(true)}
+                  >
+                    <Ionicons name="notifications" size={wp('4%')} color="#FFFFFF" />
+                    <Text style={styles.bulkButtonText}>Enable all reminders</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.bulkButton,
+                      { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#E5E7EB' }
+                    ]}
+                    onPress={() => bulkToggleReminders(false)}
+                  >
+                    <Ionicons name="notifications-off" size={wp('4%')} color={isDark ? '#E5E7EB' : '#374151'} />
+                    <Text style={[styles.bulkButtonText, { color: isDark ? '#E5E7EB' : '#111827' }]}>
+                      Disable all reminders
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </>
+          )}
 
           {/* Reminders List */}
           {groupedArray.length === 0 ? (
@@ -449,7 +600,7 @@ const RemindersScreen = ({ navigation }) => {
               />
               
               {/* Free user upsell */}
-              {!isPro && filteredReminders.length > 10 && (
+              {!isPro && filteredReminders.length > displayReminders.length && (
                 <View style={[
                   styles.upsellCard,
                   {
@@ -665,6 +816,86 @@ const styles = StyleSheet.create({
   upsellButtonText: {
     color: '#FFFFFF',
     fontSize: wp('3.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
+  inlineUpsell: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: wp('4%'),
+    borderRadius: wp('3%'),
+    borderWidth: 1,
+    marginBottom: wp('4%'),
+    gap: wp('3%'),
+  },
+  inlineUpsellLeft: {
+    width: wp('10%'),
+    height: wp('10%'),
+    borderRadius: wp('2.5%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(78,158,255,0.12)',
+  },
+  inlineUpsellTextWrap: {
+    flex: 1,
+  },
+  inlineUpsellTitle: {
+    fontSize: wp('4%'),
+    fontWeight: '700',
+    fontFamily: 'System',
+    marginBottom: wp('1%'),
+  },
+  inlineUpsellSubtitle: {
+    fontSize: wp('3.4%'),
+    fontWeight: '500',
+    fontFamily: 'System',
+    lineHeight: wp('4.6%'),
+  },
+  proControls: {
+    gap: wp('3%'),
+    marginBottom: wp('4%'),
+  },
+  searchInput: {
+    paddingHorizontal: wp('4%'),
+    paddingVertical: wp('3%'),
+    borderRadius: wp('2.5%'),
+    borderWidth: 1,
+    fontSize: wp('3.8%'),
+    fontFamily: 'System',
+  },
+  groupToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: wp('3%'),
+  },
+  groupLabel: {
+    fontSize: wp('3.6%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
+  groupTogglePills: {
+    flexDirection: 'row',
+    gap: wp('2%'),
+  },
+  bulkRow: {
+    flexDirection: 'row',
+    gap: wp('2%'),
+    flexWrap: 'wrap',
+  },
+  bulkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: wp('2%'),
+    paddingHorizontal: wp('4%'),
+    paddingVertical: wp('3%'),
+    borderRadius: wp('2.5%'),
+    minWidth: '48%',
+    justifyContent: 'center',
+  },
+  bulkButtonText: {
+    color: '#FFFFFF',
+    fontSize: wp('3.6%'),
     fontWeight: '600',
     fontFamily: 'System',
   },

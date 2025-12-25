@@ -2,7 +2,7 @@
   "expo": {
     "name": "Chrono Countdown",
     "slug": "Chrono",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "privacy": "public",
     "jsEngine": "jsc",
     "platforms": [
@@ -19,7 +19,8 @@
     },
     "updates": {
       "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/95968c5b-512b-4212-a8de-4764cea7fad7"
+      "url": "https://u.expo.dev/95968c5b-512b-4212-a8de-4764cea7fad7",
+      "runtimeVersion": "1.0.0"
     },
     "assetBundlePatterns": [
       "**/*"
