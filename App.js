@@ -101,13 +101,13 @@ function ThemedApp() {
             let iconName;
 
             if (route.name === "Home") {
-              iconName = focused ? "timer" : "timer-outline";
+              iconName = focused ? "time" : "time-outline";
             } else if (route.name === "Calendar") {
-              iconName = focused ? "calendar" : "calendar-outline";
+              iconName = focused ? "calendar-number" : "calendar-number-outline";
             } else if (route.name === "Analytics") {
-              iconName = focused ? "analytics" : "analytics-outline";
+              iconName = focused ? "trending-up" : "trending-up-outline";
             } else if (route.name === "Settings") {
-              iconName = focused ? "settings" : "settings-outline";
+              iconName = focused ? "options" : "options-outline";
             }
 
             const accentColor = isDark ? '#4E9EFF' : '#4A9EFF';

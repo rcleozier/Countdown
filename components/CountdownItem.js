@@ -107,6 +107,7 @@ const IconItem = ({ icon, isSelected, onPress, isDark }) => {
 
 const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(event.date));
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
@@ -172,7 +173,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
 
   // Modal animation
   useEffect(() => {
-    if (editModalVisible) {
+    if (editModalVisible || detailsModalVisible) {
       Animated.spring(modalScale, {
         toValue: 1,
         duration: 200,
@@ -183,7 +184,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
     } else {
       modalScale.setValue(0.95);
     }
-  }, [editModalVisible]);
+  }, [editModalVisible, detailsModalVisible]);
 
   // Icon modal animation
   useEffect(() => {
@@ -276,6 +277,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
 
   // Accent color
   const accentColor = isDark ? '#4E9EFF' : '#4A9EFF';
+  const clearButtonColor = isDark ? '#D64C3C' : '#E15747';
   
   // Card press handlers
   const handleCardPressIn = () => {
@@ -331,6 +333,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       <Pressable
         onPressIn={handleCardPressIn}
         onPressOut={handleCardPressOut}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          setDetailsModalVisible(true);
+        }}
       >
         <Animated.View style={[
           styles.cardWrapper,
@@ -516,6 +522,244 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           </Text>
         </Animated.View>
       </Pressable>
+
+      {/* Details Modal */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={detailsModalVisible}
+        onRequestClose={() => setDetailsModalVisible(false)}
+      >
+        <View style={[
+          styles.modalOverlay,
+          { backgroundColor: isDark ? 'rgba(0,0,0,0.75)' : 'rgba(0,0,0,0.5)' }
+        ]}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setDetailsModalVisible(false)}
+          >
+            <View style={styles.modalBackdropInner} />
+          </Pressable>
+          <Animated.View style={[
+            styles.detailsModalContent,
+            {
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              transform: [{ scale: modalScale }],
+            }
+          ]}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.detailsModalScrollContent}
+            >
+              {/* Header */}
+              <View style={styles.detailsHeader}>
+                <View style={[
+                  styles.detailsIconContainer,
+                  {
+                    backgroundColor: isDark 
+                      ? 'rgba(78,158,255,0.15)' 
+                      : 'rgba(78,158,255,0.1)',
+                  }
+                ]}>
+                  <Text style={[styles.detailsIcon, { fontSize: wp('10%') }]}>
+                    {event.icon}
+                  </Text>
+                </View>
+                <Text style={[
+                  styles.detailsTitle,
+                  { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                ]}>
+                  {event.name}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setDetailsModalVisible(false)}
+                  style={styles.detailsCloseButton}
+                >
+                  <Ionicons
+                    name="close"
+                    size={wp('5%')}
+                    color={isDark ? '#A1A1A1' : '#6B7280'}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Date & Time */}
+              <View style={styles.detailsSection}>
+                <View style={styles.detailsRow}>
+                  <Ionicons
+                    name="calendar-outline"
+                    size={wp('4.5%')}
+                    color={isDark ? '#6B7280' : '#9CA3AF'}
+                  />
+                  <Text style={[
+                    styles.detailsLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>
+                    Date & Time
+                  </Text>
+                </View>
+                <Text style={[
+                  styles.detailsValue,
+                  { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                ]}>
+                  {(() => {
+                    const m = moment(event.date);
+                    if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
+                      return m.format("MMMM D, YYYY") + " (All Day)";
+                    } else {
+                      return m.format("MMMM D, YYYY [at] h:mm A");
+                    }
+                  })()}
+                </Text>
+              </View>
+
+              {/* Countdown */}
+              <View style={styles.detailsSection}>
+                <View style={styles.detailsRow}>
+                  <Ionicons
+                    name="time-outline"
+                    size={wp('4.5%')}
+                    color={isDark ? '#6B7280' : '#9CA3AF'}
+                  />
+                  <Text style={[
+                    styles.detailsLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>
+                    Time Remaining
+                  </Text>
+                </View>
+                {timeLeft === null ? (
+                  <Text style={[
+                    styles.detailsValue,
+                    { color: theme.colors.error }
+                  ]}>
+                    Expired
+                  </Text>
+                ) : (
+                  <Text style={[
+                    styles.detailsCountdown,
+                    { color: accentColor }
+                  ]}>
+                    {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+                  </Text>
+                )}
+              </View>
+
+              {/* Progress Bar */}
+              {timeLeft !== null && (
+                <View style={styles.detailsSection}>
+                  <View style={[
+                    styles.progressBarContainer,
+                    {
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                    }
+                  ]}>
+                    <Animated.View
+                      style={[
+                        styles.progressBarFill,
+                        {
+                          width: progressAnim.interpolate({
+                            inputRange: [0, 100],
+                            outputRange: ['0%', '100%'],
+                          }),
+                          backgroundColor: accentColor,
+                        }
+                      ]}
+                    />
+                  </View>
+                </View>
+              )}
+
+              {/* Notes */}
+              {event.notes && event.notes.trim() && (
+                <View style={styles.detailsSection}>
+                  <View style={styles.detailsRow}>
+                    <Ionicons
+                      name="document-text-outline"
+                      size={wp('4.5%')}
+                      color={isDark ? '#6B7280' : '#9CA3AF'}
+                    />
+                    <Text style={[
+                      styles.detailsLabel,
+                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+                    ]}>
+                      Notes
+                    </Text>
+                  </View>
+                  <View style={[
+                    styles.detailsNotesContainer,
+                    {
+                      backgroundColor: isDark ? '#2A2A2A' : '#F9FAFB',
+                      borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB',
+                    }
+                  ]}>
+                    <Text style={[
+                      styles.detailsNotesText,
+                      { color: isDark ? '#F5F5F5' : '#111111' }
+                    ]}>
+                      {event.notes}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Action Buttons */}
+              <View style={styles.detailsActions}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setDetailsModalVisible(false);
+                    setTimeout(() => handleOpenEditModal(), 300);
+                  }}
+                  style={[
+                    styles.detailsActionButton,
+                    {
+                      backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
+                      borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
+                    }
+                  ]}
+                >
+                  <Ionicons
+                    name="create-outline"
+                    size={wp('4.5%')}
+                    color={accentColor}
+                  />
+                  <Text style={[
+                    styles.detailsActionText,
+                    { color: accentColor }
+                  ]}>
+                    Edit
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setDetailsModalVisible(false);
+                    setTimeout(() => setDeleteModalVisible(true), 300);
+                  }}
+                  style={[
+                    styles.detailsActionButton,
+                    {
+                      backgroundColor: isDark ? 'rgba(225,87,71,0.1)' : 'rgba(225,87,71,0.05)',
+                      borderColor: isDark ? 'rgba(225,87,71,0.3)' : 'rgba(225,87,71,0.2)',
+                    }
+                  ]}
+                >
+                  <Ionicons
+                    name="trash-outline"
+                    size={wp('4.5%')}
+                    color={clearButtonColor}
+                  />
+                  <Text style={[
+                    styles.detailsActionText,
+                    { color: clearButtonColor }
+                  ]}>
+                    Delete
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </Animated.View>
+        </View>
+      </Modal>
 
       {/* Confirmation Modal */}
       <Modal
@@ -1371,6 +1615,122 @@ const styles = StyleSheet.create({
   },
   addNotesButtonText: {
     fontSize: wp('3.5%'),
+    fontFamily: 'System',
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  modalBackdropInner: {
+    flex: 1,
+  },
+  detailsModalContent: {
+    width: '90%',
+    maxWidth: wp('90%'),
+    maxHeight: hp('85%'),
+    borderRadius: wp('4%'),
+    padding: wp('5%'),
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  detailsModalScrollContent: {
+    paddingBottom: wp('2%'),
+  },
+  detailsHeader: {
+    alignItems: 'center',
+    marginBottom: wp('5%'),
+    position: 'relative',
+  },
+  detailsIconContainer: {
+    width: wp('20%'),
+    height: wp('20%'),
+    borderRadius: wp('5%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: wp('3%'),
+  },
+  detailsIcon: {
+    fontSize: wp('10%'),
+  },
+  detailsTitle: {
+    fontSize: wp('5%'),
+    fontWeight: '700',
+    fontFamily: 'System',
+    textAlign: 'center',
+    marginBottom: wp('2%'),
+  },
+  detailsCloseButton: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    padding: wp('2%'),
+  },
+  detailsSection: {
+    marginBottom: wp('4%'),
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: wp('2%'),
+  },
+  detailsLabel: {
+    fontSize: wp('3.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+    marginLeft: wp('2%'),
+  },
+  detailsValue: {
+    fontSize: wp('4%'),
+    fontWeight: '500',
+    fontFamily: 'System',
+    marginLeft: wp('6.5%'),
+  },
+  detailsCountdown: {
+    fontSize: wp('5%'),
+    fontWeight: '700',
+    fontFamily: 'System',
+    marginLeft: wp('6.5%'),
+  },
+  detailsNotesContainer: {
+    borderRadius: wp('2.5%'),
+    padding: wp('4%'),
+    borderWidth: 1,
+    marginLeft: wp('6.5%'),
+    marginTop: wp('1%'),
+  },
+  detailsNotesText: {
+    fontSize: wp('3.5%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    lineHeight: wp('5%'),
+  },
+  detailsActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: wp('3%'),
+    gap: wp('3%'),
+  },
+  detailsActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: wp('3.5%'),
+    borderRadius: wp('2.5%'),
+    borderWidth: 1,
+    gap: wp('2%'),
+  },
+  detailsActionText: {
+    fontSize: wp('4%'),
+    fontWeight: '600',
     fontFamily: 'System',
   },
 });
