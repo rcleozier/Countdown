@@ -15,6 +15,8 @@ import {
   Animated,
   Linking,
   Switch,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -44,7 +46,8 @@ import FabButton from '../components/FabButton';
 import { useEntitlements } from '../src/billing/useEntitlements';
 import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from '../components/ProUpsellInline';
-import { buildRemindersForEvent, createDefaultReminderPlan, getReminderPreview } from '../util/reminderBuilder';
+import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
+import { isPresetPro, getPresetDescription } from '../util/reminderPresets';
 import { syncScheduledReminders } from '../util/reminderScheduler';
 import Pill from '../components/Pill';
 import LockRow from '../components/LockRow';
@@ -153,7 +156,7 @@ const HomeScreen = () => {
   const [newIcon, setNewIcon] = useState("💻");
   const [newNotes, setNewNotes] = useState("");
   const [confettiKey, setConfettiKey] = useState(0);
-  const [reminderPreset, setReminderPreset] = useState('off'); // 'off', 'simple', 'standard', 'intense', 'custom'
+  const [reminderPreset, setReminderPreset] = useState('off'); // 'off', 'simple', 'standard', 'intense'
   const [remindersEnabled, setRemindersEnabled] = useState(true);
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
@@ -548,22 +551,18 @@ const HomeScreen = () => {
       return;
     }
     
-    // Map UI preset to internal preset value
-    const presetMap = {
-      'off': 'none',
-      'simple': 'chill',
-      'standard': 'standard',
-      'intense': 'intense',
-      'custom': 'custom',
-    };
-    const internalPreset = presetMap[reminderPreset] || 'none';
+    // Validate preset selection - ensure free users can't use Pro presets
+    let finalPreset = reminderPreset;
+    if (!isPro && isPresetPro(reminderPreset)) {
+      // Fallback to 'simple' if free user tries to use Pro preset
+      finalPreset = 'simple';
+    }
     
     // Create reminder plan
     const reminderPlan = {
-      preset: internalPreset,
+      preset: finalPreset,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      enabled: remindersEnabled && reminderPreset !== 'off',
-      customOffsetsMinutes: internalPreset === 'custom' ? [] : undefined,
+      enabled: finalPreset !== 'off',
     };
     
     const newCountdown = {
@@ -613,7 +612,6 @@ const HomeScreen = () => {
     setSelectedHour(9);
     setSelectedMinute(0);
     setReminderPreset('off');
-    setRemindersEnabled(true);
     setModalVisible(false);
     
     // Sync scheduled reminders in background
@@ -1008,33 +1006,39 @@ const HomeScreen = () => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={[
-          styles.modalContainer,
-          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-        ]}>
-          <Animated.View style={[
-            styles.modalContent,
-            {
-              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
-              transform: [{ scale: modalScale }],
-            }
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={[
+            styles.modalContainer,
+            { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
           ]}>
-            <ScrollView 
-              style={styles.modalFormScroll}
-              contentContainerStyle={styles.modalFormContent}
-              showsVerticalScrollIndicator={false}
-            >
+            <Animated.View style={[
+              styles.modalContent,
+              {
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+                transform: [{ scale: modalScale }],
+              }
+            ]}>
+              <ScrollView 
+                style={styles.modalFormScroll}
+                contentContainerStyle={styles.modalFormContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
               <Text style={[
                 styles.modalTitle,
                 { color: isDark ? '#F5F5F5' : '#111111' }
-              ]}>{t('create.title')}</Text>
+              ]}>Create Countdown</Text>
               
               {/* Countdown Name Input */}
-              <Text style={[
-                styles.iconLabel,
-                { color: isDark ? '#A1A1A1' : '#6B7280', marginBottom: wp('2%') }
-              ]}>{t('create.namePlaceholder')}</Text>
+              <View style={styles.modalSection}>
+                <Text style={[
+                  styles.modalSectionLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>{t('create.namePlaceholder')}</Text>
               <TextInput
                 placeholder={t('create.namePlaceholder')}
                 placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
@@ -1054,13 +1058,14 @@ const HomeScreen = () => {
                   }
                 ]}
               />
+              </View>
 
-
-            {/* Date Label + Button */}
-            <Text style={[
-              styles.iconLabel,
-              { color: isDark ? '#A1A1A1' : '#6B7280' }
-            ]}>{t('create.selectDate')}</Text>
+              {/* Date Section */}
+              <View style={styles.modalSection}>
+                <Text style={[
+                  styles.modalSectionLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>{t('create.selectDate')}</Text>
             <TouchableOpacity
               style={[
                 styles.iconButton,
@@ -1078,6 +1083,7 @@ const HomeScreen = () => {
                 {moment(selectedDate).format("ddd, D MMM YYYY")}
               </Text>
             </TouchableOpacity>
+              </View>
 
             {/* Calendar Modal */}
             <Modal
@@ -1166,11 +1172,12 @@ const HomeScreen = () => {
               </View>
             </Modal>
 
-            {/* Time Label + Button */}
-            <Text style={[
-              styles.iconLabel,
-              { color: isDark ? '#A1A1A1' : '#6B7280' }
-            ]}>Time</Text>
+            {/* Time Section */}
+            <View style={styles.modalSection}>
+              <Text style={[
+                styles.modalSectionLabel,
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
+              ]}>Time</Text>
             <TouchableOpacity
               style={[
                 styles.iconButton,
@@ -1188,6 +1195,7 @@ const HomeScreen = () => {
                 {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
               </Text>
             </TouchableOpacity>
+              </View>
 
             {/* Time Picker Modal */}
             <Modal
@@ -1238,217 +1246,160 @@ const HomeScreen = () => {
               </View>
             </Modal>
 
-            {/* Reminders Section */}
-            <View style={styles.remindersSection}>
-              <Text style={[
-                styles.iconLabel,
-                { color: isDark ? '#A1A1A1' : '#6B7280', marginBottom: wp('2%') }
-              ]}>Reminders</Text>
-              
-              {/* Notify me label */}
-              <Text style={[
-                styles.reminderSubLabel,
-                { color: isDark ? '#6B7280' : '#9CA3AF' }
-              ]}>Notify me</Text>
-              
-              {/* Preset Pills */}
-              <View style={styles.reminderPills}>
-                <Pill
-                  label="Off"
-                  isActive={reminderPreset === 'off'}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setReminderPreset('off');
-                    setRemindersEnabled(false);
-                  }}
-                  style={{ marginRight: wp('2%'), marginBottom: wp('2%') }}
-                />
-                <Pill
-                  label="Simple"
-                  isActive={reminderPreset === 'simple'}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setReminderPreset('simple');
-                    setRemindersEnabled(true);
-                  }}
-                  style={{ marginRight: wp('2%'), marginBottom: wp('2%') }}
-                />
-                <Pill
-                  label="Standard"
-                  isActive={reminderPreset === 'standard'}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setReminderPreset('standard');
-                    setRemindersEnabled(true);
-                  }}
-                  style={{ marginRight: wp('2%'), marginBottom: wp('2%') }}
-                />
-                <Pill
-                  label="Intense"
-                  isActive={reminderPreset === 'intense'}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setReminderPreset('intense');
-                    setRemindersEnabled(true);
-                  }}
-                  style={{ marginRight: wp('2%'), marginBottom: wp('2%') }}
-                />
-              </View>
-              
-              {/* Reminder Preview */}
-              {reminderPreset !== 'off' && remindersEnabled && (() => {
-                const preview = getReminderPreview(reminderPreset, isPro);
-                return (
-                  <View style={styles.reminderPreview}>
-                    <View style={styles.reminderPreviewList}>
-                      {preview.included.map((label, index) => (
-                        <View key={index} style={[
-                          styles.reminderPreviewItem,
-                          {
-                            backgroundColor: isDark ? 'rgba(78,158,255,0.1)' : 'rgba(78,158,255,0.08)',
-                            borderColor: isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)',
-                          }
-                        ]}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={wp('3.5%')}
-                            color={isDark ? '#4E9EFF' : '#4A9EFF'}
-                            style={{ marginRight: wp('1.5%') }}
-                          />
-                          <Text style={[
-                            styles.reminderPreviewText,
-                            { color: isDark ? '#F5F5F5' : '#111111' }
-                          ]}>
-                            {label}
-                          </Text>
-                        </View>
-                      ))}
-                      {preview.locked.length > 0 && (
-                        <>
-                          {preview.locked.map((label, index) => (
-                            <View key={`locked-${index}`} style={[
-                              styles.reminderPreviewItem,
-                              {
-                                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                                opacity: 0.6,
-                              }
-                            ]}>
-                              <Ionicons
-                                name="lock-closed"
-                                size={wp('3.5%')}
-                                color={isDark ? '#6B7280' : '#9CA3AF'}
-                                style={{ marginRight: wp('1.5%') }}
-                              />
-                              <Text style={[
-                                styles.reminderPreviewText,
-                                { color: isDark ? '#A1A1A1' : '#6B7280' }
-                              ]}>
-                                {label}
-                              </Text>
-                              <ProBadge size="small" />
-                            </View>
-                          ))}
-                          <Text style={[
-                            styles.reminderFreeLimit,
-                            { color: isDark ? '#6B7280' : '#9CA3AF' }
-                          ]}>
-                            Free includes up to 2 reminders per event. Pro unlocks all reminders + custom.
-                          </Text>
-                        </>
-                      )}
-                    </View>
-                  </View>
-                );
-              })()}
-              
-              {/* Enable notifications toggle */}
-              {reminderPreset !== 'off' && (
-                <View style={styles.reminderToggleRow}>
-                  <Text style={[
-                    styles.reminderToggleLabel,
-                    { color: isDark ? '#A1A1A1' : '#6B7280' }
-                  ]}>Enable notifications</Text>
-                  <Switch
-                    value={remindersEnabled}
-                    onValueChange={(value) => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setRemindersEnabled(value);
-                    }}
-                    trackColor={{
-                      false: isDark ? '#2E2E2E' : '#E5E7EB',
-                      true: isDark ? '#3CC4A2' : '#4E9EFF'
-                    }}
-                    thumbColor="#FFFFFF"
-                    ios_backgroundColor={isDark ? '#2E2E2E' : '#E5E7EB'}
-                  />
-                </View>
-              )}
-              
-              {/* Custom option (Pro) */}
-              {reminderPreset !== 'custom' && (
-                <View style={{ marginTop: wp('2%') }}>
-                  {isPro ? (
+              {/* Reminders Section */}
+              <View style={styles.modalSection}>
+                <Text style={[
+                  styles.modalSectionLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280', marginBottom: wp('1%') }
+                ]}>Reminders</Text>
+                
+                <Text style={[
+                  styles.modalSectionSubLabel,
+                  { color: isDark ? '#6B7280' : '#9CA3AF' }
+                ]}>Notify me</Text>
+                
+                {/* Preset Buttons - 2x2 Grid */}
+                <View style={styles.reminderButtonsGrid}>
+                {['off', 'simple', 'standard', 'intense'].map((preset) => {
+                  const isProPreset = isPresetPro(preset);
+                  const isLocked = !isPro && isProPreset;
+                  const isActive = reminderPreset === preset;
+                  
+                  return (
                     <TouchableOpacity
+                      key={preset}
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        setReminderPreset('custom');
-                        setRemindersEnabled(true);
-                        // TODO: Open custom reminder editor
-                        Alert.alert('Custom Reminders', 'Custom reminder editor coming soon!');
+                        if (isLocked) {
+                          // Show paywall for Pro presets
+                          setPaywallFeature('Standard & Intense Reminders');
+                          setPaywallVisible(true);
+                          // Don't change selection
+                          return;
+                        }
+                        setReminderPreset(preset);
                       }}
                       style={[
-                        styles.customReminderButton,
+                        styles.reminderButton,
                         {
-                          backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
-                          borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB',
+                          backgroundColor: isActive
+                            ? (isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)')
+                            : (isDark ? '#2B2B2B' : '#F9FAFB'),
+                          borderColor: isActive
+                            ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                            : (isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB'),
+                          borderWidth: isActive ? 2 : 1,
+                          opacity: isLocked ? 0.6 : 1,
                         }
                       ]}
                     >
-                      <Text style={[
-                        styles.customReminderText,
-                        { color: isDark ? '#F5F5F5' : '#111111' }
-                      ]}>Custom…</Text>
+                      <View style={styles.reminderButtonContent}>
+                        <Text style={[
+                          styles.reminderButtonLabel,
+                          {
+                            color: isActive
+                              ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                              : (isDark ? '#F5F5F5' : '#111111'),
+                            fontWeight: isActive ? '600' : '500',
+                          }
+                        ]}>
+                          {preset.charAt(0).toUpperCase() + preset.slice(1)}
+                        </Text>
+                        {isLocked && (
+                          <View style={styles.reminderButtonLock}>
+                            <Ionicons
+                              name="lock-closed"
+                              size={wp('3%')}
+                              color={isDark ? '#6B7280' : '#9CA3AF'}
+                            />
+                            <ProBadge size="small" />
+                          </View>
+                        )}
+                      </View>
                     </TouchableOpacity>
-                  ) : (
-                    <LockRow
-                      onPress={() => {
-                        setPaywallFeature('Custom Reminders');
-                        setPaywallVisible(true);
-                      }}
-                      message="Unlock unlimited reminders + custom schedules"
-                      icon="lock-closed"
-                    />
-                  )}
+                  );
+                })}
                 </View>
-              )}
-            </View>
+                
+                {/* Description */}
+                <Text style={[
+                  styles.reminderDescription,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>
+                  {reminderPreset === 'off' 
+                    ? 'No notifications scheduled'
+                    : getPresetDescription(reminderPreset)
+                  }
+                </Text>
+                
+                {/* Notification Permission Warning */}
+                {reminderPreset !== 'off' && notificationPermission !== 'granted' && (
+                  <View style={[
+                    styles.permissionWarning,
+                    {
+                      backgroundColor: isDark ? 'rgba(255,193,7,0.15)' : 'rgba(255,193,7,0.1)',
+                      borderColor: isDark ? 'rgba(255,193,7,0.3)' : 'rgba(255,193,7,0.2)',
+                    }
+                  ]}>
+                    <Ionicons
+                      name="warning-outline"
+                      size={wp('4%')}
+                      color={isDark ? '#FFC107' : '#F59E0B'}
+                    />
+                    <Text style={[
+                      styles.permissionWarningText,
+                      { color: isDark ? '#FFC107' : '#F59E0B' }
+                    ]}>
+                      Enable notifications to receive reminders
+                    </Text>
+                    <TouchableOpacity
+                      onPress={async () => {
+                        const { status } = await Notifications.requestPermissionsAsync();
+                        setNotificationPermission(status);
+                        if (status !== 'granted') {
+                          Linking.openSettings();
+                        }
+                      }}
+                      style={styles.permissionEnableButton}
+                    >
+                      <Text style={[
+                        styles.permissionEnableText,
+                        { color: isDark ? '#FFC107' : '#F59E0B' }
+                      ]}>
+                        Enable
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
 
-            {/* Icon Label + Button */}
-            <Text style={[
-              styles.iconLabel,
-              { color: isDark ? '#A1A1A1' : '#6B7280' }
-            ]}>Icon</Text>
-            <TouchableOpacity
-              onPress={() => setIconPickerVisible(true)}
-              style={[
-                styles.iconButton,
-                {
-                  backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
-                  borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
-                }
-              ]}
-            >
-              <Text style={[
-                styles.iconButtonText,
-                { color: isDark ? '#F5F5F5' : '#111111' }
-              ]}>
-                {newIcon ? `${t('create.selectIcon')}: ${newIcon}` : t('create.selectIcon')}
-              </Text>
-            </TouchableOpacity>
+              {/* Icon Section */}
+              <View style={styles.modalSection}>
+                <Text style={[
+                  styles.modalSectionLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>Icon</Text>
+                <TouchableOpacity
+                  onPress={() => setIconPickerVisible(true)}
+                  style={[
+                    styles.iconButton,
+                    {
+                      backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                      borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                    }
+                  ]}
+                >
+                  <Text style={[
+                    styles.iconButtonText,
+                    { color: isDark ? '#F5F5F5' : '#111111' }
+                  ]}>
+                    {newIcon ? `${t('create.selectIcon')}: ${newIcon}` : t('create.selectIcon')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-            {/* Notes Input (Optional) - Free with Pro upgrade */}
-            <View style={styles.notesSection}>
+              {/* Notes Section */}
+              <View style={styles.modalSection}>
               <View style={styles.notesHeader}>
                 <Ionicons
                   name="document-text-outline"
@@ -1537,8 +1488,57 @@ const HomeScreen = () => {
               </View>
             </View>
 
-            {/* Icon Picker Modal */}
-            <Modal
+              {/* Footer Buttons */}
+              <View style={styles.modalFooter}>
+                <TouchableOpacity
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setModalVisible(false);
+                  }}
+                  style={[
+                    styles.modalFooterButton,
+                    styles.modalFooterButtonSecondary,
+                    {
+                      backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                    }
+                  ]}
+                >
+                  <Text style={[
+                    styles.modalFooterButtonText,
+                    { color: isDark ? '#E5E7EB' : '#111111' }
+                  ]}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleAddCountdown}
+                  disabled={!newName.trim()}
+                  style={[
+                    styles.modalFooterButton,
+                    styles.modalFooterButtonPrimary,
+                    {
+                      backgroundColor: !newName.trim()
+                        ? (isDark ? '#2A2A2A' : '#E5E7EB')
+                        : (isDark ? '#3CC4A2' : '#4E9EFF'),
+                      opacity: !newName.trim() ? 0.5 : 1,
+                    }
+                  ]}
+                >
+                  <Text style={[
+                    styles.modalFooterButtonText,
+                    { color: !newName.trim() 
+                      ? (isDark ? '#6B7280' : '#9CA3AF')
+                      : '#FFFFFF'
+                    }
+                  ]}>Create</Text>
+                </TouchableOpacity>
+              </View>
+              </ScrollView>
+            </Animated.View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Icon Picker Modal */}
+      <Modal
               animationType="fade"
               transparent
               visible={iconPickerVisible}
@@ -1558,7 +1558,7 @@ const HomeScreen = () => {
                 ]}>
                   <Text style={[
                     styles.iconModalTitle,
-                    { color: isDark ? '#F3F4F6' : '#111111' }
+                    { color: isDark ? '#F3F3F6' : '#111111' }
                   ]}>{t('create.selectIcon')}</Text>
                   <View style={[
                     styles.iconModalDivider,
@@ -1613,54 +1613,6 @@ const HomeScreen = () => {
                 </Animated.View>
               </View>
             </Modal>
-            </ScrollView>
-
-            {/* Action Buttons */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                style={[
-                  styles.button,
-                  {
-                    backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                  }
-                ]}
-              >
-                <Text style={[
-                  styles.buttonText,
-                  { color: isDark ? '#E5E7EB' : '#111111' }
-                ]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleAddCountdown}
-                disabled={!newName.trim()}
-                style={[
-                  styles.button,
-                  {
-                    backgroundColor: !newName.trim()
-                      ? (isDark ? '#2A2A2A' : '#E5E7EB')
-                      : (isDark ? '#3CC4A2' : '#4E9EFF'),
-                    shadowColor: !newName.trim() ? 'transparent' : (isDark ? '#3CC4A2' : '#4E9EFF'),
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 4,
-                    opacity: !newName.trim() ? 0.5 : 1,
-                  }
-                ]}
-              >
-                <Text style={[
-                  styles.buttonTextSave,
-                  { color: !newName.trim() 
-                    ? (isDark ? '#6B7280' : '#9CA3AF')
-                    : '#FFFFFF'
-                  }
-                ]}>Create countdown</Text>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-        </View>
-      </Modal>
       {/* Confetti overlay (re-mounts per key to replay) */}
       {confettiKey > 0 && (
         <ConfettiCannon
@@ -1998,71 +1950,108 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
     marginBottom: wp('2%'),
   },
-  reminderPills: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  modalSection: {
+    marginBottom: wp('4%'), // 16px spacing between sections
+  },
+  modalSectionLabel: {
+    fontSize: wp('3.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+    marginBottom: wp('2%'), // 8px between label and input
+  },
+  modalSectionSubLabel: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    fontFamily: 'System',
     marginBottom: wp('2%'),
   },
-  reminderExplanation: {
+  reminderButtonsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: wp('2%'),
+    marginBottom: wp('2%'),
+  },
+  reminderButton: {
+    flex: 1,
+    minWidth: '45%',
+    paddingVertical: wp('3%'),
+    paddingHorizontal: wp('3%'),
+    borderRadius: wp('2.5%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reminderButtonContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reminderButtonLabel: {
+    fontSize: wp('3.5%'),
+    fontFamily: 'System',
+  },
+  reminderButtonLock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: wp('1%'),
+    gap: wp('1%'),
+  },
+  reminderDescription: {
     fontSize: wp('3%'),
     fontWeight: '400',
     fontFamily: 'System',
     marginTop: wp('1%'),
-    marginBottom: wp('2%'),
     fontStyle: 'italic',
   },
-  reminderToggleRow: {
+  permissionWarning: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: wp('2%'),
-    paddingVertical: wp('2%'),
-  },
-  reminderToggleLabel: {
-    fontSize: wp('3.5%'),
-    fontWeight: '500',
-    fontFamily: 'System',
-  },
-  customReminderButton: {
-    paddingVertical: wp('3%'),
-    paddingHorizontal: wp('4%'),
-    borderRadius: wp('2.5%'),
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  customReminderText: {
-    fontSize: wp('3.5%'),
-    fontWeight: '500',
-    fontFamily: 'System',
-  },
-  reminderPreview: {
-    marginTop: wp('2%'),
-    marginBottom: wp('2%'),
-  },
-  reminderPreviewList: {
-    gap: wp('1.5%'),
-  },
-  reminderPreviewItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: wp('2%'),
+    paddingVertical: wp('2.5%'),
     paddingHorizontal: wp('3%'),
     borderRadius: wp('2%'),
     borderWidth: 1,
+    marginTop: wp('2%'),
+    gap: wp('2%'),
   },
-  reminderPreviewText: {
-    fontSize: wp('3.5%'),
+  permissionWarningText: {
+    flex: 1,
+    fontSize: wp('3%'),
     fontWeight: '500',
     fontFamily: 'System',
-    flex: 1,
   },
-  reminderFreeLimit: {
-    fontSize: wp('2.8%'),
-    fontWeight: '400',
+  permissionEnableButton: {
+    paddingVertical: wp('1%'),
+    paddingHorizontal: wp('2%'),
+  },
+  permissionEnableText: {
+    fontSize: wp('3%'),
+    fontWeight: '600',
     fontFamily: 'System',
-    fontStyle: 'italic',
-    marginTop: wp('1.5%'),
-    textAlign: 'center',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: wp('2%'),
+    paddingTop: wp('3%'),
+    paddingBottom: wp('2%'),
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+    marginTop: wp('2%'),
+  },
+  modalFooterButton: {
+    flex: 1,
+    paddingVertical: wp('3%'),
+    borderRadius: wp('2.5%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalFooterButtonSecondary: {
+    // Already styled above
+  },
+  modalFooterButtonPrimary: {
+    // Already styled above
+  },
+  modalFooterButtonText: {
+    fontSize: wp('3.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
   },
   notesSection: {
     marginTop: wp('3%'),

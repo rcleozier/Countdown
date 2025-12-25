@@ -21,7 +21,7 @@ import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from './ProUpsellInline';
 import LockRow from './LockRow';
 import ReminderPresetExplainer from './ReminderPresetExplainer';
-import { formatRemindersForDisplay, REMINDER_PRESETS } from '../util/reminderPresets';
+import { getPresetDescription, REMINDER_PRESETS } from '../util/reminderPresets';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import eventIcons from '../util/eventIcons';
@@ -791,12 +791,12 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     />
                   </TouchableOpacity>
                 </View>
-                {event.reminderPresetId ? (
+                {event.reminderPlan?.preset ? (
                   <Text style={[
                     styles.detailsValue,
                     { color: isDark ? '#FFFFFF' : '#1A1A1A', marginLeft: wp('6.5%') }
                   ]}>
-                    {formatRemindersForDisplay(event.reminderPresetId) || 'Custom reminders'}
+                    {getPresetDescription(event.reminderPlan.preset)}
                   </Text>
                 ) : event.reminders && event.reminders.length > 0 ? (
                   <Text style={[

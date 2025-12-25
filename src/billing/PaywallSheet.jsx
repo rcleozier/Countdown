@@ -88,10 +88,16 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.colors.text }]}>
-            Upgrade to Pro
+            {feature === 'Standard & Intense Reminders' 
+              ? 'Upgrade for stronger reminders'
+              : 'Upgrade to Pro'
+            }
           </Text>
           <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-            More control, less noise.
+            {feature === 'Standard & Intense Reminders'
+              ? 'Standard and Intense reminders are included with Pro.'
+              : 'More control, less noise.'
+            }
           </Text>
         </View>
 
@@ -100,7 +106,7 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
           <View style={styles.featureItem}>
             <Ionicons name="checkmark-circle" size={wp('5%')} color={theme.colors.success || '#4CAF50'} />
             <Text style={[styles.featureText, { color: theme.colors.text }]}>
-              Unlimited custom reminders
+              Standard & Intense reminders
             </Text>
           </View>
           <View style={styles.featureItem}>
