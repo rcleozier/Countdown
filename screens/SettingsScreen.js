@@ -355,11 +355,11 @@ const SettingsScreen = () => {
                     <Text style={[
                       styles.benefitItem,
                       { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>• More reminders + advanced notes</Text>
+                    ]}>• Advanced reminders & notes</Text>
                     <Text style={[
                       styles.benefitItem,
                       { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>• Unlock premium templates & features</Text>
+                    ]}>• Recurring countdowns</Text>
                   </View>
                 )}
               </View>

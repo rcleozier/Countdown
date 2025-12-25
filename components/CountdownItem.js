@@ -422,9 +422,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   </Text>
                 )}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: wp('1%') }}>
-                  {event.recurrence && event.recurrence !== RECURRENCE_TYPES.NONE && (
-                    <Text style={{ fontSize: wp('3.5%') }}>🔁</Text>
-                  )}
                   <Text style={[
                     styles.date,
                     {
@@ -447,10 +444,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       {
                         color: isDark ? '#6B7280' : '#9CA3AF',
                         fontSize: wp('3%'),
-                        fontStyle: 'italic',
+                        marginLeft: wp('1%'),
                       }
                     ]}>
-                      • Repeats {getRecurrenceLabel(event.recurrence).toLowerCase()}
+                      ↻ {getRecurrenceLabel(event.recurrence)}
                     </Text>
                   )}
                 </View>
@@ -645,13 +642,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       marginTop: wp('1%'),
                     }
                   ]}>
-                    Repeats {getRecurrenceLabel(event.recurrence).toLowerCase()}
-                    {event.nextOccurrenceAt && event.originalDateAt && (
-                      <Text style={{ fontStyle: 'italic' }}>
-                        {' • Next: '}
-                        {moment(event.nextOccurrenceAt).format("MMM D, YYYY [at] h:mm A")}
-                      </Text>
-                    )}
+                    ↻ {getRecurrenceLabel(event.recurrence)}
                   </Text>
                 )}
               </View>

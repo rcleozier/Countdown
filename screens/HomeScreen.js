@@ -45,7 +45,6 @@ import FabButton from '../components/FabButton';
 import { useEntitlements } from '../src/billing/useEntitlements';
 import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from '../components/ProUpsellInline';
-import ProBadge from '../components/ProBadge';
 import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
 import { isPresetPro, getPresetDescription } from '../util/reminderPresets';
 import { syncScheduledReminders } from '../util/reminderScheduler';
@@ -1468,14 +1467,11 @@ const HomeScreen = () => {
                             {preset.charAt(0).toUpperCase() + preset.slice(1)}
                           </Text>
                           {isLocked && (
-                            <View style={styles.reminderButtonLock}>
-                              <Ionicons
-                                name="lock-closed"
-                                size={wp('3%')}
-                                color={isDark ? '#6B7280' : '#9CA3AF'}
-                              />
-                              <ProBadge size="small" />
-                            </View>
+                            <Ionicons
+                              name="lock-closed"
+                              size={wp('3%')}
+                              color={isDark ? '#6B7280' : '#9CA3AF'}
+                            />
                           )}
                         </View>
                       </TouchableOpacity>
@@ -1578,14 +1574,11 @@ const HomeScreen = () => {
                       {recurrence === RECURRENCE_TYPES.NONE ? 'None' : getRecurrenceLabel(recurrence)}
                     </Text>
                     {!isPro && (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: wp('1%') }}>
-                        <Ionicons
-                          name="lock-closed"
-                          size={wp('3%')}
-                          color={isDark ? '#6B7280' : '#9CA3AF'}
-                        />
-                        <ProBadge size="small" />
-                      </View>
+                      <Ionicons
+                        name="lock-closed"
+                        size={wp('3%')}
+                        color={isDark ? '#6B7280' : '#9CA3AF'}
+                      />
                     )}
                   </View>
                 </TouchableOpacity>
@@ -1738,7 +1731,7 @@ const HomeScreen = () => {
                 ]}>
                   {newNotes.length}/{isPro ? 5000 : 100}
                 </Text>
-                {!isPro && (
+                {!isPro && newNotes.length >= 100 && (
                   <TouchableOpacity
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1747,34 +1740,12 @@ const HomeScreen = () => {
                     activeOpacity={0.7}
                     style={styles.notesUpsellRow}
                   >
-                    <Text style={[
-                      styles.notesUpsellText,
-                      { color: isDark ? '#6B7280' : '#9CA3AF' }
-                    ]}>
-                      Upgrade to Pro for 5000-char notes + no ads
-                    </Text>
                     <Ionicons
                       name="lock-closed"
                       size={wp('3%')}
                       color={isDark ? '#6B7280' : '#9CA3AF'}
-                      style={{ marginLeft: wp('1%') }}
                     />
                   </TouchableOpacity>
-                )}
-                {isPro && (
-                  <View style={styles.proEnabledRow}>
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={wp('3%')}
-                      color={isDark ? 'rgba(60,196,162,0.5)' : 'rgba(78,158,255,0.5)'}
-                    />
-                    <Text style={[
-                      styles.proEnabledText,
-                      { color: isDark ? 'rgba(60,196,162,0.5)' : 'rgba(78,158,255,0.5)' }
-                    ]}>
-                      Pro enabled
-                    </Text>
-                  </View>
                 )}
               </View>
             </View>

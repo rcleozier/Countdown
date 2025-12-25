@@ -95,13 +95,7 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
             {t('subscription.upgradeTitle')}
           </Text>
           <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-            {feature === 'Standard & Intense Reminders'
-              ? t('subscription.upgradeSubtitleReminders')
-              : t('subscription.upgradeSubtitle')
-            }
-          </Text>
-          <Text style={[styles.helperText, { color: theme.colors.textSecondary }]}>
-            {t('subscription.upgradeHelper')}
+            {t('subscription.upgradeSubtitle')}
           </Text>
         </View>
 
@@ -221,14 +215,7 @@ const styles = StyleSheet.create({
     fontSize: wp('4%'),
     fontWeight: '500',
     textAlign: 'center',
-    marginBottom: wp('1.5%'),
-  },
-  helperText: {
-    fontSize: wp('3.2%'),
-    fontWeight: '400',
-    textAlign: 'center',
-    fontStyle: 'italic',
-    opacity: 0.8,
+    marginBottom: wp('2%'),
   },
   featuresList: {
     marginBottom: wp('6%'),
