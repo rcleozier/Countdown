@@ -130,6 +130,7 @@ const RemindersScreen = ({ navigation }) => {
   const { t } = useLocale();
   const { isPro } = useEntitlements();
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const [paywallFeature, setPaywallFeature] = useState('');
   const [filterInfoVisible, setFilterInfoVisible] = useState(false);
   const [filterInfoLabel, setFilterInfoLabel] = useState('');
 
@@ -735,7 +736,7 @@ const RemindersScreen = ({ navigation }) => {
       <PaywallSheet
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
-        feature="reminders"
+        feature={paywallFeature || "reminders"}
       />
 
       {/* Filter info sheet (lightweight) */}

@@ -116,7 +116,7 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
           <View style={styles.featureItem}>
             <Ionicons name="checkmark-circle" size={wp('5%')} color={theme.colors.success || '#4CAF50'} />
             <Text style={[styles.featureText, { color: theme.colors.text }]}>
-              Notes on every event
+              Extended notes (up to 5000 characters)
             </Text>
           </View>
           <View style={styles.featureItem}>

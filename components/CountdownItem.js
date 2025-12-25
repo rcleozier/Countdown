@@ -9,6 +9,8 @@ import {
   ScrollView,
   Animated,
   Pressable,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import moment from "moment";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
@@ -926,272 +928,429 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
         visible={editModalVisible}
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View style={[
-          styles.modalOverlay,
-          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-        ]}>
-          <Animated.View style={[
-            styles.editModalContent,
-            {
-              backgroundColor: '#FFFFFF',
-              shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.15)',
-              width: '92%',
-              maxWidth: 420,
-              maxHeight: hp('80%'),
-              transform: [{ scale: modalScale }],
-            }
-          ]}>
-            <ScrollView 
-              style={styles.modalFormScroll}
-              contentContainerStyle={styles.modalFormContent}
-              showsVerticalScrollIndicator={false}
-            >
-              {/* Header */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              if (iconPickerVisible || calendarModalVisible || timePickerVisible) return;
+              setEditModalVisible(false);
+            }}
+            style={[
+              styles.modalContainer,
+              { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+            ]}
+          >
+            <Animated.View style={[
+              styles.modalContent,
+              {
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+                transform: [{ scale: modalScale }],
+              }
+            ]}>
               <TouchableOpacity
-                accessibilityLabel="Close"
-                onPress={() => setEditModalVisible(false)}
-                style={styles.detailCloseNew}
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+                pointerEvents={iconPickerVisible || calendarModalVisible || timePickerVisible ? 'none' : 'auto'}
               >
-                <Ionicons name="close" size={18} color="#6B7280" />
-              </TouchableOpacity>
-              <View style={styles.detailHeaderNew}>
-                <View style={[
-                  styles.detailIconBubble,
-                  { backgroundColor: 'rgba(74,158,255,0.12)' }
-                ]}>
-                  <Text style={styles.detailIconText}>{editIcon || event.icon}</Text>
-                </View>
-                <Text style={styles.detailTitleNew}>
-                  {editName || event.name || 'Untitled Event'}
-                </Text>
-                <Text style={styles.detailSubtitleNew}>
-                  {moment(selectedDate).format('MMM D, YYYY • h:mm A')}
-                </Text>
+              <ScrollView 
+                style={styles.modalFormScroll}
+                contentContainerStyle={styles.modalFormContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+              <Text style={[
+                styles.modalTitle,
+                { color: isDark ? '#F5F5F5' : '#111111' }
+              ]}>Edit Countdown</Text>
+              
+              {/* Countdown Name Input */}
+              <View style={styles.modalSection}>
+                <Text style={[
+                  styles.modalSectionLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>Name</Text>
+              <TextInput
+                placeholder="Event name"
+                placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+                value={editName}
+                onChangeText={setEditName}
+                onFocus={() => setInputFocused({ name: true })}
+                onBlur={() => setInputFocused({ name: false })}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                    borderColor: inputFocused.name 
+                      ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                      : (isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB'),
+                    color: isDark ? '#F5F5F5' : '#111111',
+                    marginBottom: wp('4%'),
+                  }
+                ]}
+              />
               </View>
 
-              {/* Hero countdown */}
-              <View style={styles.heroCard}>
-                <Text style={[styles.heroCountdown, { color: accentColor }]}>
-                  {timeLeft
-                    ? `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m`
-                    : 'Expired'}
-                </Text>
-                <Text style={styles.heroSub}>
-                  {timeLeft
-                    ? timeLeft.days === 0
-                      ? 'Happening now'
-                      : `Ends in ${timeLeft.days} day${timeLeft.days === 1 ? '' : 's'}`
-                    : 'Event passed'}
-                </Text>
-                {timeLeft && (
-                  <View style={styles.progressBarContainer}>
-                    <Animated.View
+              {/* Date Section */}
+              <View style={styles.modalSection}>
+                <Text style={[
+                  styles.modalSectionLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>Date</Text>
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                  borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                }
+              ]}
+              onPress={() => setCalendarModalVisible(true)}
+            >
+              <Text style={[
+                styles.iconButtonText,
+                { color: isDark ? '#F5F5F5' : '#111111' }
+              ]}>
+                {moment(selectedDate).format("ddd, D MMM YYYY")}
+              </Text>
+            </TouchableOpacity>
+              </View>
+
+            {/* Calendar Modal */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={calendarModalVisible}
+              onRequestClose={() => {
+                setCalendarModalVisible(false);
+              }}
+            >
+              <View style={[
+                styles.modalContainer,
+                { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+              ]}>
+                <Animated.View style={[
+                  styles.calendarModalContent,
+                  {
+                    backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                    shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+                    transform: [{ scale: modalScale }],
+                  }
+                ]}>
+                  <Text style={[
+                    styles.modalTitle,
+                    { color: isDark ? '#F5F5F5' : '#111111' }
+                  ]}>Select a Date</Text>
+                  <Calendar
+                    key={theme.name}
+                    style={styles.calendar}
+                    onDayPress={handleDayPress}
+                    minDate={moment().format("YYYY-MM-DD")}
+                    theme={{
+                      backgroundColor: 'transparent',
+                      calendarBackground: 'transparent',
+                      textSectionTitleColor: isDark ? '#A1A1A1' : '#6B7280',
+                      dayTextColor: isDark ? '#F5F5F5' : '#111111',
+                      todayTextColor: '#4E9EFF',
+                      monthTextColor: isDark ? '#A1A1A1' : '#6B7280',
+                      arrowColor: '#4E9EFF',
+                      selectedDayBackgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                      selectedDayTextColor: '#FFFFFF',
+                      textDisabledColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                      dotColor: '#4E9EFF',
+                      selectedDotColor: '#FFFFFF',
+                      "stylesheet.calendar.header": {
+                        week: {
+                          marginTop: wp('2%'),
+                          marginBottom: wp('1%'),
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        },
+                      },
+                    }}
+                  />
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
                       style={[
-                        styles.progressBarFill,
+                        styles.button,
                         {
-                          width: progressAnim.interpolate({
-                            inputRange: [0, 100],
-                            outputRange: ['0%', '100%'],
-                          }),
-                          backgroundColor: accentColor,
+                          backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
                         }
                       ]}
+                      onPress={() => setCalendarModalVisible(false)}
+                    >
+                      <Text style={[
+                        styles.buttonText,
+                        { color: isDark ? '#E5E7EB' : '#111111' }
+                      ]}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.button,
+                        {
+                          backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                          shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 1,
+                          shadowRadius: 4,
+                          elevation: 3,
+                        }
+                      ]}
+                      onPress={handleConfirmDate}
+                    >
+                      <Text style={styles.buttonTextSave}>Confirm</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Animated.View>
+              </View>
+            </Modal>
+
+            {/* Time Section */}
+            <View style={styles.modalSection}>
+              <Text style={[
+                styles.modalSectionLabel,
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
+              ]}>Time</Text>
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                  borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                }
+              ]}
+              onPress={() => setTimePickerVisible(true)}
+            >
+              <Text style={[
+                styles.iconButtonText,
+                { color: isDark ? '#F5F5F5' : '#111111' }
+              ]}>
+                {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
+              </Text>
+            </TouchableOpacity>
+              </View>
+
+            {/* Time Picker Modal */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={timePickerVisible}
+              onRequestClose={() => setTimePickerVisible(false)}
+            >
+              <View style={[styles.timePickerOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
+                <View style={[styles.timePickerContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
+                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Time</Text>
+                  {Picker ? (
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                      <Picker
+                        selectedValue={selectedHour}
+                        style={{ width: wp('25%') }}
+                        onValueChange={(itemValue) => setSelectedHour(itemValue)}
+                      >
+                        {[...Array(24).keys()].map((h) => (
+                          <Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
+                        ))}
+                      </Picker>
+                      <Text style={{ fontSize: wp('6%'), marginHorizontal: wp('2%') }}>:</Text>
+                      <Picker
+                        selectedValue={selectedMinute}
+                        style={{ width: wp('25%') }}
+                        onValueChange={(itemValue) => setSelectedMinute(itemValue)}
+                      >
+                        {[...Array(60).keys()].map((m) => (
+                          <Picker.Item key={m} label={m.toString().padStart(2, '0')} value={m} />
+                        ))}
+                      </Picker>
+                    </View>
+                  ) : (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                      <Text style={{ color: theme.colors.text }}>Loading time picker...</Text>
+                    </View>
+                  )}
+                  <View style={styles.timePickerButtonContainer}>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: theme.colors.border }]}
+                      onPress={() => setTimePickerVisible(false)}
+                    >
+                      <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: theme.colors.primary }]}
+                      onPress={() => setTimePickerVisible(false)}
+                    >
+                      <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>Confirm</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
+              {/* Icon Section */}
+              <View style={styles.modalSection}>
+                <Text style={[
+                  styles.modalSectionLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>Icon</Text>
+                <TouchableOpacity
+                  onPress={() => setIconPickerVisible(true)}
+                  style={[
+                    styles.iconButton,
+                    {
+                      backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                      borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                    }
+                  ]}
+                >
+                  <Text style={[
+                    styles.iconButtonText,
+                    { color: isDark ? '#F5F5F5' : '#111111' }
+                  ]}>
+                    {editIcon ? `Icon: ${editIcon}` : 'Select Icon'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Notes Section */}
+              <View style={styles.modalSection}>
+              <View style={styles.notesHeader}>
+                <Ionicons
+                  name="document-text-outline"
+                  size={wp('4%')}
+                  color={isDark ? '#6B7280' : '#9CA3AF'}
+                  style={styles.notesIcon}
+                />
+                <Text style={[
+                  styles.iconLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>Notes (optional)</Text>
+              </View>
+              <TextInput
+                placeholder="Add plans, packing list, reminders…"
+                placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+                value={editNotes}
+                onChangeText={(text) => {
+                  const maxLength = isPro ? 5000 : 100;
+                  if (text.length <= maxLength) {
+                    setEditNotes(text);
+                  }
+                }}
+                editable={true}
+                multiline
+                textAlignVertical="top"
+                maxLength={isPro ? 5000 : 100}
+                style={[
+                  styles.notesInput,
+                  {
+                    backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                    color: isDark ? '#F5F5F5' : '#111111',
+                  }
+                ]}
+              />
+              <View style={styles.notesCounterContainer}>
+                <Text style={[
+                  styles.notesCharCount,
+                  { 
+                    color: (!isPro && editNotes.length >= 100) 
+                      ? (isDark ? '#E74C3C' : '#DC2626')
+                      : (isDark ? '#6B7280' : '#9CA3AF')
+                  }
+                ]}>
+                  {editNotes.length}/{isPro ? 5000 : 100}
+                </Text>
+                {!isPro && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setPaywallFeature('Long Notes');
+                      setPaywallVisible(true);
+                    }}
+                    activeOpacity={0.7}
+                    style={styles.notesUpsellRow}
+                  >
+                    <Text style={[
+                      styles.notesUpsellText,
+                      { color: isDark ? '#6B7280' : '#9CA3AF' }
+                    ]}>
+                      Upgrade to Pro for 5000-char notes + no ads
+                    </Text>
+                    <Ionicons
+                      name="lock-closed"
+                      size={wp('3%')}
+                      color={isDark ? '#6B7280' : '#9CA3AF'}
+                      style={{ marginLeft: wp('1%') }}
                     />
+                  </TouchableOpacity>
+                )}
+                {isPro && (
+                  <View style={styles.proEnabledRow}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={wp('3%')}
+                      color={isDark ? 'rgba(60,196,162,0.5)' : 'rgba(78,158,255,0.5)'}
+                    />
+                    <Text style={[
+                      styles.proEnabledText,
+                      { color: isDark ? 'rgba(60,196,162,0.5)' : 'rgba(78,158,255,0.5)' }
+                    ]}>
+                      Pro enabled
+                    </Text>
                   </View>
                 )}
               </View>
-
-              {/* Details card */}
-              <View style={styles.sectionCard}>
-                <View style={styles.sectionHeaderRow}>
-                  <Text style={styles.sectionTitle}>Details</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Ionicons name="calendar-outline" size={18} color="#6B7280" />
-                  <Text style={styles.detailRowLabel}>Date</Text>
-                  <TouchableOpacity
-                    style={styles.detailPillButton}
-                    onPress={() => setCalendarModalVisible(true)}
-                  >
-                    <Text style={styles.detailPillText}>
-                      {moment(selectedDate).format("ddd, D MMM YYYY")}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.detailRow}>
-                  <Ionicons name="time-outline" size={18} color="#6B7280" />
-                  <Text style={styles.detailRowLabel}>Time</Text>
-                  <TouchableOpacity
-                    style={styles.detailPillButton}
-                    onPress={() => setTimePickerVisible(true)}
-                  >
-                    <Text style={styles.detailPillText}>
-                      {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.detailRow}>
-                  <Ionicons name="image-outline" size={18} color="#6B7280" />
-                  <Text style={styles.detailRowLabel}>Icon</Text>
-                  <TouchableOpacity
-                    style={styles.detailPillButton}
-                    onPress={() => setIconPickerVisible(true)}
-                  >
-                    <Text style={styles.detailPillText}>
-                      {editIcon ? `${editIcon}` : 'Select'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Notes card */}
-              <View style={styles.sectionCard}>
-                <View style={styles.sectionHeaderRow}>
-                  <Text style={styles.sectionTitle}>Notes</Text>
-                  <TouchableOpacity
-                    onPress={() => setShowNotesEditor((v) => !v)}
-                    style={styles.sectionAction}
-                  >
-                    <Text style={[styles.sectionActionText, { color: accentColor }]}>
-                      {showNotesEditor ? 'Done' : (editNotes ? 'Edit' : 'Add')}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                {!showNotesEditor && (
-                  <Text style={styles.notesPreview}>
-                    {editNotes
-                      ? editNotes.slice(0, 180)
-                      : 'Add a packing list, plan, or anything you’ll forget.'}
-                  </Text>
-                )}
-                {showNotesEditor && (
-                  <>
-                    <TextInput
-                      placeholder="Add plans, packing list, reminders…"
-                      placeholderTextColor="#9CA3AF"
-                      value={editNotes}
-                      onChangeText={(text) => {
-                        const maxLength = isPro ? 5000 : 100;
-                        if (text.length <= maxLength) {
-                          setEditNotes(text);
-                        } else {
-                          setPaywallVisible(true);
-                        }
-                      }}
-                      multiline
-                      textAlignVertical="top"
-                      maxLength={isPro ? 5000 : 100}
-                      style={styles.notesInputNew}
-                    />
-                    <View style={styles.notesCounterRow}>
-                      <Text style={[
-                        styles.notesCharCount,
-                        { 
-                          color: (!isPro && editNotes.length >= 100) 
-                            ? '#DC2626'
-                            : '#6B7280'
-                        }
-                      ]}>
-                        {editNotes.length}/{isPro ? 5000 : 100}
-                      </Text>
-                      {!isPro && (
-                        <TouchableOpacity
-                          onPress={() => {
-                            setPaywallFeature('Long Notes');
-                            setPaywallVisible(true);
-                          }}
-                        >
-                          <Text style={styles.notesHint}>Upgrade for longer notes</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </>
-                )}
-              </View>
-
-              {/* Reminders card */}
-              <View style={styles.sectionCard}>
-                <View style={styles.sectionHeaderRow}>
-                  <Text style={styles.sectionTitle}>Reminders</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (!isPro) {
-                        setPaywallFeature('reminders_presets');
-                        setPaywallVisible(true);
-                        return;
-                      }
-                      setReminderExplainerVisible(true);
-                    }}
-                    style={styles.sectionAction}
-                  >
-                    <Text style={[styles.sectionActionText, { color: accentColor }]}>
-                      Manage
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.reminderPreviewList}>
-                  {(!event.reminders || event.reminders.length === 0) && (
-                    <Text style={styles.reminderEmpty}>
-                      No reminders scheduled. Tap Manage to add one.
-                    </Text>
-                  )}
-                  {event.reminders && event.reminders.slice(0, 3).map((r, idx) => {
-                    const when = moment(r.fireAtISO);
-                    const label = r.typeLabel || r.type || 'Reminder';
-                    return (
-                      <View key={`${r.id || idx}`} style={styles.reminderPreviewRow}>
-                        <Ionicons name="notifications-outline" size={18} color={accentColor} />
-                        <Text style={styles.reminderPreviewText}>
-                          {label} • {when.format('MMM D, h:mm A')}
-                        </Text>
-                      </View>
-                    );
-                  })}
-                  {event.reminders && event.reminders.length > 3 && (
-                    <Text style={[styles.reminderMore, { color: accentColor }]}>
-                      View all
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </ScrollView>
-
-            {/* Action Buttons */}
-            <View style={styles.detailFooterBar}>
-              <TouchableOpacity
-                onPress={() => setEditModalVisible(false)}
-                style={[
-                  styles.footerButton,
-                  { backgroundColor: '#E5E7EB' }
-                ]}
-              >
-                <Text style={[styles.footerButtonText, { color: '#111827' }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSaveEdit}
-                style={[
-                  styles.footerButton,
-                  { backgroundColor: accentColor }
-                ]}
-              >
-                <Text style={styles.footerButtonText}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setDeleteModalVisible(true)}
-                style={[
-                  styles.footerButton,
-                  {
-                    backgroundColor: 'rgba(220,38,38,0.08)',
-                    borderWidth: 1,
-                    borderColor: 'rgba(220,38,38,0.4)',
-                  }
-                ]}
-              >
-                <Text style={[styles.footerButtonText, { color: '#B91C1C' }]}>Delete</Text>
-              </TouchableOpacity>
             </View>
-          </Animated.View>
-        </View>
+
+              {/* Footer Buttons */}
+              <View style={styles.modalFooter}>
+                <TouchableOpacity
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setEditModalVisible(false);
+                  }}
+                  style={[
+                    styles.modalFooterButton,
+                    styles.modalFooterButtonSecondary,
+                    {
+                      backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                    }
+                  ]}
+                >
+                  <Text style={[
+                    styles.modalFooterButtonText,
+                    { color: isDark ? '#E5E7EB' : '#111111' }
+                  ]}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleSaveEdit}
+                  disabled={!editName.trim()}
+                  style={[
+                    styles.modalFooterButton,
+                    styles.modalFooterButtonPrimary,
+                    {
+                      backgroundColor: !editName.trim()
+                        ? (isDark ? '#2A2A2A' : '#E5E7EB')
+                        : (isDark ? '#3CC4A2' : '#4E9EFF'),
+                      opacity: !editName.trim() ? 0.5 : 1,
+                    }
+                  ]}
+                >
+                  <Text style={[
+                    styles.modalFooterButtonText,
+                    { color: !editName.trim() 
+                      ? (isDark ? '#6B7280' : '#9CA3AF')
+                      : '#FFFFFF'
+                    }
+                  ]}>Save</Text>
+                </TouchableOpacity>
+              </View>
+              </ScrollView>
+              </TouchableOpacity>
+            </Animated.View>
+          </TouchableOpacity>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Calendar Modal */}
@@ -1520,15 +1679,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: wp("5%"),
   },
-  modalContent: {
-    width: "80%",
-    backgroundColor: "#FFFFFF",
-    borderRadius: wp("2.5%"),
-    padding: wp("4%"),
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
+    paddingHorizontal: wp("5%"),
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: wp('90%'),
+    maxHeight: hp('75%'),
+    borderRadius: wp('4%'), // 16px
+    paddingHorizontal: wp('4%'),
+    paddingTop: wp('3.5%'),
+    paddingBottom: wp('2.5%'),
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 8,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
   },
   modalTitle: {
     fontSize: wp('4.25%'), // Even smaller
@@ -1588,7 +1758,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   modalFormScroll: {
-    maxHeight: hp('55%'),
+    flexShrink: 1,
   },
   modalFormContent: {
     paddingBottom: wp('1%'),
@@ -2147,6 +2317,67 @@ const styles = StyleSheet.create({
   infoButton: {
     marginLeft: wp('2%'),
     padding: wp('1%'),
+  },
+  modalSection: {
+    marginBottom: wp('4%'), // 16px spacing between sections
+  },
+  modalSectionLabel: {
+    fontSize: wp('3.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+    marginBottom: wp('2%'), // 8px between label and input
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: wp('2%'),
+    paddingTop: wp('3%'),
+    paddingBottom: wp('2%'),
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+    marginTop: wp('2%'),
+  },
+  modalFooterButton: {
+    flex: 1,
+    paddingVertical: wp('3%'),
+    borderRadius: wp('2.5%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalFooterButtonSecondary: {
+    // Already styled above
+  },
+  modalFooterButtonPrimary: {
+    // Already styled above
+  },
+  modalFooterButtonText: {
+    fontSize: wp('3.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
+  notesCounterContainer: {
+    marginTop: wp('1.5%'),
+    alignItems: 'flex-end',
+  },
+  notesUpsellRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: wp('0.5%'),
+  },
+  notesUpsellText: {
+    fontSize: wp('2.5%'),
+    fontFamily: 'System',
+    fontStyle: 'italic',
+  },
+  proEnabledRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: wp('0.5%'),
+  },
+  proEnabledText: {
+    fontSize: wp('2.5%'),
+    fontFamily: 'System',
+    fontStyle: 'italic',
+    marginLeft: wp('0.5%'),
   },
 });
 
