@@ -13,6 +13,8 @@ import {
   ScrollView,
   Pressable,
   Animated,
+  Linking,
+  Switch,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -42,8 +44,11 @@ import FabButton from '../components/FabButton';
 import { useEntitlements } from '../src/billing/useEntitlements';
 import PaywallSheet from '../src/billing/PaywallSheet';
 import ProUpsellInline from '../components/ProUpsellInline';
-import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
+import { buildRemindersForEvent, createDefaultReminderPlan, getReminderPreview } from '../util/reminderBuilder';
 import { syncScheduledReminders } from '../util/reminderScheduler';
+import Pill from '../components/Pill';
+import LockRow from '../components/LockRow';
+import ProBadge from '../components/ProBadge';
 
 const IconItem = ({ icon, isSelected, onPress, isDark }) => {
   const iconScale = useRef(new Animated.Value(1)).current;
@@ -148,6 +153,8 @@ const HomeScreen = () => {
   const [newIcon, setNewIcon] = useState("💻");
   const [newNotes, setNewNotes] = useState("");
   const [confettiKey, setConfettiKey] = useState(0);
+  const [reminderPreset, setReminderPreset] = useState('off'); // 'off', 'simple', 'standard', 'intense', 'custom'
+  const [remindersEnabled, setRemindersEnabled] = useState(true);
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
   
@@ -483,8 +490,14 @@ const HomeScreen = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
     setModalVisible(true);
+    setNewName("");
+    setNewIcon("💻");
+    setNewNotes("");
+    setSelectedDate(new Date());
     setSelectedHour(9);
     setSelectedMinute(0);
+    setReminderPreset('off');
+    setRemindersEnabled(true);
   };
 
   // Schedules a notification only if the event time is in the future
@@ -535,8 +548,23 @@ const HomeScreen = () => {
       return;
     }
     
-    // Create default reminder plan (none by default)
-    const reminderPlan = createDefaultReminderPlan('none');
+    // Map UI preset to internal preset value
+    const presetMap = {
+      'off': 'none',
+      'simple': 'chill',
+      'standard': 'standard',
+      'intense': 'intense',
+      'custom': 'custom',
+    };
+    const internalPreset = presetMap[reminderPreset] || 'none';
+    
+    // Create reminder plan
+    const reminderPlan = {
+      preset: internalPreset,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      enabled: remindersEnabled && reminderPreset !== 'off',
+      customOffsetsMinutes: internalPreset === 'custom' ? [] : undefined,
+    };
     
     const newCountdown = {
       id: generateGUID(),
@@ -553,16 +581,45 @@ const HomeScreen = () => {
       reminders: [], // Will be generated and synced
     };
     
-    // Generate reminders from plan
-    newCountdown.reminders = buildRemindersForEvent(newCountdown);
-    setCountdowns((prev) => [...prev, newCountdown]);
+    // Generate reminders from plan (always includes "On time" notification)
+    newCountdown.reminders = buildRemindersForEvent(newCountdown, isPro);
+    
+    // Request notification permissions - always needed since we schedule "On time" notification
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Notifications Disabled',
+          'To receive event notifications, please enable notifications in Settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Open Settings', 
+              onPress: () => Linking.openSettings() 
+            }
+          ]
+        );
+        // Still create the event, just without notifications
+      }
+    } catch (error) {
+      console.warn('Error requesting notification permissions:', error);
+    }
+    const updatedCountdowns = [...countdowns, newCountdown];
+    setCountdowns(updatedCountdowns);
     setNewName("");
     setNewIcon("💻");
     setNewNotes("");
     setSelectedDate(new Date());
     setSelectedHour(9);
     setSelectedMinute(0);
+    setReminderPreset('off');
+    setRemindersEnabled(true);
     setModalVisible(false);
+    
+    // Sync scheduled reminders in background
+    syncScheduledReminders(updatedCountdowns, isPro).catch(err => {
+      console.error('Error syncing reminders:', err);
+    });
     
     // Haptic feedback for successful creation
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -595,10 +652,10 @@ const HomeScreen = () => {
     
     if (dateChanged || planChanged) {
       // Regenerate reminders from reminderPlan
-      updatedEvent.reminders = buildRemindersForEvent(updatedEvent);
+      updatedEvent.reminders = buildRemindersForEvent(updatedEvent, isPro);
     } else if (!updatedEvent.reminders) {
       // Ensure reminders exist
-      updatedEvent.reminders = buildRemindersForEvent(updatedEvent);
+      updatedEvent.reminders = buildRemindersForEvent(updatedEvent, isPro);
     }
     
     // Ensure reminderPlan exists
@@ -924,18 +981,21 @@ const HomeScreen = () => {
         </LinearGradient>
       ) : (
         <>
-        <SearchBar onSearch={setSearchQuery} />
-        <FilterBar 
-          filterType={filterType}
-          onFilterChange={setFilterType}
-          sortType={sortType}
-          onSortChange={setSortType}
-        />
-        <FlatList
-          data={filteredAndSortedCountdowns}
-          keyExtractor={(item) => item.id}
+          <SearchBar onSearch={setSearchQuery} />
+          <FilterBar 
+            filterType={filterType}
+            onFilterChange={setFilterType}
+            sortType={sortType}
+            onSortChange={setSortType}
+          />
+          <FlatList
+            data={filteredAndSortedCountdowns}
+            keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
+            showsVerticalScrollIndicator={true}
+            nestedScrollEnabled={true}
+            style={{ flex: 1 }}
           />
           <FabButton onPress={handleOpenModal} />
         </>
@@ -1177,6 +1237,192 @@ const HomeScreen = () => {
                 </View>
               </View>
             </Modal>
+
+            {/* Reminders Section */}
+            <View style={styles.remindersSection}>
+              <Text style={[
+                styles.iconLabel,
+                { color: isDark ? '#A1A1A1' : '#6B7280', marginBottom: wp('2%') }
+              ]}>Reminders</Text>
+              
+              {/* Notify me label */}
+              <Text style={[
+                styles.reminderSubLabel,
+                { color: isDark ? '#6B7280' : '#9CA3AF' }
+              ]}>Notify me</Text>
+              
+              {/* Preset Pills */}
+              <View style={styles.reminderPills}>
+                <Pill
+                  label="Off"
+                  isActive={reminderPreset === 'off'}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setReminderPreset('off');
+                    setRemindersEnabled(false);
+                  }}
+                  style={{ marginRight: wp('2%'), marginBottom: wp('2%') }}
+                />
+                <Pill
+                  label="Simple"
+                  isActive={reminderPreset === 'simple'}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setReminderPreset('simple');
+                    setRemindersEnabled(true);
+                  }}
+                  style={{ marginRight: wp('2%'), marginBottom: wp('2%') }}
+                />
+                <Pill
+                  label="Standard"
+                  isActive={reminderPreset === 'standard'}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setReminderPreset('standard');
+                    setRemindersEnabled(true);
+                  }}
+                  style={{ marginRight: wp('2%'), marginBottom: wp('2%') }}
+                />
+                <Pill
+                  label="Intense"
+                  isActive={reminderPreset === 'intense'}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setReminderPreset('intense');
+                    setRemindersEnabled(true);
+                  }}
+                  style={{ marginRight: wp('2%'), marginBottom: wp('2%') }}
+                />
+              </View>
+              
+              {/* Reminder Preview */}
+              {reminderPreset !== 'off' && remindersEnabled && (() => {
+                const preview = getReminderPreview(reminderPreset, isPro);
+                return (
+                  <View style={styles.reminderPreview}>
+                    <View style={styles.reminderPreviewList}>
+                      {preview.included.map((label, index) => (
+                        <View key={index} style={[
+                          styles.reminderPreviewItem,
+                          {
+                            backgroundColor: isDark ? 'rgba(78,158,255,0.1)' : 'rgba(78,158,255,0.08)',
+                            borderColor: isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)',
+                          }
+                        ]}>
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={wp('3.5%')}
+                            color={isDark ? '#4E9EFF' : '#4A9EFF'}
+                            style={{ marginRight: wp('1.5%') }}
+                          />
+                          <Text style={[
+                            styles.reminderPreviewText,
+                            { color: isDark ? '#F5F5F5' : '#111111' }
+                          ]}>
+                            {label}
+                          </Text>
+                        </View>
+                      ))}
+                      {preview.locked.length > 0 && (
+                        <>
+                          {preview.locked.map((label, index) => (
+                            <View key={`locked-${index}`} style={[
+                              styles.reminderPreviewItem,
+                              {
+                                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                                opacity: 0.6,
+                              }
+                            ]}>
+                              <Ionicons
+                                name="lock-closed"
+                                size={wp('3.5%')}
+                                color={isDark ? '#6B7280' : '#9CA3AF'}
+                                style={{ marginRight: wp('1.5%') }}
+                              />
+                              <Text style={[
+                                styles.reminderPreviewText,
+                                { color: isDark ? '#A1A1A1' : '#6B7280' }
+                              ]}>
+                                {label}
+                              </Text>
+                              <ProBadge size="small" />
+                            </View>
+                          ))}
+                          <Text style={[
+                            styles.reminderFreeLimit,
+                            { color: isDark ? '#6B7280' : '#9CA3AF' }
+                          ]}>
+                            Free includes up to 2 reminders per event. Pro unlocks all reminders + custom.
+                          </Text>
+                        </>
+                      )}
+                    </View>
+                  </View>
+                );
+              })()}
+              
+              {/* Enable notifications toggle */}
+              {reminderPreset !== 'off' && (
+                <View style={styles.reminderToggleRow}>
+                  <Text style={[
+                    styles.reminderToggleLabel,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>Enable notifications</Text>
+                  <Switch
+                    value={remindersEnabled}
+                    onValueChange={(value) => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setRemindersEnabled(value);
+                    }}
+                    trackColor={{
+                      false: isDark ? '#2E2E2E' : '#E5E7EB',
+                      true: isDark ? '#3CC4A2' : '#4E9EFF'
+                    }}
+                    thumbColor="#FFFFFF"
+                    ios_backgroundColor={isDark ? '#2E2E2E' : '#E5E7EB'}
+                  />
+                </View>
+              )}
+              
+              {/* Custom option (Pro) */}
+              {reminderPreset !== 'custom' && (
+                <View style={{ marginTop: wp('2%') }}>
+                  {isPro ? (
+                    <TouchableOpacity
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setReminderPreset('custom');
+                        setRemindersEnabled(true);
+                        // TODO: Open custom reminder editor
+                        Alert.alert('Custom Reminders', 'Custom reminder editor coming soon!');
+                      }}
+                      style={[
+                        styles.customReminderButton,
+                        {
+                          backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                          borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB',
+                        }
+                      ]}
+                    >
+                      <Text style={[
+                        styles.customReminderText,
+                        { color: isDark ? '#F5F5F5' : '#111111' }
+                      ]}>Custom…</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <LockRow
+                      onPress={() => {
+                        setPaywallFeature('Custom Reminders');
+                        setPaywallVisible(true);
+                      }}
+                      message="Unlock unlimited reminders + custom schedules"
+                      icon="lock-closed"
+                    />
+                  )}
+                </View>
+              )}
+            </View>
 
             {/* Icon Label + Button */}
             <Text style={[
@@ -1741,6 +1987,82 @@ const styles = StyleSheet.create({
   timePickerButtonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  remindersSection: {
+    marginTop: wp('4%'),
+    marginBottom: wp('4%'),
+  },
+  reminderSubLabel: {
+    fontSize: wp('3%'),
+    fontWeight: '500',
+    fontFamily: 'System',
+    marginBottom: wp('2%'),
+  },
+  reminderPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: wp('2%'),
+  },
+  reminderExplanation: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    marginTop: wp('1%'),
+    marginBottom: wp('2%'),
+    fontStyle: 'italic',
+  },
+  reminderToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: wp('2%'),
+    paddingVertical: wp('2%'),
+  },
+  reminderToggleLabel: {
+    fontSize: wp('3.5%'),
+    fontWeight: '500',
+    fontFamily: 'System',
+  },
+  customReminderButton: {
+    paddingVertical: wp('3%'),
+    paddingHorizontal: wp('4%'),
+    borderRadius: wp('2.5%'),
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  customReminderText: {
+    fontSize: wp('3.5%'),
+    fontWeight: '500',
+    fontFamily: 'System',
+  },
+  reminderPreview: {
+    marginTop: wp('2%'),
+    marginBottom: wp('2%'),
+  },
+  reminderPreviewList: {
+    gap: wp('1.5%'),
+  },
+  reminderPreviewItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: wp('2%'),
+    paddingHorizontal: wp('3%'),
+    borderRadius: wp('2%'),
+    borderWidth: 1,
+  },
+  reminderPreviewText: {
+    fontSize: wp('3.5%'),
+    fontWeight: '500',
+    fontFamily: 'System',
+    flex: 1,
+  },
+  reminderFreeLimit: {
+    fontSize: wp('2.8%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    fontStyle: 'italic',
+    marginTop: wp('1.5%'),
+    textAlign: 'center',
   },
   notesSection: {
     marginTop: wp('3%'),

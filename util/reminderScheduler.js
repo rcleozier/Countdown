@@ -28,22 +28,18 @@ export const syncScheduledReminders = async (events, isPro) => {
     const scheduledIds = new Set(allScheduled.map(n => n.identifier));
 
     // Build reminders for all events
+    // Always include reminders (even if reminderPlan.enabled is false, we still schedule "on time")
     const allReminders = [];
     events.forEach(event => {
-      if (!event.reminderPlan || !event.reminderPlan.enabled) {
-        return;
-      }
-
       const eventReminders = event.reminders || [];
       eventReminders.forEach(reminder => {
-        if (reminder.enabled || isPro) {
-          // Free users can only enable/disable if Pro, but we still schedule enabled ones
-          if (reminder.enabled) {
-            allReminders.push({
-              ...reminder,
-              event,
-            });
-          }
+        // Always schedule enabled reminders
+        // For free users, only schedule if enabled (Pro users can toggle per-reminder)
+        if (reminder.enabled) {
+          allReminders.push({
+            ...reminder,
+            event,
+          });
         }
       });
     });

@@ -1,12 +1,103 @@
 import moment from 'moment';
 import { REMINDER_PRESETS } from './reminderPresets';
 
+const FREE_MAX_REMINDERS_PER_EVENT = 2;
+
+/**
+ * Gets reminder offsets in minutes for a preset
+ * @param {string} preset - Preset ID ('none', 'chill', 'standard', 'intense', 'custom')
+ * @param {Array} customOffsetsMinutes - Custom offsets for 'custom' preset
+ * @returns {Array} Array of offsets in minutes (negative values, closest to 0 = closest to event)
+ */
+export const getPresetOffsets = (preset, customOffsetsMinutes = []) => {
+  if (preset === 'none' || preset === 'off') {
+    return [0]; // Just "on time"
+  }
+  
+  if (preset === 'chill') {
+    return [-60, 0]; // 1 hour before, on time
+  }
+  
+  if (preset === 'standard') {
+    return [-1440, -60, 0]; // 1 day before, 1 hour before, on time
+  }
+  
+  if (preset === 'intense') {
+    return [-10080, -1440, -60, 0]; // 1 week before, 1 day before, 1 hour before, on time
+  }
+  
+  if (preset === 'custom') {
+    // Include 0 (on time) if not already present
+    const offsets = [...customOffsetsMinutes];
+    if (!offsets.includes(0)) {
+      offsets.push(0);
+    }
+    return offsets.sort((a, b) => b - a); // Sort descending (closest to event first)
+  }
+  
+  return [0]; // Default to just "on time"
+};
+
+/**
+ * Applies free user limits to reminder offsets
+ * Keeps the closest reminders to the event (highest values, closest to 0)
+ * @param {Array} offsets - Array of offsets in minutes
+ * @param {boolean} isPro - Whether user has Pro subscription
+ * @returns {Array} Filtered offsets array
+ */
+export const applyFreeLimits = (offsets, isPro) => {
+  if (isPro) {
+    return offsets; // No limits for Pro
+  }
+  
+  // Sort by absolute value (closest to event first)
+  const sorted = [...offsets].sort((a, b) => Math.abs(a) - Math.abs(b));
+  
+  // Keep only the closest FREE_MAX_REMINDERS_PER_EVENT reminders
+  return sorted.slice(0, FREE_MAX_REMINDERS_PER_EVENT);
+};
+
+/**
+ * Gets preview of reminders for a preset (for UI display)
+ * @param {string} preset - Preset ID
+ * @param {boolean} isPro - Whether user has Pro subscription
+ * @param {Array} customOffsetsMinutes - Custom offsets for 'custom' preset
+ * @returns {Object} { included: Array of reminder labels, locked: Array of locked reminder labels }
+ */
+export const getReminderPreview = (preset, isPro, customOffsetsMinutes = []) => {
+  if (preset === 'off' || preset === 'none') {
+    return { included: [], locked: [] };
+  }
+  
+  const allOffsets = getPresetOffsets(preset, customOffsetsMinutes);
+  const allowedOffsets = applyFreeLimits(allOffsets, isPro);
+  const lockedOffsets = isPro ? [] : allOffsets.filter(o => !allowedOffsets.includes(o));
+  
+  const formatOffset = (offsetMinutes) => {
+    if (offsetMinutes === 0) return 'At start';
+    const abs = Math.abs(offsetMinutes);
+    if (abs < 60) return `${abs} minute${abs !== 1 ? 's' : ''} before`;
+    if (abs < 1440) {
+      const hours = Math.floor(abs / 60);
+      return `${hours} hour${hours !== 1 ? 's' : ''} before`;
+    }
+    const days = Math.floor(abs / 1440);
+    return `${days} day${days !== 1 ? 's' : ''} before`;
+  };
+  
+  return {
+    included: allowedOffsets.map(formatOffset),
+    locked: lockedOffsets.map(formatOffset),
+  };
+};
+
 /**
  * Builds reminder entries for an event based on its reminderPlan
  * @param {Object} event - Event object with date, reminderPlan, etc.
+ * @param {boolean} isPro - Whether user has Pro subscription (optional, defaults to false)
  * @returns {Array} Array of reminder objects
  */
-export const buildRemindersForEvent = (event) => {
+export const buildRemindersForEvent = (event, isPro = false) => {
   if (!event || !event.date) {
     return [];
   }
@@ -21,67 +112,44 @@ export const buildRemindersForEvent = (event) => {
 
   // Check if reminders are enabled for this event
   const reminderPlan = event.reminderPlan || { enabled: true, preset: 'none' };
-  if (!reminderPlan.enabled) {
-    return [];
-  }
-
   const preset = reminderPlan.preset || 'none';
   const reminders = [];
 
-  // Generate reminders based on preset
-  if (preset === 'none') {
-    return [];
-  }
-
-  if (preset === 'chill') {
-    // [1 hour before, on time]
-    reminders.push(
-      { offset: 1, unit: 'hours', typeLabel: '1 hour before' },
-      { offset: 0, unit: 'minutes', typeLabel: 'On time' }
-    );
-  } else if (preset === 'standard') {
-    // [1 day before, 1 hour before, on time]
-    reminders.push(
-      { offset: 1, unit: 'days', typeLabel: '1 day before' },
-      { offset: 1, unit: 'hours', typeLabel: '1 hour before' },
-      { offset: 0, unit: 'minutes', typeLabel: 'On time' }
-    );
-  } else if (preset === 'intense') {
-    // [1 week before, 1 day before, 1 hour before, on time]
-    reminders.push(
-      { offset: 7, unit: 'days', typeLabel: '1 week before' },
-      { offset: 1, unit: 'days', typeLabel: '1 day before' },
-      { offset: 1, unit: 'hours', typeLabel: '1 hour before' },
-      { offset: 0, unit: 'minutes', typeLabel: 'On time' }
-    );
-  } else if (preset === 'custom' && reminderPlan.customOffsetsMinutes) {
-    // Custom offsets in minutes
-    reminderPlan.customOffsetsMinutes.forEach(offsetMinutes => {
-      if (offsetMinutes === 0) {
-        reminders.push({ offset: 0, unit: 'minutes', typeLabel: 'On time' });
-      } else if (offsetMinutes < 60) {
-        reminders.push({ 
-          offset: offsetMinutes, 
-          unit: 'minutes', 
-          typeLabel: `${offsetMinutes} minute${offsetMinutes !== 1 ? 's' : ''} before` 
-        });
-      } else if (offsetMinutes < 1440) {
-        const hours = Math.floor(offsetMinutes / 60);
-        reminders.push({ 
-          offset: hours, 
-          unit: 'hours', 
-          typeLabel: `${hours} hour${hours !== 1 ? 's' : ''} before` 
-        });
-      } else {
-        const days = Math.floor(offsetMinutes / 1440);
-        reminders.push({ 
-          offset: days, 
-          unit: 'days', 
-          typeLabel: `${days} day${days !== 1 ? 's' : ''} before` 
-        });
-      }
-    });
-  }
+  // Get offsets for the preset
+  const allOffsets = getPresetOffsets(preset, reminderPlan.customOffsetsMinutes);
+  
+  // Apply free limits if reminders are enabled
+  const allowedOffsets = reminderPlan.enabled 
+    ? applyFreeLimits(allOffsets, isPro)
+    : [0]; // If disabled, only "on time"
+  
+  // Convert offsets to reminder objects
+  allowedOffsets.forEach(offsetMinutes => {
+    const abs = Math.abs(offsetMinutes);
+    let unit, offset, typeLabel;
+    
+    if (offsetMinutes === 0) {
+      typeLabel = 'On time';
+      unit = 'minutes';
+      offset = 0;
+    } else if (abs < 60) {
+      typeLabel = `${abs} minute${abs !== 1 ? 's' : ''} before`;
+      unit = 'minutes';
+      offset = abs;
+    } else if (abs < 1440) {
+      const hours = Math.floor(abs / 60);
+      typeLabel = `${hours} hour${hours !== 1 ? 's' : ''} before`;
+      unit = 'hours';
+      offset = hours;
+    } else {
+      const days = Math.floor(abs / 1440);
+      typeLabel = `${days} day${days !== 1 ? 's' : ''} before`;
+      unit = 'days';
+      offset = days;
+    }
+    
+    reminders.push({ offset, unit, typeLabel });
+  });
 
   // Convert to reminder entries with fireAt times
   const reminderEntries = reminders.map((reminder, index) => {
