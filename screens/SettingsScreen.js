@@ -11,6 +11,8 @@ import {
   ScrollView,
   Animated,
   Pressable,
+  Linking,
+  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -33,6 +35,7 @@ import * as Haptics from 'expo-haptics';
 const SettingsScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [appInfoTapCount, setAppInfoTapCount] = useState(0);
+  const [eventCount, setEventCount] = useState(0);
   const appInfo = appConfig.expo;
   const { theme, isDark, toggleTheme } = useTheme();
   const { locale, setLocale, t } = useLocale();
@@ -50,18 +53,68 @@ const SettingsScreen = () => {
   useEffect(() => {
     Analytics.initialize();
     Analytics.trackScreenView('Settings');
+    loadEventCount();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadEventCount();
+    }, [])
+  );
+
+  const loadEventCount = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('countdowns');
+      if (stored) {
+        const events = JSON.parse(stored);
+        if (Array.isArray(events)) {
+          setEventCount(events.length);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading event count:', error);
+    }
+  };
 
   // Clear all events
   const clearEvents = async () => {
     try {
       await AsyncStorage.removeItem("countdowns");
+      setEventCount(0);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       Analytics.trackEvent && Analytics.trackEvent('clear_all_events', { timestamp: new Date().toISOString() });
+      Alert.alert('Cleared', 'All events have been deleted.');
     } catch (error) {
       console.error("Error clearing events", error);
+      Alert.alert('Error', 'Failed to clear events.');
     }
     setModalVisible(false);
+  };
+
+  // Open subscription management
+  const openSubscriptionManagement = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        const url = 'https://apps.apple.com/account/subscriptions';
+        const canOpen = await Linking.canOpenURL(url);
+        if (canOpen) {
+          await Linking.openURL(url);
+        } else {
+          Alert.alert('Manage Subscription', 'Please go to Settings > Apple ID > Subscriptions to manage your subscription.');
+        }
+      } else if (Platform.OS === 'android') {
+        const url = 'https://play.google.com/store/account/subscriptions';
+        const canOpen = await Linking.canOpenURL(url);
+        if (canOpen) {
+          await Linking.openURL(url);
+        } else {
+          Alert.alert('Manage Subscription', 'Please go to Google Play Store > Subscriptions to manage your subscription.');
+        }
+      }
+    } catch (error) {
+      console.error('Error opening subscription management:', error);
+      Alert.alert('Error', 'Could not open subscription management. Please go to your device settings.');
+    }
   };
 
 
@@ -242,92 +295,166 @@ const SettingsScreen = () => {
           </Pressable>
 
           {/* Subscription */}
-          <Pressable
-            onPressIn={() => handleCardPressIn('subscription')}
-            onPressOut={() => handleCardPressOut('subscription')}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setSubscriptionModalVisible(true);
-            }}
-          >
-            <Animated.View style={[
-              styles.card,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-                transform: [{ scale: getCardScale('subscription') }],
-                borderColor: isPro 
-                  ? (isDark ? '#3CC4A2' : '#4E9EFF')
-                  : 'transparent',
-                borderWidth: isPro ? 2 : 0,
-              }
-            ]}>
-              <View style={styles.subscriptionHeader}>
-                <View style={[
-                  styles.subscriptionIconContainer,
-                  {
-                    backgroundColor: isPro
-                      ? (isDark ? 'rgba(60,196,162,0.15)' : 'rgba(78,158,255,0.1)')
-                      : (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)'),
+          <View style={[
+            styles.card,
+            {
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+              borderColor: isPro 
+                ? (isDark ? '#3CC4A2' : '#4E9EFF')
+                : 'transparent',
+              borderWidth: isPro ? 2 : 0,
+            }
+          ]}>
+            <View style={styles.subscriptionHeader}>
+              <View style={[
+                styles.subscriptionIconContainer,
+                {
+                  backgroundColor: isPro
+                    ? (isDark ? 'rgba(60,196,162,0.15)' : 'rgba(78,158,255,0.1)')
+                    : (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)'),
+                }
+              ]}>
+                <Ionicons
+                  name={isPro ? "checkmark-circle" : "star"}
+                  size={wp('5%')}
+                  color={isPro 
+                    ? (isDark ? '#3CC4A2' : '#4E9EFF')
+                    : (isDark ? '#4E9EFF' : '#4A9EFF')
                   }
-                ]}>
-                  <Ionicons
-                    name={isPro ? "checkmark-circle" : "star"}
-                    size={wp('5%')}
-                    color={isPro 
-                      ? (isDark ? '#3CC4A2' : '#4E9EFF')
-                      : (isDark ? '#4E9EFF' : '#4A9EFF')
-                    }
-                  />
-                </View>
-                <View style={styles.subscriptionTextContainer}>
-                  <Text style={[
-                    styles.cardTitle,
-                    { color: accentColor }
-                  ]}>
-                    {isPro ? t('subscription.status.active') : t('subscription.title')}
-                  </Text>
-                  <Text style={[
-                    styles.cardSubtext,
-                    { color: isDark ? '#A1A1A1' : '#6B7280' }
-                  ]}>
-                    {isPro 
-                      ? 'Pro Active'
-                      : t('subscription.subtitle')
-                    }
-                  </Text>
-                </View>
+                />
               </View>
-            </Animated.View>
-          </Pressable>
+              <View style={styles.subscriptionTextContainer}>
+                <Text style={[
+                  styles.cardTitle,
+                  { color: accentColor }
+                ]}>
+                  {isPro ? 'Pro Active' : 'Upgrade to Pro'}
+                </Text>
+                {isPro ? (
+                  <>
+                    <Text style={[
+                      styles.cardSubtext,
+                      { color: isDark ? '#A1A1A1' : '#6B7280', marginTop: wp('1%') }
+                    ]}>
+                      No ads • Full access
+                    </Text>
+                    <Text style={[
+                      styles.proThankYou,
+                      { color: isDark ? '#6B7280' : '#9CA3AF', marginTop: wp('2%') }
+                    ]}>
+                      Thanks for supporting the app
+                    </Text>
+                  </>
+                ) : (
+                  <View style={styles.benefitsList}>
+                    <Text style={[
+                      styles.benefitItem,
+                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+                    ]}>• No ads</Text>
+                    <Text style={[
+                      styles.benefitItem,
+                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+                    ]}>• More reminders + advanced notes</Text>
+                    <Text style={[
+                      styles.benefitItem,
+                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+                    ]}>• Unlock premium templates & features</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+            {isPro ? (
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  openSubscriptionManagement();
+                }}
+                style={[
+                  styles.proCtaButton,
+                  {
+                    backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
+                    borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
+                  }
+                ]}
+              >
+                <Text style={[
+                  styles.proCtaText,
+                  { color: accentColor }
+                ]}>Manage Subscription</Text>
+              </Pressable>
+            ) : (
+              <>
+                <Pressable
+                  onPressIn={() => handleCardPressIn('subscription')}
+                  onPressOut={() => handleCardPressOut('subscription')}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setSubscriptionModalVisible(true);
+                  }}
+                  style={[
+                    styles.proCtaButton,
+                    {
+                      backgroundColor: accentColor,
+                      marginTop: wp('4%'),
+                    }
+                  ]}
+                >
+                  <Animated.View style={[
+                    { transform: [{ scale: getCardScale('subscription') }] }
+                  ]}>
+                    <Text style={styles.proCtaTextActive}>Go Pro</Text>
+                  </Animated.View>
+                </Pressable>
+                <Text style={[
+                  styles.proCtaSubtext,
+                  { color: isDark ? '#6B7280' : '#9CA3AF' }
+                ]}>Cancel anytime</Text>
+              </>
+            )}
+          </View>
 
           {/* Language */}
-          <Pressable
-            onPressIn={() => handleCardPressIn('language')}
-            onPressOut={() => handleCardPressOut('language')}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setLanguageModalVisible(true);
-            }}
-          >
-            <Animated.View style={[
-              styles.card,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-                transform: [{ scale: getCardScale('language') }],
-              }
-            ]}>
-              <Text style={[
-                styles.cardTitle,
-                { color: accentColor }
-              ]}>{t('settings.language')}</Text>
-              <Text style={[
-                styles.cardSubtext,
-                { color: isDark ? '#A1A1A1' : '#6B7280' }
-              ]}>{SUPPORTED_LOCALES[locale]?.name || locale}</Text>
-            </Animated.View>
-          </Pressable>
+          <View style={[
+            styles.card,
+            {
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+            }
+          ]}>
+            <Text style={[
+              styles.cardTitle,
+              { color: accentColor }
+            ]}>Language</Text>
+            <View style={styles.languageRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[
+                  styles.cardSubtext,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>
+                  {SUPPORTED_LOCALES[locale]?.name || locale}
+                </Text>
+              </View>
+              <Pressable
+                onPressIn={() => handleCardPressIn('language')}
+                onPressOut={() => handleCardPressOut('language')}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setLanguageModalVisible(true);
+                }}
+              >
+                <Animated.View style={[
+                  { transform: [{ scale: getCardScale('language') }] }
+                ]}>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={wp('4%')}
+                    color={isDark ? '#6B7280' : '#9CA3AF'}
+                  />
+                </Animated.View>
+              </Pressable>
+            </View>
+          </View>
 
           {/* Appearance */}
           <View style={[
@@ -340,12 +467,18 @@ const SettingsScreen = () => {
             <Text style={[
               styles.cardTitle,
               { color: accentColor }
-            ]}>{t('settings.theme')}</Text>
+            ]}>Appearance</Text>
             <View style={styles.themeToggleContainer}>
-              <Text style={[
-                styles.themeLabel,
-                { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-              ]}>{isDark ? t('settings.dark') : t('settings.light')}</Text>
+              <View>
+                <Text style={[
+                  styles.themeLabel,
+                  { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                ]}>Theme</Text>
+                <Text style={[
+                  styles.themeValue,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>{isDark ? 'Dark' : 'Light'}</Text>
+              </View>
               <Switch
                 value={isDark}
                 onValueChange={() => {
@@ -371,9 +504,9 @@ const SettingsScreen = () => {
             }
           ]}>
             <Text style={[
-              styles.cardTitle,
-              { color: accentColor }
-            ]}>{t('settings.actions')}</Text>
+              styles.sectionHeader,
+              { color: isDark ? '#A1A1A1' : '#6B7280' }
+            ]}>Actions</Text>
             
             {/* Restore Purchases */}
             <Pressable
@@ -425,7 +558,50 @@ const SettingsScreen = () => {
               </View>
             </Pressable>
             
-            {__DEV__ && (
+            {/* Destructive: Clear All Events */}
+            <Pressable
+              onPressIn={handleClearPressIn}
+              onPressOut={handleClearPressOut}
+              onPress={() => setModalVisible(true)}
+            >
+              <Animated.View style={[
+                styles.clearButton,
+                {
+                  backgroundColor: isDark ? 'rgba(225,87,71,0.1)' : 'rgba(225,87,71,0.05)',
+                  borderColor: isDark ? 'rgba(225,87,71,0.3)' : 'rgba(225,87,71,0.2)',
+                  borderWidth: 1,
+                  shadowColor: 'transparent',
+                  transform: [{ scale: clearButtonScale }],
+                  opacity: clearButtonOpacity,
+                }
+              ]}>
+                <Ionicons
+                  name="trash-outline"
+                  size={wp('4%')}
+                  color={clearButtonColor}
+                  style={{ marginRight: wp('2%') }}
+                />
+                <Text style={[
+                  styles.clearButtonText,
+                  { color: clearButtonColor }
+                ]}>{t('settings.clearAll')}</Text>
+              </Animated.View>
+            </Pressable>
+          </View>
+
+          {/* Developer Section (DEV ONLY) */}
+          {__DEV__ && (
+            <View style={[
+              styles.card,
+              {
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+              }
+            ]}>
+              <Text style={[
+                styles.sectionHeader,
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
+              ]}>Developer</Text>
               <Pressable
                 onPress={async () => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -440,7 +616,6 @@ const SettingsScreen = () => {
                   }));
                   Alert.alert('Debug', `Pro status toggled to ${newProStatus}. Restart app to see changes.`);
                 }}
-                style={{ marginBottom: wp('3%') }}
               >
                 <View style={[
                   styles.actionRow,
@@ -464,26 +639,8 @@ const SettingsScreen = () => {
                   </Text>
                 </View>
               </Pressable>
-            )}
-            
-            <Pressable
-              onPressIn={handleClearPressIn}
-              onPressOut={handleClearPressOut}
-              onPress={() => setModalVisible(true)}
-            >
-              <Animated.View style={[
-                styles.clearButton,
-                {
-                  backgroundColor: clearButtonColor,
-                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
-                  transform: [{ scale: clearButtonScale }],
-                  opacity: clearButtonOpacity,
-                }
-              ]}>
-                <Text style={styles.clearButtonText}>{t('settings.clearAll')}</Text>
-              </Animated.View>
-            </Pressable>
-          </View>
+            </View>
+          )}
 
           {/* Confirmation Modal */}
           <Modal
@@ -511,12 +668,12 @@ const SettingsScreen = () => {
                 <Text style={[
                   styles.modalTitle,
                   { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                ]}>{t('settings.clearConfirmTitle')}</Text>
+                ]}>Delete all events?</Text>
                 <Text style={[
                   styles.modalMessage,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>
-                  {t('settings.clearConfirmMessage')}
+                  This will permanently delete {eventCount} {eventCount === 1 ? 'event' : 'events'}. This can't be undone.
                 </Text>
                 <View style={styles.modalButtonContainer}>
                   <TouchableOpacity
@@ -534,7 +691,10 @@ const SettingsScreen = () => {
                     ]}>{t('common.cancel')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={clearEvents}
+                    onPress={() => {
+                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+                      clearEvents();
+                    }}
                     style={[
                       styles.modalButton,
                       {
@@ -542,7 +702,7 @@ const SettingsScreen = () => {
                       }
                     ]}
                   >
-                    <Text style={styles.modalButtonText}>{t('common.confirm')}</Text>
+                    <Text style={styles.modalButtonText}>Delete</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -652,16 +812,24 @@ const styles = StyleSheet.create({
     padding: wp('4.5%'), // 16-18px
     marginBottom: wp('5%'), // 20-24px uniform vertical spacing
     borderWidth: 0, // Remove visible borders
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 2,
   },
   cardTitle: {
     fontSize: wp('4.25%'), // 16-17px
     fontWeight: '600', // Semibold
     fontFamily: 'System',
     marginBottom: wp('1.5%'), // 6px spacing between title and subtitle
+  },
+  sectionHeader: {
+    fontSize: wp('3.5%'), // 14px
+    fontWeight: '500', // Medium
+    fontFamily: 'System',
+    marginBottom: wp('3%'),
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   cardSubtext: {
     fontSize: wp('3.5%'), // 14px
@@ -676,27 +844,84 @@ const styles = StyleSheet.create({
     marginTop: wp('2%'),
   },
   themeLabel: {
-    fontSize: wp('3.5%'),
+    fontSize: wp('4%'),
     fontWeight: '500',
     fontFamily: 'System',
+    marginBottom: wp('0.5%'),
+  },
+  themeValue: {
+    fontSize: wp('3.5%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+  },
+  languageRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: wp('1%'),
+  },
+  helperText: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    marginTop: wp('1%'),
+    fontStyle: 'italic',
   },
   clearButton: {
     marginTop: wp('2%'),
-    paddingVertical: wp('3.5%'),
-    paddingHorizontal: wp('5%'),
-    borderRadius: wp('3%'), // 10-12px rounded corners
+    paddingVertical: wp('3%'),
+    paddingHorizontal: wp('4%'),
+    borderRadius: wp('2.5%'),
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 4,
+    flexDirection: 'row',
   },
   clearButtonText: {
-    color: '#FFFFFF',
     fontSize: wp('3.75%'), // 15px semibold
     fontWeight: '600', // Semibold
     fontFamily: 'System',
+  },
+  proCtaButton: {
+    paddingVertical: wp('3.5%'),
+    paddingHorizontal: wp('5%'),
+    borderRadius: wp('2.5%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  proCtaText: {
+    fontSize: wp('4%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
+  proCtaTextActive: {
+    fontSize: wp('4%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+    color: '#FFFFFF',
+  },
+  proCtaSubtext: {
+    fontSize: wp('2.8%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    textAlign: 'center',
+    marginTop: wp('1.5%'),
+  },
+  proThankYou: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    fontStyle: 'italic',
+  },
+  benefitsList: {
+    marginTop: wp('2%'),
+  },
+  benefitItem: {
+    fontSize: wp('3.5%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    marginTop: wp('1%'),
+    lineHeight: wp('5%'),
   },
   modalOverlay: {
     flex: 1,

@@ -16,6 +16,9 @@ import { Calendar } from "react-native-calendars";
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useEntitlements } from '../src/billing/useEntitlements';
+import PaywallSheet from '../src/billing/PaywallSheet';
+import ProUpsellInline from './ProUpsellInline';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import eventIcons from '../util/eventIcons';
@@ -126,6 +129,8 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [selectedHour, setSelectedHour] = useState(moment(event.date).hour());
   const [selectedMinute, setSelectedMinute] = useState(moment(event.date).minute());
   const [inputFocused, setInputFocused] = useState({});
+  const [paywallVisible, setPaywallVisible] = useState(false);
+  const { isPro } = useEntitlements();
   
   // Modal animation refs
   const modalScale = useRef(new Animated.Value(0.95)).current;
@@ -402,6 +407,22 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     }
                   })()}
                 </Text>
+                {event.notes && event.notes.trim() && (
+                  <Text 
+                    style={[
+                      styles.notesPreview,
+                      {
+                        color: isDark ? '#6B7280' : '#9CA3AF',
+                        fontSize: wp('3%'),
+                        marginTop: wp('1%'),
+                      }
+                    ]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    Notes: {event.notes.trim()}
+                  </Text>
+                )}
               </View>
             </View>
             {/* Action buttons */}
@@ -658,7 +679,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 </Text>
               </TouchableOpacity>
 
-              {/* Notes Section */}
+              {/* Notes Section - Free with Pro upgrade */}
               <View style={styles.notesSection}>
                 <View style={styles.notesHeader}>
                   <Ionicons
@@ -673,17 +694,19 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   ]}>Notes</Text>
                 </View>
                 <TextInput
-                  placeholder="Add notes, plans, or reminders…"
+                  placeholder="Add plans, packing list, reminders…"
                   placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
                   value={editNotes}
                   onChangeText={(text) => {
-                    if (text.length <= 500) {
+                    const maxLength = isPro ? 5000 : 100;
+                    if (text.length <= maxLength) {
                       setEditNotes(text);
                     }
                   }}
+                  editable={true}
                   multiline
                   textAlignVertical="top"
-                  maxLength={500}
+                  maxLength={isPro ? 5000 : 100}
                   style={[
                     styles.notesInput,
                     {
@@ -696,10 +719,25 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 {editNotes.length > 0 && (
                   <Text style={[
                     styles.notesCharCount,
-                    { color: isDark ? '#6B7280' : '#9CA3AF' }
+                    { 
+                      color: (!isPro && editNotes.length >= 100) 
+                        ? (isDark ? '#E74C3C' : '#DC2626')
+                        : (isDark ? '#6B7280' : '#9CA3AF')
+                    }
                   ]}>
-                    {editNotes.length}/500
+                    {editNotes.length}/{isPro ? 5000 : 100}
                   </Text>
+                )}
+                {!isPro && editNotes.length >= 80 && (
+                  <ProUpsellInline
+                    onPress={() => {
+                      setPaywallVisible(true);
+                    }}
+                    message={editNotes.length >= 100 
+                      ? 'Upgrade to Pro for longer notes (5,000 characters)'
+                      : 'Upgrade to Pro for longer notes'
+                    }
+                  />
                 )}
               </View>
             </ScrollView>
@@ -976,6 +1014,13 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
           </Animated.View>
         </View>
       </Modal>
+
+      {/* Paywall Sheet */}
+      <PaywallSheet
+        visible={paywallVisible}
+        onClose={() => setPaywallVisible(false)}
+        feature="notes"
+      />
     </>
   );
 };
@@ -1028,6 +1073,13 @@ const styles = StyleSheet.create({
     fontFamily: "System",
     marginTop: wp('0.5%'),
     lineHeight: wp('4.5%'),
+  },
+  notesPreview: {
+    fontSize: wp('3%'),
+    fontWeight: '400',
+    fontFamily: 'System',
+    fontStyle: 'italic',
+    marginTop: wp('0.5%'),
   },
   countdownText: {
     fontWeight: "600",
@@ -1292,6 +1344,20 @@ const styles = StyleSheet.create({
     fontSize: wp('2.8%'),
     marginTop: wp('1.5%'),
     textAlign: 'right',
+    fontFamily: 'System',
+  },
+  lockedIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: wp('2%'),
+    padding: wp('2%'),
+    borderRadius: wp('2%'),
+    backgroundColor: 'rgba(78,158,255,0.05)',
+  },
+  lockedText: {
+    fontSize: wp('3%'),
+    marginLeft: wp('2%'),
+    fontStyle: 'italic',
     fontFamily: 'System',
   },
   addNotesButton: {

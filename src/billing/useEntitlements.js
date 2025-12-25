@@ -12,12 +12,15 @@ export const FREE_FEATURES = [
   'progress_bar',
   'filters',
   'basic_sort',
+  'basic_notes', // Basic notes (500 chars) - FREE
 ];
 
 export const PRO_FEATURES = [
   'custom_reminders', // Multiple reminders + custom offsets
-  'notes', // Notes per event
-  'notes_search', // Search notes
+  'power_notes', // Power notes features (search, overview, longer notes)
+  'notes_search', // Search notes across all events
+  'notes_overview', // All Notes overview screen
+  'long_notes', // 5000 character limit (vs 500 for free)
   'unit_controls', // Hide seconds, show weeks/months
   'advanced_templates',
   'advanced_analytics',

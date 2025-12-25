@@ -19,8 +19,24 @@ export const migrateEvents = async () => {
       return;
     }
 
-    const events = JSON.parse(stored);
+    let events;
+    try {
+      events = JSON.parse(stored);
+    } catch (parseError) {
+      console.error('Error parsing countdowns during migration:', parseError);
+      // If parsing fails, don't migrate - preserve original data
+      await AsyncStorage.setItem(MIGRATION_VERSION_KEY, String(CURRENT_MIGRATION_VERSION));
+      return;
+    }
+
     if (!Array.isArray(events)) {
+      console.warn('Countdowns data is not an array, skipping migration');
+      await AsyncStorage.setItem(MIGRATION_VERSION_KEY, String(CURRENT_MIGRATION_VERSION));
+      return;
+    }
+
+    // Safety check: don't migrate if events array is empty (might be intentional)
+    if (events.length === 0) {
       await AsyncStorage.setItem(MIGRATION_VERSION_KEY, String(CURRENT_MIGRATION_VERSION));
       return;
     }
@@ -78,6 +94,13 @@ export const migrateEvents = async () => {
       return migrated;
     });
 
+    // Safety check: ensure we have events to save
+    if (!migratedEvents || migratedEvents.length === 0) {
+      console.warn('Migration resulted in empty array, preserving original data');
+      await AsyncStorage.setItem(MIGRATION_VERSION_KEY, String(CURRENT_MIGRATION_VERSION));
+      return;
+    }
+
     // Save migrated events
     await AsyncStorage.setItem('countdowns', JSON.stringify(migratedEvents));
     
@@ -88,6 +111,7 @@ export const migrateEvents = async () => {
   } catch (error) {
     console.error('Error migrating events:', error);
     // Don't throw - allow app to continue even if migration fails
+    // Original data should still be in AsyncStorage
   }
 };
 

@@ -39,9 +39,9 @@ import FilterBar from '../components/FilterBar';
 import { getDefaultEventName } from '../util/eventTemplates';
 import SkeletonCard from '../components/SkeletonCard';
 import FabButton from '../components/FabButton';
-import { useEntitlements } from '../hooks/useEntitlements';
-import ProUpsellSheet from '../components/ProUpsellSheet';
-import LockedRow from '../components/LockedRow';
+import { useEntitlements } from '../src/billing/useEntitlements';
+import PaywallSheet from '../src/billing/PaywallSheet';
+import ProUpsellInline from '../components/ProUpsellInline';
 
 const IconItem = ({ icon, isSelected, onPress, isDark }) => {
   const iconScale = useRef(new Animated.Value(1)).current;
@@ -131,9 +131,9 @@ const HomeScreen = () => {
   const [countdowns, setCountdowns] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
-  const [proUpsellVisible, setProUpsellVisible] = useState(false);
-  const [proUpsellFeature, setProUpsellFeature] = useState(null);
-  const { hasFeature } = useEntitlements();
+  const [paywallVisible, setPaywallVisible] = useState(false);
+  const [paywallFeature, setPaywallFeature] = useState(null);
+  const { hasFeature, isPro } = useEntitlements();
   const [modalVisible, setModalVisible] = useState(false);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
@@ -151,7 +151,7 @@ const HomeScreen = () => {
   
   // New state for templates, reminders, search, filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('upcoming');
+  const [filterType, setFilterType] = useState('all');
   const [sortType, setSortType] = useState('soonest');
   
   // Modal animation refs
@@ -188,7 +188,18 @@ const HomeScreen = () => {
       const hasLaunchedBefore = await AsyncStorage.getItem("hasLaunchedBefore");
       
       if (storedCountdowns) {
-        setCountdowns(JSON.parse(storedCountdowns));
+        try {
+          const parsed = JSON.parse(storedCountdowns);
+          if (Array.isArray(parsed)) {
+            setCountdowns(parsed);
+          } else {
+            console.error('Countdowns data is not an array');
+            setCountdowns([]);
+          }
+        } catch (parseError) {
+          console.error('Error parsing countdowns:', parseError);
+          setCountdowns([]);
+        }
       } else if (!hasLaunchedBefore) {
         // First time user - seed with test data
         await seedTestDataForNewUser();
@@ -796,7 +807,7 @@ const HomeScreen = () => {
             </View>
           )}
         </View>
-      ) : filteredAndSortedCountdowns.length === 0 && !searchQuery && filterType === 'all' ? (
+      ) : filteredAndSortedCountdowns.length === 0 && !searchQuery ? (
         <LinearGradient
           colors={isDark ? ['#121212', '#1C1C1C'] : ['#F9FAFB', '#FFFFFF']}
           style={styles.emptyContainer}
@@ -821,7 +832,14 @@ const HomeScreen = () => {
             <Text style={[
               styles.emptyText,
               { color: isDark ? '#E5E7EB' : '#111111' }
-            ]}>{t('home.emptyTitle')}</Text>
+            ]}>
+              {filterType === 'upcoming' 
+                ? 'No upcoming events'
+                : filterType === 'past'
+                ? 'No past events'
+                : t('home.emptyTitle')
+              }
+            </Text>
             
             {/* CTA Button */}
             <Pressable
@@ -1149,7 +1167,7 @@ const HomeScreen = () => {
               </Text>
             </TouchableOpacity>
 
-            {/* Notes Input (Optional) */}
+            {/* Notes Input (Optional) - Free with Pro upgrade */}
             <View style={styles.notesSection}>
               <View style={styles.notesHeader}>
                 <Ionicons
@@ -1164,17 +1182,19 @@ const HomeScreen = () => {
                 ]}>Notes (optional)</Text>
               </View>
               <TextInput
-                placeholder="Add notes, plans, or reminders…"
+                placeholder="Add plans, packing list, reminders…"
                 placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
                 value={newNotes}
                 onChangeText={(text) => {
-                  if (text.length <= 500) {
+                  const maxLength = isPro ? 5000 : 100;
+                  if (text.length <= maxLength) {
                     setNewNotes(text);
                   }
                 }}
+                editable={true}
                 multiline
                 textAlignVertical="top"
-                maxLength={500}
+                maxLength={isPro ? 5000 : 100}
                 style={[
                   styles.notesInput,
                   {
@@ -1184,14 +1204,57 @@ const HomeScreen = () => {
                   }
                 ]}
               />
-              {newNotes.length > 0 && (
+              <View style={styles.notesCounterContainer}>
                 <Text style={[
                   styles.notesCharCount,
-                  { color: isDark ? '#6B7280' : '#9CA3AF' }
+                  { 
+                    color: (!isPro && newNotes.length >= 100) 
+                      ? (isDark ? '#E74C3C' : '#DC2626')
+                      : (isDark ? '#6B7280' : '#9CA3AF')
+                  }
                 ]}>
-                  {newNotes.length}/500
+                  {newNotes.length}/{isPro ? 5000 : 100}
                 </Text>
-              )}
+                {!isPro && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setPaywallFeature('Long Notes');
+                      setPaywallVisible(true);
+                    }}
+                    activeOpacity={0.7}
+                    style={styles.notesUpsellRow}
+                  >
+                    <Text style={[
+                      styles.notesUpsellText,
+                      { color: isDark ? '#6B7280' : '#9CA3AF' }
+                    ]}>
+                      Upgrade to Pro for 5000-char notes + no ads
+                    </Text>
+                    <Ionicons
+                      name="lock-closed"
+                      size={wp('3%')}
+                      color={isDark ? '#6B7280' : '#9CA3AF'}
+                      style={{ marginLeft: wp('1%') }}
+                    />
+                  </TouchableOpacity>
+                )}
+                {isPro && (
+                  <View style={styles.proEnabledRow}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={wp('3%')}
+                      color={isDark ? 'rgba(60,196,162,0.5)' : 'rgba(78,158,255,0.5)'}
+                    />
+                    <Text style={[
+                      styles.proEnabledText,
+                      { color: isDark ? 'rgba(60,196,162,0.5)' : 'rgba(78,158,255,0.5)' }
+                    ]}>
+                      Pro enabled
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
 
             {/* Icon Picker Modal */}
@@ -1329,16 +1392,11 @@ const HomeScreen = () => {
         />
       )}
 
-      {/* Pro Upsell Sheet */}
-      <ProUpsellSheet
-        visible={proUpsellVisible}
-        onClose={() => setProUpsellVisible(false)}
-        feature={proUpsellFeature}
-        onUpgrade={() => {
-          // Navigate to subscription screen or open subscription modal
-          // For now, just log
-          console.log('Upgrade to Pro:', proUpsellFeature);
-        }}
+      {/* Paywall Sheet */}
+      <PaywallSheet
+        visible={paywallVisible}
+        onClose={() => setPaywallVisible(false)}
+        feature={paywallFeature}
       />
 
     </SafeAreaView>
@@ -1673,10 +1731,48 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
     lineHeight: wp('5%'),
   },
+  notesCounterContainer: {
+    marginTop: wp('1.5%'),
+    alignItems: 'flex-end',
+  },
   notesCharCount: {
     fontSize: wp('2.8%'),
-    marginTop: wp('1.5%'),
-    textAlign: 'right',
+    fontFamily: 'System',
+    marginBottom: wp('0.5%'),
+  },
+  notesUpsellRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: wp('0.5%'),
+  },
+  notesUpsellText: {
+    fontSize: wp('2.5%'),
+    fontFamily: 'System',
+    fontStyle: 'italic',
+  },
+  proEnabledRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: wp('0.5%'),
+  },
+  proEnabledText: {
+    fontSize: wp('2.5%'),
+    fontFamily: 'System',
+    fontStyle: 'italic',
+    marginLeft: wp('0.5%'),
+  },
+  lockedIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: wp('2%'),
+    padding: wp('2%'),
+    borderRadius: wp('2%'),
+    backgroundColor: 'rgba(78,158,255,0.05)',
+  },
+  lockedText: {
+    fontSize: wp('3%'),
+    marginLeft: wp('2%'),
+    fontStyle: 'italic',
     fontFamily: 'System',
   },
 });
