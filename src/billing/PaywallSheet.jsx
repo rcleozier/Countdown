@@ -22,10 +22,12 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
   const { purchase, restore, offerings, isLoading, error } = usePurchases();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [forceShow, setForceShow] = useState(false);
 
   useEffect(() => {
     if (visible && feature) {
       Analytics.trackEvent('paywall_shown', { feature });
+      setForceShow(true); // ensure sheet renders even if offerings missing
     }
   }, [visible, feature]);
 
@@ -84,7 +86,10 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
 
   return (
     <BottomSheet visible={visible} onClose={onClose} showHandle={true}>
-      <View style={[styles.container, { backgroundColor: theme.colors.modalBackground }]}>
+      <View style={[
+        styles.container,
+        { backgroundColor: theme.colors.modalBackground, minHeight: wp('10%') }
+      ]}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.colors.text }]}>

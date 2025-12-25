@@ -525,6 +525,29 @@ const HomeScreen = () => {
     setRemindersEnabled(true);
   };
 
+  const closeCreationModal = () => {
+    setCalendarModalVisible(false);
+    setTimePickerVisible(false);
+    setIconPickerVisible(false);
+    setModalVisible(false);
+    // Small delay to let animations settle before reset (avoids stuck overlay)
+    setTimeout(() => {
+      modalScale.setValue(0.95);
+      calendarModalScale.setValue(0.95);
+      iconModalScale.setValue(0.95);
+    }, 50);
+  };
+
+  const openPaywall = (feature) => {
+    // Close creation modal overlays so the paywall is not blocked
+    closeCreationModal();
+    setPaywallFeature(feature);
+    // Wait a tick so the modal tear-down completes before showing sheet
+    setTimeout(() => {
+      setPaywallVisible(true);
+    }, 60);
+  };
+
   // Schedules a notification only if the event time is in the future
   // Accepts a Date object and enforces a small safety buffer to avoid immediate triggers
   const scheduleNotificationIfFuture = async (eventName, eventDateInput) => {
@@ -1032,16 +1055,20 @@ const HomeScreen = () => {
         animationType="fade"
         transparent
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={closeCreationModal}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
         >
-          <View style={[
-            styles.modalContainer,
-            { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-          ]}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={closeCreationModal}
+            style={[
+              styles.modalContainer,
+              { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+            ]}
+          >
             <Animated.View style={[
               styles.modalContent,
               {
@@ -1050,6 +1077,7 @@ const HomeScreen = () => {
                 transform: [{ scale: modalScale }],
               }
             ]}>
+              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
               <ScrollView 
                 style={styles.modalFormScroll}
                 contentContainerStyle={styles.modalFormContent}
@@ -1118,7 +1146,9 @@ const HomeScreen = () => {
               animationType="fade"
               transparent
               visible={calendarModalVisible}
-              onRequestClose={() => setCalendarModalVisible(false)}
+              onRequestClose={() => {
+                setCalendarModalVisible(false);
+              }}
             >
               <View style={[
                 styles.modalContainer,
@@ -1307,8 +1337,7 @@ const HomeScreen = () => {
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             if (isLocked) {
                               // Show paywall for Pro presets
-                              setPaywallFeature('reminders_presets');
-                              setPaywallVisible(true);
+                      openPaywall('reminders_presets');
                               // Don't change selection
                               return;
                             }
@@ -1542,7 +1571,7 @@ const HomeScreen = () => {
                 <TouchableOpacity
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setModalVisible(false);
+                    closeCreationModal();
                   }}
                   style={[
                     styles.modalFooterButton,
@@ -1581,8 +1610,9 @@ const HomeScreen = () => {
                 </TouchableOpacity>
               </View>
               </ScrollView>
+              </TouchableOpacity>
             </Animated.View>
-          </View>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
       </Modal>
 
