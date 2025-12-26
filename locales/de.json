@@ -60,9 +60,9 @@
     "updateErrorPlural": "Fehler beim Aktualisieren der Erinnerungen",
     "settingsError": "Einstellungen konnten nicht geöffnet werden",
     "presetOff": "Keine Benachrichtigungen geplant",
-    "presetSimple": "Eine Erinnerung zur Startzeit",
-    "presetStandard": "24 Stunden vorher + zur Startzeit",
-    "presetIntense": "7 Tage, 24 Stunden, 1 Stunde vorher + zur Startzeit",
+    "presetSimple": "Eine Erinnerung zum Start des Ereignisses",
+    "presetStandard": "24 Stunden vorher + zum Start des Ereignisses",
+    "presetIntense": "7 Tage, 24 Stunden und 1 Stunde vorher + zum Start des Ereignisses",
     "title": "Erinnerungen",
     "nextReminderToday": "Nächste Erinnerung: Heute um {{time}}",
     "nextReminderTomorrow": "Nächste Erinnerung: Morgen um {{time}}",
@@ -81,7 +81,10 @@
     "presetOffLabel": "Aus",
     "presetSimpleLabel": "Einfach",
     "presetStandardLabel": "Standard",
-    "presetIntenseLabel": "Intensiv"
+    "presetIntenseLabel": "Intensiv",
+    "upsellTitle": "Vollständigen Erinnerungsplan freischalten",
+    "upsellDescription": "Erhalten Sie vollständige Filter, Suche, Gruppierung und unbegrenzte Erinnerungen.",
+    "upsellButton": "Zu Pro wechseln"
   },
   "notes": {
     "title": "Notizen",

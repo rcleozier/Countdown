@@ -60,9 +60,9 @@
     "updateErrorPlural": "Échec de la mise à jour des rappels",
     "settingsError": "Impossible d'ouvrir les paramètres",
     "presetOff": "Aucune notification programmée",
-    "presetSimple": "Un rappel à l'heure de début",
-    "presetStandard": "24 heures avant + à l'heure de début",
-    "presetIntense": "7 jours, 24 heures, 1 heure avant + à l'heure de début",
+    "presetSimple": "Un rappel au début de l'événement",
+    "presetStandard": "24 heures avant + au début de l'événement",
+    "presetIntense": "7 jours, 24 heures et 1 heure avant + au début de l'événement",
     "title": "Rappels",
     "nextReminderToday": "Prochain rappel : Aujourd'hui à {{time}}",
     "nextReminderTomorrow": "Prochain rappel : Demain à {{time}}",
@@ -81,7 +81,10 @@
     "presetOffLabel": "Désactivé",
     "presetSimpleLabel": "Simple",
     "presetStandardLabel": "Standard",
-    "presetIntenseLabel": "Intense"
+    "presetIntenseLabel": "Intense",
+    "upsellTitle": "Débloquer le planning complet des rappels",
+    "upsellDescription": "Obtenez des filtres complets, la recherche, le regroupement et des rappels illimités.",
+    "upsellButton": "Passer à Pro"
   },
   "notes": {
     "title": "Notes",

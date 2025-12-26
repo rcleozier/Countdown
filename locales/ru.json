@@ -314,9 +314,9 @@
     "updateErrorPlural": "Не удалось обновить напоминания",
     "settingsError": "Не удалось открыть настройки",
     "presetOff": "Нет запланированных уведомлений",
-    "presetSimple": "Одно напоминание в момент начала",
-    "presetStandard": "За 24 часа + в момент начала",
-    "presetIntense": "За 7 дней, 24 часа, 1 час + в момент начала",
+    "presetSimple": "Одно напоминание при начале события",
+    "presetStandard": "За 24 часа + при начале события",
+    "presetIntense": "За 7 дней, 24 часа и 1 час + при начале события",
     "title": "Напоминания",
     "nextReminderToday": "Следующее напоминание: Сегодня в {{time}}",
     "nextReminderTomorrow": "Следующее напоминание: Завтра в {{time}}",
@@ -335,6 +335,9 @@
     "presetOffLabel": "Выкл",
     "presetSimpleLabel": "Простой",
     "presetStandardLabel": "Стандартный",
-    "presetIntenseLabel": "Интенсивный"
+    "presetIntenseLabel": "Интенсивный",
+    "upsellTitle": "Разблокировать полное расписание напоминаний",
+    "upsellDescription": "Получите полные фильтры, поиск, группировку и неограниченные напоминания.",
+    "upsellButton": "Перейти к Pro"
   }
 }

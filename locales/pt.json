@@ -73,9 +73,9 @@
     "updateErrorPlural": "Falha ao atualizar lembretes",
     "settingsError": "Não foi possível abrir as configurações",
     "presetOff": "Nenhuma notificação agendada",
-    "presetSimple": "Um lembrete no horário de início",
-    "presetStandard": "24 horas antes + no horário de início",
-    "presetIntense": "7 dias, 24 horas, 1 hora antes + no horário de início",
+    "presetSimple": "Um lembrete quando o evento começar",
+    "presetStandard": "24 horas antes + quando o evento começar",
+    "presetIntense": "7 dias, 24 horas e 1 hora antes + quando o evento começar",
     "title": "Lembretes",
     "nextReminderToday": "Próximo lembrete: Hoje às {{time}}",
     "nextReminderTomorrow": "Próximo lembrete: Amanhã às {{time}}",
@@ -94,7 +94,10 @@
     "presetOffLabel": "Desativado",
     "presetSimpleLabel": "Simples",
     "presetStandardLabel": "Padrão",
-    "presetIntenseLabel": "Intenso"
+    "presetIntenseLabel": "Intenso",
+    "upsellTitle": "Desbloquear agenda completa de lembretes",
+    "upsellDescription": "Obtenha filtros completos, pesquisa, agrupamento e lembretes ilimitados.",
+    "upsellButton": "Ir para Pro"
   },
   "notes": {
     "title": "Notas",

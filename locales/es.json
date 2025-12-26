@@ -269,7 +269,9 @@
     "expired": "Expirado",
     "endsIn": "Termina en {{count}} días",
     "noNotificationsScheduled": "No hay notificaciones programadas",
-    "remindersEnabled": "Recordatorios habilitados"
+    "remindersEnabled": "Recordatorios habilitados",
+    "deleteTitle": "Eliminar Cuenta Regresiva",
+    "deleteMessage": "¿Estás seguro de que quieres eliminar \"{{name}}\"?"
   },
   "reminders": {
     "all": "Todos",
@@ -288,9 +290,9 @@
     "updateErrorPlural": "Error al actualizar recordatorios",
     "settingsError": "No se pudo abrir la configuración",
     "presetOff": "No hay notificaciones programadas",
-    "presetSimple": "Un recordatorio a la hora de inicio",
-    "presetStandard": "24 horas antes + a la hora de inicio",
-    "presetIntense": "7 días, 24 horas, 1 hora antes + a la hora de inicio",
+    "presetSimple": "Un recordatorio cuando comience el evento",
+    "presetStandard": "24 horas antes + cuando comience el evento",
+    "presetIntense": "7 días, 24 horas y 1 hora antes + cuando comience el evento",
     "presetOffLabel": "Desactivado",
     "presetSimpleLabel": "Simple",
     "presetStandardLabel": "Estándar",

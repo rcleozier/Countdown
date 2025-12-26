@@ -314,9 +314,9 @@
     "updateErrorPlural": "Impossibile aggiornare i promemoria",
     "settingsError": "Impossibile aprire le impostazioni",
     "presetOff": "Nessuna notifica programmata",
-    "presetSimple": "Un promemoria all'ora di inizio",
-    "presetStandard": "24 ore prima + all'ora di inizio",
-    "presetIntense": "7 giorni, 24 ore, 1 ora prima + all'ora di inizio",
+    "presetSimple": "Un promemoria quando inizia l'evento",
+    "presetStandard": "24 ore prima + quando inizia l'evento",
+    "presetIntense": "7 giorni, 24 ore e 1 ora prima + quando inizia l'evento",
     "title": "Promemoria",
     "nextReminderToday": "Prossimo promemoria: Oggi alle {{time}}",
     "nextReminderTomorrow": "Prossimo promemoria: Domani alle {{time}}",
@@ -335,6 +335,9 @@
     "presetOffLabel": "Disattivato",
     "presetSimpleLabel": "Semplice",
     "presetStandardLabel": "Standard",
-    "presetIntenseLabel": "Intenso"
+    "presetIntenseLabel": "Intenso",
+    "upsellTitle": "Sblocca programma completo di promemoria",
+    "upsellDescription": "Ottieni filtri completi, ricerca, raggruppamento e promemoria illimitati.",
+    "upsellButton": "Vai a Pro"
   }
 }

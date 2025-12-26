@@ -60,9 +60,9 @@
     "updateErrorPlural": "リマインダーの更新に失敗しました",
     "settingsError": "設定を開けませんでした",
     "presetOff": "通知がスケジュールされていません",
-    "presetSimple": "開始時に1回リマインダー",
-    "presetStandard": "24時間前 + 開始時",
-    "presetIntense": "7日前、24時間前、1時間前 + 開始時",
+    "presetSimple": "イベント開始時に1回リマインダー",
+    "presetStandard": "24時間前 + イベント開始時",
+    "presetIntense": "7日前、24時間前、1時間前 + イベント開始時",
     "title": "リマインダー",
     "nextReminderToday": "次のリマインダー：今日 {{time}}",
     "nextReminderTomorrow": "次のリマインダー：明日 {{time}}",
@@ -81,7 +81,10 @@
     "presetOffLabel": "オフ",
     "presetSimpleLabel": "シンプル",
     "presetStandardLabel": "標準",
-    "presetIntenseLabel": "集中"
+    "presetIntenseLabel": "集中",
+    "upsellTitle": "完全なリマインダースケジュールのロック解除",
+    "upsellDescription": "完全なフィルター、検索、グループ化、無制限のリマインダーを取得します。",
+    "upsellButton": "Proに移動"
   },
   "notes": {
     "title": "メモ",

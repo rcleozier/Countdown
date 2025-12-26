@@ -73,9 +73,9 @@
     "updateErrorPlural": "अनुस्मारक अपडेट करने में विफल",
     "settingsError": "सेटिंग्स खोल नहीं सके",
     "presetOff": "कोई सूचना निर्धारित नहीं",
-    "presetSimple": "शुरुआत के समय एक अनुस्मारक",
-    "presetStandard": "24 घंटे पहले + शुरुआत के समय",
-    "presetIntense": "7 दिन, 24 घंटे, 1 घंटा पहले + शुरुआत के समय",
+    "presetSimple": "इवेंट शुरू होने पर एक अनुस्मारक",
+    "presetStandard": "24 घंटे पहले + इवेंट शुरू होने पर",
+    "presetIntense": "7 दिन, 24 घंटे और 1 घंटे पहले + इवेंट शुरू होने पर",
     "title": "अनुस्मारक",
     "nextReminderToday": "अगला अनुस्मारक: आज {{time}}",
     "nextReminderTomorrow": "अगला अनुस्मारक: कल {{time}}",
@@ -94,7 +94,10 @@
     "presetOffLabel": "बंद",
     "presetSimpleLabel": "सरल",
     "presetStandardLabel": "मानक",
-    "presetIntenseLabel": "तीव्र"
+    "presetIntenseLabel": "तीव्र",
+    "upsellTitle": "पूर्ण अनुस्मारक अनुसूची अनलॉक करें",
+    "upsellDescription": "पूर्ण फ़िल्टर, खोज, समूहीकरण और असीमित अनुस्मारक प्राप्त करें।",
+    "upsellButton": "Pro पर जाएं"
   },
   "notes": {
     "title": "नोट्स",

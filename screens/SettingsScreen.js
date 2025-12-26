@@ -472,7 +472,12 @@ const SettingsScreen = () => {
                 styles.languageRow,
                 { transform: [{ scale: getCardScale('language') }] }
               ]}>
-                <View style={{ flex: 1 }}>
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                  {SUPPORTED_LOCALES[locale]?.flag && (
+                    <Text style={{ fontSize: wp('4%'), marginRight: wp('2%') }}>
+                      {SUPPORTED_LOCALES[locale].flag}
+                    </Text>
+                  )}
                   <Text style={[
                     styles.cardSubtext,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
@@ -786,12 +791,21 @@ const SettingsScreen = () => {
                       }
                     ]}
                   >
-                    <Text style={[
-                      styles.languageOptionText,
-                      { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                    ]}>{localeData.name}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                      <Text style={{ fontSize: wp('5%'), marginRight: wp('3%') }}>
+                        {localeData.flag}
+                      </Text>
+                      <Text style={[
+                        styles.languageOptionText,
+                        { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                      ]}>{localeData.name}</Text>
+                    </View>
                     {locale === code && (
-                      <Text style={{ color: isDark ? '#3CC4A2' : '#4E9EFF' }}>✓</Text>
+                      <Ionicons 
+                        name="checkmark" 
+                        size={wp('5%')} 
+                        color={isDark ? '#3CC4A2' : '#4E9EFF'} 
+                      />
                     )}
                   </TouchableOpacity>
                 ))}
