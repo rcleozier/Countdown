@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ExpoStoreAdapter } from './ExpoStoreAdapter';
 import { Analytics } from '../../util/analytics';
@@ -24,6 +25,7 @@ export const PurchasesProvider = ({ children }) => {
   // Initialize store
   useEffect(() => {
     initializePurchases();
+    
     return () => {
       // Cleanup: disconnect from store
       storeAdapter.disconnect().catch(() => {});
@@ -64,10 +66,24 @@ export const PurchasesProvider = ({ children }) => {
         const now = Date.now();
         const cacheAge = now - (data.timestamp || 0);
         
+        // Check if cached subscription has expired
+        let isPro = data.isPro || false;
+        if (data.expirationDate) {
+          const expirationDate = new Date(data.expirationDate);
+          if (expirationDate <= new Date()) {
+            isPro = false;
+            // Clear expired cache
+            await AsyncStorage.removeItem(ENTITLEMENTS_CACHE_KEY);
+            setIsPro(false);
+            setActiveProductId(null);
+            return;
+          }
+        }
+        
         // Use cache if less than 1 hour old
         if (cacheAge < 3600000) {
-          setIsPro(data.isPro || false);
-          setActiveProductId(data.activeProductId);
+          setIsPro(isPro);
+          setActiveProductId(isPro ? data.activeProductId : null);
         } else {
           // Cache expired, clear it
           await AsyncStorage.removeItem(ENTITLEMENTS_CACHE_KEY);
@@ -80,14 +96,26 @@ export const PurchasesProvider = ({ children }) => {
 
   const saveCachedEntitlements = async (entitlements) => {
     try {
+      // Check if subscription has expired
+      let isPremium = entitlements.isPremium || false;
+      if (entitlements.expirationDate) {
+        const expirationDate = new Date(entitlements.expirationDate);
+        const now = new Date();
+        if (expirationDate <= now) {
+          isPremium = false;
+          console.log('[Billing] Subscription expired:', expirationDate);
+        }
+      }
+
       await AsyncStorage.setItem(ENTITLEMENTS_CACHE_KEY, JSON.stringify({
-        isPro: entitlements.isPremium || false,
-        activeProductId: entitlements.activeProductId,
+        isPro: isPremium,
+        activeProductId: isPremium ? entitlements.activeProductId : null,
+        expirationDate: entitlements.expirationDate,
         timestamp: Date.now(),
       }));
 
-      setIsPro(entitlements.isPremium || false);
-      setActiveProductId(entitlements.activeProductId);
+      setIsPro(isPremium);
+      setActiveProductId(isPremium ? entitlements.activeProductId : null);
     } catch (err) {
       console.error('[Billing] Error saving cached entitlements:', err);
     }
@@ -195,6 +223,22 @@ export const PurchasesProvider = ({ children }) => {
       setIsLoading(false);
     }
   }, [storeAdapter, refreshEntitlements]);
+
+  // Refresh entitlements when app comes to foreground
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        // App has come to the foreground, refresh subscription status
+        refreshEntitlements().catch(err => {
+          console.error('[Billing] Error refreshing on app resume:', err);
+        });
+      }
+    });
+    
+    return () => {
+      subscription.remove();
+    };
+  }, [refreshEntitlements]);
 
   const value = {
     isPro,

@@ -237,34 +237,88 @@ export class ExpoStoreAdapter {
         ...(available || []),
       ];
 
-      // Find subscription purchases (monthly only)
-      const subscriptionPurchases = allPurchases.filter(p => 
+      // Prioritize available purchases (active subscriptions) over history
+      // getAvailablePurchasesAsync() returns only active, non-expired subscriptions
+      const activeSubscriptions = (available || []).filter(p => 
         p.productId && p.productId.includes('monthly')
       );
 
-      if (subscriptionPurchases.length > 0) {
-        // Get most recent purchase
-        const latestPurchase = subscriptionPurchases.sort(
-          (a, b) => new Date(b.purchaseTime) - new Date(a.purchaseTime)
+      if (activeSubscriptions.length > 0) {
+        // Use the most recent active subscription
+        const latestActive = activeSubscriptions.sort(
+          (a, b) => new Date(b.purchaseTime || 0) - new Date(a.purchaseTime || 0)
         )[0];
 
         // Acknowledge if needed
-        if (!latestPurchase.acknowledged) {
-          await InAppPurchases.finishTransactionAsync(latestPurchase, true);
+        if (!latestActive.acknowledged) {
+          await InAppPurchases.finishTransactionAsync(latestActive, true);
         }
 
-        // Calculate expiration: 1 month from purchase
-        const purchaseDate = new Date(latestPurchase.purchaseTime);
-        const expirationDate = new Date(purchaseDate);
-        expirationDate.setMonth(expirationDate.getMonth() + 1);
+        // For iOS, use the actual expiration date from the receipt if available
+        // Otherwise, calculate from purchase time (fallback)
+        let expirationDate;
+        if (latestActive.expirationDate) {
+          expirationDate = new Date(latestActive.expirationDate);
+        } else if (latestActive.purchaseTime) {
+          // Fallback: calculate 1 month from purchase
+          const purchaseDate = new Date(latestActive.purchaseTime);
+          expirationDate = new Date(purchaseDate);
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
+        } else {
+          // Last resort: 1 month from now
+          expirationDate = new Date();
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
+        }
+
+        // Verify expiration hasn't passed
+        const now = new Date();
+        if (expirationDate <= now) {
+          // Subscription has expired
+          return {
+            isPremium: false,
+            activeProductId: null,
+            expirationDate: expirationDate.toISOString(),
+            lastCheckedAt: new Date().toISOString(),
+            source: 'store',
+          };
+        }
 
         return {
           isPremium: true,
-          activeProductId: latestPurchase.productId,
+          activeProductId: latestActive.productId,
           expirationDate: expirationDate.toISOString(),
           lastCheckedAt: new Date().toISOString(),
           source: 'store',
         };
+      }
+
+      // If no active subscriptions, check history for recently expired
+      const subscriptionPurchases = (history || []).filter(p => 
+        p.productId && p.productId.includes('monthly')
+      );
+
+      if (subscriptionPurchases.length > 0) {
+        // Get most recent purchase from history
+        const latestPurchase = subscriptionPurchases.sort(
+          (a, b) => new Date(b.purchaseTime || 0) - new Date(a.purchaseTime || 0)
+        )[0];
+
+        // Calculate expiration from purchase time
+        const purchaseDate = new Date(latestPurchase.purchaseTime || Date.now());
+        const expirationDate = new Date(purchaseDate);
+        expirationDate.setMonth(expirationDate.getMonth() + 1);
+
+        // Check if expired
+        const now = new Date();
+        if (expirationDate <= now) {
+          return {
+            isPremium: false,
+            activeProductId: null,
+            expirationDate: expirationDate.toISOString(),
+            lastCheckedAt: new Date().toISOString(),
+            source: 'store',
+          };
+        }
       }
 
       return {
