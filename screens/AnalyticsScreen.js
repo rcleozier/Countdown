@@ -406,11 +406,11 @@ const AnalyticsScreen = () => {
                         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                         
                         if (days > 0) {
-                          return `${days} ${days === 1 ? 'day' : 'days'} remaining`;
+                          return t('analytics.daysRemaining', { count: days });
                         } else if (hours > 0) {
-                          return `${hours} ${hours === 1 ? 'hour' : 'hours'} remaining`;
+                          return t('analytics.hoursRemaining', { count: hours });
                         } else {
-                          return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} remaining`;
+                          return t('analytics.minutesRemaining', { count: minutes });
                         }
                       })()}
                     </Text>
@@ -458,7 +458,7 @@ const AnalyticsScreen = () => {
             <View style={styles.statsGrid}>
               <StatCard 
                 title={t('analytics.totalEvents')} 
-                subtitle="Total Events"
+                subtitle={t('analytics.totalEvents')}
                 value={stats.total} 
                 icon="calendar" 
                 color={accentColor}
@@ -467,7 +467,7 @@ const AnalyticsScreen = () => {
               />
               <StatCard 
                 title={t('analytics.upcoming')} 
-                subtitle="Coming Up"
+                subtitle={t('analytics.comingUp')}
                 value={stats.upcoming} 
                 icon="time" 
                 color={successColor}
@@ -476,7 +476,7 @@ const AnalyticsScreen = () => {
               />
               <StatCard 
                 title={t('analytics.pastEvents')} 
-                subtitle="Completed"
+                subtitle={t('analytics.completed')}
                 value={stats.past} 
                 icon="checkmark-circle" 
                 color={warningColor}
@@ -501,7 +501,7 @@ const AnalyticsScreen = () => {
             <Text style={[
               styles.insightsLabel,
               { color: isDark ? '#A1A1A1' : '#6B7280' }
-            ]}>Insights</Text>
+            ]}>{t('analytics.insights')}</Text>
             
             {/* Bar chart - Upcoming by Month */}
             <View style={styles.chartSection}>
@@ -527,7 +527,7 @@ const AnalyticsScreen = () => {
                   styles.chartCaption,
                   { color: isDark ? '#6B7280' : '#9CA3AF' }
                 ]}>
-                  When most of your events are coming up
+                  {t('analytics.chartCaptionUpcoming')}
                 </Text>
               </View>
             </View>
@@ -556,7 +556,7 @@ const AnalyticsScreen = () => {
                   styles.chartCaption,
                   { color: isDark ? '#6B7280' : '#9CA3AF' }
                 ]}>
-                  Days you tend to schedule events
+                  {t('analytics.chartCaptionDays')}
                 </Text>
               </View>
             </View>

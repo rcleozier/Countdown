@@ -468,7 +468,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                         marginLeft: wp('1%'),
                       }
                     ]}>
-                      ↻ {getRecurrenceLabel(event.recurrence)}
+                      ↻ {event.recurrence === RECURRENCE_TYPES.DAILY ? t('countdown.recurrenceDaily') : event.recurrence === RECURRENCE_TYPES.WEEKLY ? t('countdown.recurrenceWeekly') : event.recurrence === RECURRENCE_TYPES.MONTHLY ? t('countdown.recurrenceMonthly') : event.recurrence === RECURRENCE_TYPES.YEARLY ? t('countdown.recurrenceYearly') : ''}
                     </Text>
                   )}
                 </View>
@@ -824,7 +824,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       styles.addNoteText,
                       { color: isDark ? '#6B7280' : '#9CA3AF' }
                     ]}>
-                      Add note
+                      {t('common.addNote')}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -917,7 +917,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     styles.detailsActionText,
                     { color: accentColor }
                   ]}>
-                    Edit
+                    {t('common.edit')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -942,7 +942,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     styles.detailsActionText,
                     { color: clearButtonColor }
                   ]}>
-                    Delete
+                    {t('common.delete')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -966,16 +966,16 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Delete Countdown</Text>
+            <Text style={styles.modalTitle}>{t('countdown.deleteTitle')}</Text>
             <Text style={styles.modalMessage}>
-              Are you sure you want to delete "{event.name}"?
+              {t('countdown.deleteMessage', { name: event.name })}
             </Text>
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: "#444" }]}
                 onPress={() => setDeleteModalVisible(false)}
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
@@ -984,7 +984,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   setDeleteModalVisible(false);
                 }}
               >
-                <Text style={styles.modalButtonText}>Delete</Text>
+                <Text style={styles.modalButtonText}>{t('common.delete')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1403,7 +1403,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 ]}>{t('countdown.notesOptional')}</Text>
               </View>
               <TextInput
-                placeholder="Add plans, packing list, reminders…"
+                placeholder={t('countdown.notesPlaceholder')}
                 placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
                 value={editNotes}
                 onChangeText={(text) => {
@@ -1495,7 +1495,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 <Text style={[
                   styles.modalSectionSubLabel,
                   { color: isDark ? '#6B7280' : '#9CA3AF' }
-                ]}>Notify me</Text>
+                ]}>{t('countdown.notifyMe')}</Text>
                 
                 {/* Preset Buttons - 2x2 Grid */}
                 <View style={styles.reminderButtonsGrid}>
@@ -1540,7 +1540,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                               fontWeight: isActive ? '600' : '500',
                             }
                           ]}>
-                            {preset.charAt(0).toUpperCase() + preset.slice(1)}
+                            {t(`reminders.preset${preset.charAt(0).toUpperCase() + preset.slice(1)}Label`)}
                           </Text>
                           {isLocked && (
                             <Ionicons
@@ -1610,7 +1610,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       styles.iconButtonText,
                       { color: isDark ? '#F5F5F5' : '#111111' }
                     ]}>
-                      {editRecurrence === RECURRENCE_TYPES.NONE ? 'None' : getRecurrenceLabel(editRecurrence)}
+                      {editRecurrence === RECURRENCE_TYPES.NONE ? t('countdown.recurrenceNone') : getRecurrenceLabel(editRecurrence)}
                     </Text>
                     {!isPro && (
                       <Ionicons
@@ -1682,7 +1682,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                               fontWeight: editRecurrence === type ? '600' : '400',
                             }
                           ]}>
-                            {type === RECURRENCE_TYPES.NONE ? 'None' : getRecurrenceLabel(type)}
+                            {type === RECURRENCE_TYPES.NONE ? t('countdown.recurrenceNone') : getRecurrenceLabel(type)}
                           </Text>
                           {editRecurrence === type && (
                             <Ionicons
@@ -1813,7 +1813,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   setCalendarModalVisible(false);
                 }}
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
@@ -1869,7 +1869,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   setTimePickerVisible(false);
                 }}
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}

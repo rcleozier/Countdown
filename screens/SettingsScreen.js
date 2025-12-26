@@ -85,10 +85,10 @@ const SettingsScreen = () => {
       setEventCount(0);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       Analytics.trackEvent && Analytics.trackEvent('clear_all_events', { timestamp: new Date().toISOString() });
-      Alert.alert('Cleared', 'All events have been deleted.');
+      Alert.alert(t('settings.cleared'), t('settings.allEventsDeleted'));
     } catch (error) {
       console.error("Error clearing events", error);
-      Alert.alert('Error', 'Failed to clear events.');
+      Alert.alert(t('common.error'), t('settings.failedToClearEvents'));
     }
     setModalVisible(false);
   };
@@ -102,7 +102,7 @@ const SettingsScreen = () => {
         if (canOpen) {
           await Linking.openURL(url);
         } else {
-          Alert.alert('Manage Subscription', 'Please go to Settings > Apple ID > Subscriptions to manage your subscription.');
+          Alert.alert(t('settings.manageSubscription'), t('settings.manageSubscriptionMessage'));
         }
       } else if (Platform.OS === 'android') {
         const url = 'https://play.google.com/store/account/subscriptions';
@@ -110,12 +110,12 @@ const SettingsScreen = () => {
         if (canOpen) {
           await Linking.openURL(url);
         } else {
-          Alert.alert('Manage Subscription', 'Please go to Google Play Store > Subscriptions to manage your subscription.');
+          Alert.alert(t('settings.manageSubscription'), t('settings.manageSubscriptionMessageAndroid'));
         }
       }
     } catch (error) {
       console.error('Error opening subscription management:', error);
-      Alert.alert('Error', 'Could not open subscription management. Please go to your device settings.');
+      Alert.alert(t('common.error'), t('settings.couldNotOpenSubscription'));
     }
   };
 
@@ -212,9 +212,9 @@ const SettingsScreen = () => {
       // Schedule notifications for events with reminders
       await syncScheduledReminders(allEvents, isPro);
       
-      Alert.alert("Seeded!", "App data has been reset and seeded with test data.");
+      Alert.alert(t('settings.seeded'), t('settings.seededMessage'));
     } catch (error) {
-      Alert.alert("Error", "Failed to seed test data.");
+      Alert.alert(t('common.error'), t('settings.failedToSeedData'));
     }
   };
 
@@ -354,7 +354,7 @@ const SettingsScreen = () => {
                   styles.cardTitle,
                   { color: accentColor }
                 ]}>
-                  {isPro ? 'Pro Active' : 'Upgrade to Pro'}
+                  {isPro ? t('settings.proActive') : t('settings.upgradeToPro')}
                 </Text>
                 {isPro ? (
                   <>
@@ -362,13 +362,13 @@ const SettingsScreen = () => {
                       styles.cardSubtext,
                       { color: isDark ? '#A1A1A1' : '#6B7280', marginTop: wp('1%') }
                     ]}>
-                      Recurring countdowns, advanced reminders, no ads
+                      {t('settings.proActiveDescription')}
                     </Text>
                     <Text style={[
                       styles.proThankYou,
                       { color: isDark ? '#6B7280' : '#9CA3AF', marginTop: wp('2%') }
                     ]}>
-                      Thanks for supporting the app
+                      {t('settings.thanksForSupporting')}
                     </Text>
                   </>
                 ) : (
@@ -376,15 +376,15 @@ const SettingsScreen = () => {
                     <Text style={[
                       styles.benefitItem,
                       { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>• No ads</Text>
+                    ]}>{t('settings.benefitNoAds')}</Text>
                     <Text style={[
                       styles.benefitItem,
                       { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>• Advanced reminders & notes</Text>
+                    ]}>{t('settings.benefitAdvancedReminders')}</Text>
                     <Text style={[
                       styles.benefitItem,
                       { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>• Recurring countdowns</Text>
+                    ]}>{t('settings.benefitRecurringCountdowns')}</Text>
                   </View>
                 )}
               </View>
@@ -407,13 +407,13 @@ const SettingsScreen = () => {
                   <Text style={[
                     styles.proCtaText,
                     { color: accentColor }
-                  ]}>Manage Subscription</Text>
+                  ]}>{t('settings.manageSubscription')}</Text>
                 </Pressable>
                 <Text style={[
                   styles.proManageSubtext,
                   { color: isDark ? '#6B7280' : '#9CA3AF' }
                 ]}>
-                  Cancel anytime in Apple ID settings
+                  {t('settings.cancelAnytime')}
                 </Text>
               </View>
             ) : (
@@ -436,13 +436,13 @@ const SettingsScreen = () => {
                   <Animated.View style={[
                     { transform: [{ scale: getCardScale('subscription') }] }
                   ]}>
-                    <Text style={styles.proCtaTextActive}>Go Pro</Text>
+                    <Text style={styles.proCtaTextActive}>{t('settings.goPro')}</Text>
                   </Animated.View>
                 </Pressable>
                 <Text style={[
                   styles.proCtaSubtext,
                   { color: isDark ? '#6B7280' : '#9CA3AF' }
-                ]}>Cancel anytime</Text>
+                ]}>{t('settings.cancelAnytime')}</Text>
               </>
             )}
           </View>
@@ -506,11 +506,11 @@ const SettingsScreen = () => {
                 <Text style={[
                   styles.themeLabel,
                   { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                ]}>Theme</Text>
+                ]}>{t('settings.theme')}</Text>
                 <Text style={[
                   styles.themeValue,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>{isDark ? 'Dark' : 'Light'}</Text>
+                ]}>{isDark ? t('settings.dark') : t('settings.light')}</Text>
               </View>
               <Switch
                 value={isDark}
@@ -539,7 +539,7 @@ const SettingsScreen = () => {
             <Text style={[
               styles.sectionHeader,
               { color: isDark ? '#A1A1A1' : '#6B7280' }
-            ]}>Actions</Text>
+            ]}>{t('settings.actions')}</Text>
             
             {/* Restore Purchases - Only show when not Pro */}
             {!isPro && (
@@ -550,17 +550,17 @@ const SettingsScreen = () => {
                   try {
                     await restore();
                     Alert.alert(
-                      'Restore Complete',
+                      t('settings.restoreComplete'),
                       isPro 
-                        ? 'Your Pro subscription has been restored.'
-                        : 'No active purchases found.',
-                      [{ text: 'OK' }]
+                        ? t('settings.restoreCompleteMessage')
+                        : t('settings.noActivePurchases'),
+                      [{ text: t('common.ok') }]
                     );
                   } catch (err) {
                     Alert.alert(
-                      'Restore Failed',
-                      err.message || 'Could not restore purchases. Please try again.',
-                      [{ text: 'OK' }]
+                      t('settings.restoreFailed'),
+                      err.message || t('settings.restoreFailedMessage'),
+                      [{ text: t('common.ok') }]
                     );
                   } finally {
                     setIsRestoring(false);
@@ -587,7 +587,7 @@ const SettingsScreen = () => {
                     styles.actionText,
                     { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
                   ]}>
-                    {isRestoring ? 'Restoring...' : 'Restore Purchases'}
+                    {isRestoring ? t('settings.restoring') : t('settings.restorePurchases')}
                   </Text>
                 </View>
               </Pressable>
@@ -636,7 +636,7 @@ const SettingsScreen = () => {
               <Text style={[
                 styles.sectionHeader,
                 { color: isDark ? '#A1A1A1' : '#6B7280' }
-              ]}>Developer</Text>
+              ]}>{t('settings.developer')}</Text>
               <Pressable
                 onPress={async () => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -649,7 +649,7 @@ const SettingsScreen = () => {
                     isPro: newProStatus,
                     timestamp: Date.now(),
                   }));
-                  Alert.alert('Debug', `Pro status toggled to ${newProStatus}. Restart app to see changes.`);
+                  Alert.alert(t('settings.debug'), t('settings.debugToggleMessage', { status: newProStatus ? t('settings.on') : t('settings.off') }));
                 }}
               >
                 <View style={[
@@ -670,7 +670,7 @@ const SettingsScreen = () => {
                     styles.actionText,
                     { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
                   ]}>
-                    Debug: Toggle Pro ({isPro ? 'ON' : 'OFF'})
+                    {t('settings.debugTogglePro', { status: isPro ? t('settings.on') : t('settings.off') })}
                   </Text>
                 </View>
               </Pressable>
@@ -703,12 +703,12 @@ const SettingsScreen = () => {
                 <Text style={[
                   styles.modalTitle,
                   { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                ]}>Delete all events?</Text>
+                ]}>{t('settings.deleteAllEventsTitle')}</Text>
                 <Text style={[
                   styles.modalMessage,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>
-                  This will permanently delete {eventCount} {eventCount === 1 ? 'event' : 'events'}. This can't be undone.
+                  {t('settings.deleteAllEventsMessage', { count: eventCount })}
                 </Text>
                 <View style={styles.modalButtonContainer}>
                   <TouchableOpacity
@@ -737,7 +737,7 @@ const SettingsScreen = () => {
                       }
                     ]}
                   >
-                    <Text style={styles.modalButtonText}>Delete</Text>
+                    <Text style={styles.modalButtonText}>{t('common.delete')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>

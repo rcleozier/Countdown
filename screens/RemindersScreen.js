@@ -421,14 +421,15 @@ const RemindersScreen = ({ navigation }) => {
     const line1 = reminder.typeLabel || reminder.type || t('reminders.reminder');
     const line2 = (() => {
       if (within7) {
-        return fireAt.calendar(null, {
-          sameDay: '[Today at] h:mm A',
-          nextDay: '[Tomorrow at] h:mm A',
-          nextWeek: 'dddd [at] h:mm A',
-          lastDay: '[Yesterday at] h:mm A',
-          lastWeek: '[Last] dddd [at] h:mm A',
-          sameElse: 'MMM D [at] h:mm A',
-        });
+        if (fireAt.isSame(now, 'day')) {
+          return t('reminders.todayAt', { time: fireAt.format('h:mm A') });
+        } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
+          return t('reminders.tomorrowAt', { time: fireAt.format('h:mm A') });
+        } else if (fireAt.diff(now, 'days') <= 7) {
+          return t('reminders.dayAt', { day: fireAt.format('dddd'), time: fireAt.format('h:mm A') });
+        } else {
+          return t('reminders.dateAt', { date: fireAt.format('MMM D'), time: fireAt.format('h:mm A') });
+        }
       }
       return fireAt.format('MMM D, h:mm A');
     })();
@@ -538,7 +539,7 @@ const RemindersScreen = ({ navigation }) => {
               styles.title,
               { color: isDark ? '#FFFFFF' : '#1A1A1A' }
             ]}>
-              Reminders
+              {t('reminders.title')}
             </Text>
             {nextReminder
               ? (
@@ -546,12 +547,19 @@ const RemindersScreen = ({ navigation }) => {
                   styles.subtitle,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>
-                  Next reminder: {moment(nextReminder.fireAtISO).calendar(null, {
-                    sameDay: `[Today at] h:mm A`,
-                    nextDay: `[Tomorrow at] h:mm A`,
-                    nextWeek: 'dddd [at] h:mm A',
-                    sameElse: 'MMM D [at] h:mm A',
-                  })}
+                  {(() => {
+                    const fireAt = moment(nextReminder.fireAtISO);
+                    const now = moment();
+                    if (fireAt.isSame(now, 'day')) {
+                      return t('reminders.nextReminderToday', { time: fireAt.format('h:mm A') });
+                    } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
+                      return t('reminders.nextReminderTomorrow', { time: fireAt.format('h:mm A') });
+                    } else if (fireAt.diff(now, 'days') <= 7) {
+                      return t('reminders.nextReminderWeek', { day: fireAt.format('dddd'), time: fireAt.format('h:mm A') });
+                    } else {
+                      return t('reminders.nextReminderDate', { date: fireAt.format('MMM D'), time: fireAt.format('h:mm A') });
+                    }
+                  })()}
                 </Text>
               )
               : (
@@ -559,7 +567,7 @@ const RemindersScreen = ({ navigation }) => {
                   styles.subtitle,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>
-                  No reminders scheduled
+                  {t('reminders.noRemindersScheduled')}
                 </Text>
               )}
           </View>
@@ -582,7 +590,7 @@ const RemindersScreen = ({ navigation }) => {
                 styles.permissionText,
                 { color: isDark ? '#FFC107' : '#F59E0B' }
               ]}>
-                Enable notifications to receive reminders
+                {t('reminders.enableNotifications')}
               </Text>
               <TouchableOpacity
                 onPress={openSettings}
@@ -592,7 +600,7 @@ const RemindersScreen = ({ navigation }) => {
                   styles.settingsButtonText,
                   { color: isDark ? '#FFC107' : '#F59E0B' }
                 ]}>
-                  Settings
+                  {t('reminders.settings')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -620,7 +628,7 @@ const RemindersScreen = ({ navigation }) => {
             contentContainerStyle={styles.filterScroll}
           >
             <FilterChip
-              label="All"
+              label={t('reminders.all')}
               selected={filter === 'all'}
               locked={false}
               showPro={false}
@@ -631,8 +639,8 @@ const RemindersScreen = ({ navigation }) => {
             />
             {[
               { key: 'today', label: t('reminders.today') },
-              { key: 'week', label: 'This Week' },
-              { key: 'enabled', label: 'Enabled' },
+              { key: 'week', label: t('reminders.thisWeek') },
+              { key: 'enabled', label: t('reminders.enabled') },
             ].map(({ key, label }) => {
               const locked = !isPro;
               const selected = filter === key;
@@ -660,7 +668,7 @@ const RemindersScreen = ({ navigation }) => {
           {/* Search bar (Pro only, moved under filters) */}
           {isPro && (
             <TextInput
-              placeholder="Search reminders"
+              placeholder={t('reminders.searchPlaceholder')}
               placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -690,13 +698,13 @@ const RemindersScreen = ({ navigation }) => {
                 styles.emptyTitle,
                 { color: isDark ? '#FFFFFF' : '#1A1A1A' }
               ]}>
-                No reminders yet
+                {t('reminders.emptyTitle')}
               </Text>
               <Text style={[
                 styles.emptySubtext,
                 { color: isDark ? '#A1A1A1' : '#6B7280' }
               ]}>
-                Add reminders from any event to get notified.
+                {t('reminders.emptySubtext')}
               </Text>
               <TouchableOpacity
                 style={[
@@ -715,7 +723,7 @@ const RemindersScreen = ({ navigation }) => {
                   styles.emptyActionText,
                   { color: accentColor }
                 ]}>
-                  View events
+                  {t('reminders.viewEvents')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -965,14 +973,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp('1%'),
   },
   chip: {
-    height: 40,
-    minWidth: 80,
-    paddingHorizontal: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     marginRight: wp('2%'),
+    minHeight: 36,
   },
   chipLabel: {
     fontSize: 15,

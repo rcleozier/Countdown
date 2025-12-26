@@ -1500,7 +1500,7 @@ const HomeScreen = () => {
                 <Text style={[
                   styles.modalSectionSubLabel,
                   { color: isDark ? '#6B7280' : '#9CA3AF' }
-                ]}>Notify me</Text>
+                ]}>{t('countdown.notifyMe')}</Text>
                 
                 {/* Preset Buttons - 2x2 Grid */}
                 <View style={styles.reminderButtonsGrid}>
@@ -1551,7 +1551,7 @@ const HomeScreen = () => {
                               fontWeight: isActive ? '600' : '500',
                             }
                           ]}>
-                            {preset.charAt(0).toUpperCase() + preset.slice(1)}
+                            {t(`reminders.preset${preset.charAt(0).toUpperCase() + preset.slice(1)}Label`)}
                           </Text>
                           {isLocked && (
                             <Ionicons
@@ -1660,7 +1660,7 @@ const HomeScreen = () => {
                       styles.iconButtonText,
                       { color: isDark ? '#F5F5F5' : '#111111' }
                     ]}>
-                      {recurrence === RECURRENCE_TYPES.NONE ? 'None' : getRecurrenceLabel(recurrence)}
+                      {recurrence === RECURRENCE_TYPES.NONE ? t('countdown.recurrenceNone') : getRecurrenceLabel(recurrence)}
                     </Text>
                     {!isPro && (
                       <Ionicons
@@ -1731,7 +1731,7 @@ const HomeScreen = () => {
                               fontWeight: recurrence === type ? '600' : '400',
                             }
                           ]}>
-                            {type === RECURRENCE_TYPES.NONE ? 'None' : getRecurrenceLabel(type)}
+                            {type === RECURRENCE_TYPES.NONE ? t('countdown.recurrenceNone') : getRecurrenceLabel(type)}
                           </Text>
                           {recurrence === type && (
                             <Ionicons
@@ -1787,7 +1787,7 @@ const HomeScreen = () => {
                 ]}>{t('countdown.notesOptional')}</Text>
               </View>
               <TextInput
-                placeholder="Add plans, packing list, reminders…"
+                placeholder={t('countdown.notesPlaceholder')}
                 placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
                 value={newNotes}
                 onChangeText={(text) => {
