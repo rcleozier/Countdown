@@ -97,7 +97,9 @@
     "presetIntenseLabel": "तीव्र",
     "upsellTitle": "पूर्ण अनुस्मारक अनुसूची अनलॉक करें",
     "upsellDescription": "पूर्ण फ़िल्टर, खोज, समूहीकरण और असीमित अनुस्मारक प्राप्त करें।",
-    "upsellButton": "Pro पर जाएं"
+    "upsellButton": "Pro पर जाएं",
+    "moreRemindersAvailable": "Pro के साथ अधिक अनुस्मारक उपलब्ध",
+    "unlockMoreReminders": "{{count}} और अनुस्मारक अनलॉक करें"
   },
   "notes": {
     "title": "नोट्स",

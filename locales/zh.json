@@ -338,6 +338,8 @@
     "presetIntenseLabel": "密集",
     "upsellTitle": "解锁完整提醒计划",
     "upsellDescription": "获得完整筛选、搜索、分组和无限提醒。",
-    "upsellButton": "升级到Pro"
+    "upsellButton": "升级到Pro",
+    "moreRemindersAvailable": "Pro 可提供更多提醒",
+    "unlockMoreReminders": "解锁 {{count}} 个更多提醒"
   }
 }

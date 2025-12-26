@@ -84,7 +84,9 @@
     "presetIntenseLabel": "Intense",
     "upsellTitle": "Débloquer le planning complet des rappels",
     "upsellDescription": "Obtenez des filtres complets, la recherche, le regroupement et des rappels illimités.",
-    "upsellButton": "Passer à Pro"
+    "upsellButton": "Passer à Pro",
+    "moreRemindersAvailable": "Plus de rappels disponibles avec Pro",
+    "unlockMoreReminders": "Débloquer {{count}} rappels supplémentaires"
   },
   "notes": {
     "title": "Notes",

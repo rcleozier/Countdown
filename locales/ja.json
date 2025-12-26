@@ -84,7 +84,9 @@
     "presetIntenseLabel": "集中",
     "upsellTitle": "完全なリマインダースケジュールのロック解除",
     "upsellDescription": "完全なフィルター、検索、グループ化、無制限のリマインダーを取得します。",
-    "upsellButton": "Proに移動"
+    "upsellButton": "Proに移動",
+    "moreRemindersAvailable": "Proでより多くのリマインダーを利用可能",
+    "unlockMoreReminders": "さらに{{count}}個のリマインダーをロック解除"
   },
   "notes": {
     "title": "メモ",

@@ -338,6 +338,8 @@
     "presetIntenseLabel": "Интенсивный",
     "upsellTitle": "Разблокировать полное расписание напоминаний",
     "upsellDescription": "Получите полные фильтры, поиск, группировку и неограниченные напоминания.",
-    "upsellButton": "Перейти к Pro"
+    "upsellButton": "Перейти к Pro",
+    "moreRemindersAvailable": "Больше напоминаний доступно с Pro",
+    "unlockMoreReminders": "Разблокировать еще {{count}} напоминаний"
   }
 }

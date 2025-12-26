@@ -735,6 +735,128 @@ const RemindersScreen = ({ navigation }) => {
                 keyExtractor={(item, index) => `group_${item.date}_${index}`}
                 scrollEnabled={false}
               />
+              {/* Hidden reminders indicator for free users */}
+              {!isPro && filteredReminders.length > displayReminders.length && (
+                <View style={{ marginTop: wp('4%'), marginBottom: wp('2%') }}>
+                  <Text style={[
+                    styles.groupHeader,
+                    { 
+                      color: isDark ? '#A1A1A1' : '#6B7280',
+                      marginBottom: wp('2%'),
+                      opacity: 0.6
+                    }
+                  ]}>
+                    {t('reminders.moreRemindersAvailable')}
+                  </Text>
+                  {/* Show 2-3 blurred reminder placeholders */}
+                  {filteredReminders.slice(displayReminders.length, displayReminders.length + 3).map((reminder, index) => {
+                    const fireAt = moment(reminder.fireAtISO);
+                    const line1 = reminder.typeLabel || reminder.type || t('reminders.reminder');
+                    const line2 = (() => {
+                      const now = moment();
+                      if (fireAt.isSame(now, 'day')) {
+                        return t('reminders.todayAt', { time: fireAt.format('h:mm A') });
+                      } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
+                        return t('reminders.tomorrowAt', { time: fireAt.format('h:mm A') });
+                      } else if (fireAt.diff(now, 'days') <= 7) {
+                        return t('reminders.dayAt', { day: fireAt.format('dddd'), time: fireAt.format('h:mm A') });
+                      } else {
+                        return t('reminders.dateAt', { date: fireAt.format('MMM D'), time: fireAt.format('h:mm A') });
+                      }
+                    })();
+                    
+                    return (
+                      <View
+                        key={`hidden_${reminder.id || index}`}
+                        style={[
+                          styles.reminderItem,
+                          {
+                            backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                            borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                            opacity: 0.4,
+                            marginBottom: wp('2%'),
+                          }
+                        ]}
+                      >
+                        <View style={styles.reminderLeft}>
+                          <View style={[
+                            styles.eventIconContainer,
+                            {
+                              backgroundColor: isDark 
+                                ? 'rgba(78,158,255,0.15)' 
+                                : 'rgba(78,158,255,0.1)',
+                            }
+                          ]}>
+                            <Text style={styles.eventIcon}>{reminder.event.icon}</Text>
+                          </View>
+                          <View style={styles.reminderInfo}>
+                            <Text style={[
+                              styles.eventName,
+                              { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                            ]}>
+                              {line1}
+                            </Text>
+                            <Text style={[
+                              styles.typeLabel,
+                              { color: isDark ? '#A1A1A1' : '#6B7280' }
+                            ]}>
+                              {filter === 'all'
+                                ? `${reminder.event.name || t('reminders.untitledEvent')} · ${line2}`
+                                : line2}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)',
+                          borderRadius: wp('2.5%'),
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                          <Ionicons
+                            name="lock-closed"
+                            size={wp('6%')}
+                            color={isDark ? '#6B7280' : '#9CA3AF'}
+                          />
+                        </View>
+                      </View>
+                    );
+                  })}
+                  {filteredReminders.length - displayReminders.length > 3 && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setPaywallFeature('reminders');
+                        setPaywallVisible(true);
+                      }}
+                      style={[
+                        styles.lockedReminderCTA,
+                        {
+                          backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
+                          borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
+                        }
+                      ]}
+                    >
+                      <Ionicons
+                        name="lock-closed"
+                        size={wp('4%')}
+                        color={accentColor}
+                        style={{ marginRight: wp('2%') }}
+                      />
+                      <Text style={[
+                        styles.lockedReminderCTAText,
+                        { color: accentColor }
+                      ]}>
+                        {t('reminders.unlockMoreReminders', { count: filteredReminders.length - displayReminders.length })}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
             </>
           )}
         </ScrollView>
@@ -964,6 +1086,21 @@ const styles = StyleSheet.create({
   upsellButtonText: {
     color: '#FFFFFF',
     fontSize: wp('3.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
+  lockedReminderCTA: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: wp('3%'),
+    paddingHorizontal: wp('4%'),
+    borderRadius: wp('2.5%'),
+    borderWidth: 1,
+    marginTop: wp('2%'),
+  },
+  lockedReminderCTAText: {
+    fontSize: wp('3.8%'),
     fontWeight: '600',
     fontFamily: 'System',
   },

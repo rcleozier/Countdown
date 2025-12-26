@@ -314,7 +314,9 @@
     "todayAt": "Hoy a las {{time}}",
     "tomorrowAt": "Mañana a las {{time}}",
     "dayAt": "{{day}} a las {{time}}",
-    "dateAt": "{{date}} a las {{time}}"
+    "dateAt": "{{date}} a las {{time}}",
+    "moreRemindersAvailable": "Más recordatorios disponibles con Pro",
+    "unlockMoreReminders": "Desbloquear {{count}} recordatorios más"
   }
 }
 

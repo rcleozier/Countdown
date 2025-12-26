@@ -338,6 +338,8 @@
     "presetIntenseLabel": "Intenso",
     "upsellTitle": "Sblocca programma completo di promemoria",
     "upsellDescription": "Ottieni filtri completi, ricerca, raggruppamento e promemoria illimitati.",
-    "upsellButton": "Vai a Pro"
+    "upsellButton": "Vai a Pro",
+    "moreRemindersAvailable": "Più promemoria disponibili con Pro",
+    "unlockMoreReminders": "Sblocca {{count}} promemoria in più"
   }
 }

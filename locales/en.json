@@ -338,7 +338,9 @@
     "todayAt": "Today at {{time}}",
     "tomorrowAt": "Tomorrow at {{time}}",
     "dayAt": "{{day}} at {{time}}",
-    "dateAt": "{{date}} at {{time}}"
+    "dateAt": "{{date}} at {{time}}",
+    "moreRemindersAvailable": "More reminders available with Pro",
+    "unlockMoreReminders": "Unlock {{count}} more reminders"
   }
 }
 

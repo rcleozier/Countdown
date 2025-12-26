@@ -84,7 +84,9 @@
     "presetIntenseLabel": "Intensiv",
     "upsellTitle": "Vollständigen Erinnerungsplan freischalten",
     "upsellDescription": "Erhalten Sie vollständige Filter, Suche, Gruppierung und unbegrenzte Erinnerungen.",
-    "upsellButton": "Zu Pro wechseln"
+    "upsellButton": "Zu Pro wechseln",
+    "moreRemindersAvailable": "Weitere Erinnerungen mit Pro verfügbar",
+    "unlockMoreReminders": "{{count}} weitere Erinnerungen freischalten"
   },
   "notes": {
     "title": "Notizen",

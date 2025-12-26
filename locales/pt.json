@@ -97,7 +97,9 @@
     "presetIntenseLabel": "Intenso",
     "upsellTitle": "Desbloquear agenda completa de lembretes",
     "upsellDescription": "Obtenha filtros completos, pesquisa, agrupamento e lembretes ilimitados.",
-    "upsellButton": "Ir para Pro"
+    "upsellButton": "Ir para Pro",
+    "moreRemindersAvailable": "Mais lembretes disponíveis com Pro",
+    "unlockMoreReminders": "Desbloquear mais {{count}} lembretes"
   },
   "notes": {
     "title": "Notas",
