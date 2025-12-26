@@ -638,7 +638,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     styles.detailsLabel,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
                   ]}>
-                    Date & Time
+                    {t('countdown.dateTime')}
                   </Text>
                 </View>
                 <Text style={[
@@ -680,7 +680,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     styles.detailsLabel,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
                   ]}>
-                    Time Remaining
+                    {t('countdown.timeRemaining')}
                   </Text>
                 </View>
                 {timeLeft === null ? (
@@ -688,7 +688,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     styles.detailsValue,
                     { color: theme.colors.error }
                   ]}>
-                    Expired
+                    {t('countdown.expired')}
                   </Text>
                 ) : (
                   <>
@@ -706,7 +706,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                         ? t('countdown.endsToday')
                         : timeLeft.days === 1
                         ? t('countdown.endsTomorrow')
-                        : `Ends in ${timeLeft.days} days`}
+                        : t('countdown.endsIn', { count: timeLeft.days })}
                     </Text>
                   </>
                 )}
@@ -749,7 +749,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     styles.detailsLabel,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
                   ]}>
-                    Notes
+                    {t('countdown.notes')}
                   </Text>
                 </View>
                 {event.notes && event.notes.trim() ? (
@@ -782,7 +782,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                         styles.viewEditText,
                         { color: accentColor }
                       ]}>
-                        View / Edit
+                        {t('countdown.viewEdit')}
                       </Text>
                     </TouchableOpacity>
                     {!isPro && event.notes.length >= 80 && (
@@ -842,7 +842,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     styles.detailsLabel,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
                   ]}>
-                    Reminders
+                    {t('countdown.reminders')}
                   </Text>
                   <TouchableOpacity
                     onPress={() => {
@@ -863,7 +863,14 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     styles.detailsValue,
                     { color: isDark ? '#FFFFFF' : '#1A1A1A', marginLeft: wp('6.5%') }
                   ]}>
-                    {getPresetDescription(event.reminderPlan.preset)}
+                    {(() => {
+                      const preset = event.reminderPlan?.preset || 'off';
+                      if (preset === 'off') {
+                        return t('countdown.noNotificationsScheduled');
+                      }
+                      const presetKey = `reminders.preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`;
+                      return t(presetKey);
+                    })()}
                   </Text>
                 ) : event.reminders && event.reminders.length > 0 ? (
                   <Text style={[
@@ -1020,6 +1027,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   styles.iconPickerOverlay,
                   {
                     backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
+                    overflow: 'hidden',
                   }
                 ]}>
                   <Pressable
@@ -1054,7 +1062,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                             marginBottom: wp('4%'),
                             color: isDark ? '#F3F4F6' : '#111111',
                           }
-                        ]}>Select Icon</Text>
+                        ]}>{t('create.selectIcon')}</Text>
                         <View style={[
                           {
                             height: 1,
@@ -1112,7 +1120,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                               textAlign: 'center',
                             }}
                           >
-                            Cancel
+                            {t('common.cancel')}
                           </Text>
                         </TouchableOpacity>
                       </Animated.View>
@@ -1120,21 +1128,19 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   </Pressable>
                 </View>
               )}
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={(e) => e.stopPropagation()}
-                pointerEvents={iconPickerVisible || calendarModalVisible || timePickerVisible ? 'none' : 'auto'}
-              >
               <ScrollView 
                 style={styles.modalFormScroll}
                 contentContainerStyle={styles.modalFormContent}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
+                scrollEnabled={true}
+                nestedScrollEnabled={true}
+                bounces={true}
               >
               <Text style={[
                 styles.modalTitle,
                 { color: isDark ? '#F5F5F5' : '#111111' }
-              ]}>Edit Countdown</Text>
+              ]}>{t('edit.title')}</Text>
               
               {/* Countdown Name Input */}
               <View style={styles.modalSection}>
@@ -1270,7 +1276,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       ]}
                       onPress={handleConfirmDate}
                     >
-                      <Text style={styles.buttonTextSave}>Confirm</Text>
+                      <Text style={styles.buttonTextSave}>{t('common.confirm')}</Text>
                     </TouchableOpacity>
                   </View>
                 </Animated.View>
@@ -1362,7 +1368,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 <Text style={[
                   styles.modalSectionLabel,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>Icon</Text>
+                ]}>{t('countdown.icon')}</Text>
                 <TouchableOpacity
                   onPress={() => setIconPickerVisible(true)}
                   style={[
@@ -1394,7 +1400,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 <Text style={[
                   styles.iconLabel,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>Notes (optional)</Text>
+                ]}>{t('countdown.notesOptional')}</Text>
               </View>
               <TextInput
                 placeholder="Add plans, packing list, reminders…"
@@ -1478,7 +1484,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   <Text style={[
                     styles.modalSectionLabel,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
-                  ]}>Reminders</Text>
+                  ]}>{t('countdown.reminders')}</Text>
                   {(editReminderPreset === 'standard' || editReminderPreset === 'intense') && (
                     <View style={{ marginLeft: wp('2%') }}>
                       <ProBadge size="small" />
@@ -1557,9 +1563,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   ]}>
                     {(() => {
                       if (!editReminderPreset || editReminderPreset === 'off') {
-                        return 'No notifications scheduled';
+                        return t('countdown.noNotificationsScheduled');
                       }
-                      return getPresetDescription(editReminderPreset) || 'Reminders enabled';
+                      const presetKey = `reminders.preset${editReminderPreset.charAt(0).toUpperCase() + editReminderPreset.slice(1)}`;
+                      return t(presetKey) || t('countdown.remindersEnabled');
                     })()}
                   </Text>
                 </View>
@@ -1571,7 +1578,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   <Text style={[
                     styles.modalSectionLabel,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
-                  ]}>Repeats</Text>
+                  ]}>{t('countdown.repeats')}</Text>
                   {editRecurrence !== RECURRENCE_TYPES.NONE && (
                     <View style={{ marginLeft: wp('2%') }}>
                       <ProBadge size="small" />
@@ -1746,11 +1753,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       ? (isDark ? '#6B7280' : '#9CA3AF')
                       : '#FFFFFF'
                     }
-                  ]}>Save</Text>
+                  ]}>{t('common.save')}</Text>
                 </TouchableOpacity>
               </View>
               </ScrollView>
-              </TouchableOpacity>
             </Animated.View>
           </TouchableOpacity>
         </KeyboardAvoidingView>
@@ -2751,6 +2757,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
     paddingHorizontal: wp('5%'),
+    overflow: 'hidden',
   },
 });
 

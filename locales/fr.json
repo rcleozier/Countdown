@@ -43,19 +43,22 @@
     "selectIcon": "Sélectionner une icône"
   },
   "reminders": {
-    "chill": "Détendu",
-    "standard": "Standard",
-    "intense": "Intense",
-    "custom": "Personnalisé",
-    "daysBefore": "{{count}} jour avant",
-    "daysBefore_plural": "{{count}} jours avant",
-    "weeksBefore": "{{count}} semaine avant",
-    "weeksBefore_plural": "{{count}} semaines avant",
-    "monthsBefore": "{{count}} mois avant",
-    "monthsBefore_plural": "{{count}} mois avant",
-    "addReminder": "Ajouter un rappel",
-    "removeReminder": "Supprimer",
-    "noReminders": "Aucun rappel défini"
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
+    "event": "Événement",
+    "reminder": "Rappel",
+    "untitledEvent": "Événement Sans Titre",
+    "searchPlaceholder": "Rechercher des rappels par événement",
+    "date": "Date",
+    "filterProMessage": "fait partie de Pro. Passez à Pro pour mieux organiser vos rappels.",
+    "thisFilter": "Ce filtre",
+    "updateError": "Échec de la mise à jour du rappel",
+    "updateErrorPlural": "Échec de la mise à jour des rappels",
+    "settingsError": "Impossible d'ouvrir les paramètres",
+    "presetOff": "Aucune notification programmée",
+    "presetSimple": "Un rappel à l'heure de début",
+    "presetStandard": "24 heures avant + à l'heure de début",
+    "presetIntense": "7 jours, 24 heures, 1 heure avant + à l'heure de début"
   },
   "notes": {
     "title": "Notes",
@@ -88,7 +91,8 @@
     "appInfo": "Informations sur l'application",
     "notes": "Notes",
     "notesDescription": "Voir et gérer vos notes",
-    "actions": "Actions"
+    "actions": "Actions",
+    "appearance": "Apparence"
   },
   "time": {
     "now": "maintenant",
@@ -215,5 +219,29 @@
         "bullet3": "Suggestions de timing alimentées par l'IA"
       }
     }
+  },
+  "countdown": {
+    "endsToday": "Se termine aujourd'hui",
+    "endsTomorrow": "Se termine demain",
+    "justStarted": "Vient de commencer !",
+    "iconLabel": "Icône :",
+    "longNotes": "Notes Longues",
+    "upgradeNotes": "Passez à Pro pour des notes de 5000 caractères + sans publicité",
+    "proEnabled": "Pro activé",
+    "pickDateError": "Veuillez sélectionner une date sur le calendrier.",
+    "futureDateError": "Veuillez sélectionner une date et une heure dans le futur.",
+    "allDay": "Toute la Journée",
+    "icon": "Icône",
+    "dateTime": "Date et Heure",
+    "timeRemaining": "Temps Restant",
+    "notes": "Notes",
+    "notesOptional": "Notes (optionnel)",
+    "reminders": "Rappels",
+    "repeats": "Répète",
+    "viewEdit": "Voir / Modifier",
+    "expired": "Expiré",
+    "endsIn": "Se termine dans {{count}} jours",
+    "noNotificationsScheduled": "Aucune notification programmée",
+    "remindersEnabled": "Rappels activés"
   }
 }

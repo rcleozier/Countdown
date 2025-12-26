@@ -73,7 +73,8 @@
     "appInfo": "Info App",
     "notes": "Note",
     "notesDescription": "Visualizza e gestisci le tue note",
-    "actions": "Azioni"
+    "actions": "Azioni",
+    "appearance": "Aspetto"
   },
   "time": {
     "now": "ora",
@@ -211,7 +212,19 @@
     "proEnabled": "Pro abilitato",
     "pickDateError": "Seleziona una data sul calendario.",
     "futureDateError": "Seleziona una data e un'ora nel futuro.",
-    "allDay": "Tutto il Giorno"
+    "allDay": "Tutto il Giorno",
+    "icon": "Icona",
+    "dateTime": "Data e Ora",
+    "timeRemaining": "Tempo Rimanente",
+    "notes": "Note",
+    "notesOptional": "Note (opzionale)",
+    "reminders": "Promemoria",
+    "repeats": "Ripete",
+    "viewEdit": "Visualizza / Modifica",
+    "expired": "Scaduto",
+    "endsIn": "Termina tra {{count}} giorni",
+    "noNotificationsScheduled": "Nessuna notifica programmata",
+    "remindersEnabled": "Promemoria abilitati"
   },
   "reminders": {
     "chill": "Rilassato",
@@ -240,6 +253,10 @@
     "thisFilter": "Questo filtro",
     "updateError": "Impossibile aggiornare il promemoria",
     "updateErrorPlural": "Impossibile aggiornare i promemoria",
-    "settingsError": "Impossibile aprire le impostazioni"
+    "settingsError": "Impossibile aprire le impostazioni",
+    "presetOff": "Nessuna notifica programmata",
+    "presetSimple": "Un promemoria all'ora di inizio",
+    "presetStandard": "24 ore prima + all'ora di inizio",
+    "presetIntense": "7 giorni, 24 ore, 1 ora prima + all'ora di inizio"
   }
 }

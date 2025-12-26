@@ -55,7 +55,11 @@
     "monthsBefore_plural": "{{count}} महीने पहले",
     "addReminder": "अनुस्मारक जोड़ें",
     "removeReminder": "हटाएं",
-    "noReminders": "कोई अनुस्मारक सेट नहीं"
+    "noReminders": "कोई अनुस्मारक सेट नहीं",
+    "presetOff": "कोई सूचना निर्धारित नहीं",
+    "presetSimple": "शुरुआत के समय एक अनुस्मारक",
+    "presetStandard": "24 घंटे पहले + शुरुआत के समय",
+    "presetIntense": "7 दिन, 24 घंटे, 1 घंटा पहले + शुरुआत के समय"
   },
   "notes": {
     "title": "नोट्स",
@@ -88,7 +92,8 @@
     "appInfo": "ऐप जानकारी",
     "notes": "नोट्स",
     "notesDescription": "अपने नोट्स देखें और प्रबंधित करें",
-    "actions": "क्रियाएं"
+    "actions": "क्रियाएं",
+    "appearance": "उपस्थिति"
   },
   "time": {
     "now": "अभी",
@@ -187,5 +192,19 @@
       "none": "कोई सक्रिय सदस्यता नहीं"
     },
     "manage": "सदस्यता प्रबंधित करें"
+  },
+  "countdown": {
+    "icon": "आइकन",
+    "dateTime": "तारीख और समय",
+    "timeRemaining": "शेष समय",
+    "notes": "नोट्स",
+    "notesOptional": "नोट्स (वैकल्पिक)",
+    "reminders": "अनुस्मारक",
+    "repeats": "दोहराता है",
+    "viewEdit": "देखें / संपादित करें",
+    "expired": "समाप्त हो गया",
+    "endsIn": "{{count}} दिनों में समाप्त होता है",
+    "noNotificationsScheduled": "कोई सूचना निर्धारित नहीं",
+    "remindersEnabled": "अनुस्मारक सक्षम"
   }
 }

@@ -43,19 +43,22 @@
     "selectIcon": "アイコンを選択"
   },
   "reminders": {
-    "chill": "リラックス",
-    "standard": "標準",
-    "intense": "集中的",
-    "custom": "カスタム",
-    "daysBefore": "{{count}}日前",
-    "daysBefore_plural": "{{count}}日前",
-    "weeksBefore": "{{count}}週間前",
-    "weeksBefore_plural": "{{count}}週間前",
-    "monthsBefore": "{{count}}ヶ月前",
-    "monthsBefore_plural": "{{count}}ヶ月前",
-    "addReminder": "リマインダーを追加",
-    "removeReminder": "削除",
-    "noReminders": "リマインダーが設定されていません"
+    "today": "今日",
+    "tomorrow": "明日",
+    "event": "イベント",
+    "reminder": "リマインダー",
+    "untitledEvent": "タイトルなしのイベント",
+    "searchPlaceholder": "イベントでリマインダーを検索",
+    "date": "日付",
+    "filterProMessage": "はProの一部です。リマインダーをより良く整理するためにアップグレードしてください。",
+    "thisFilter": "このフィルター",
+    "updateError": "リマインダーの更新に失敗しました",
+    "updateErrorPlural": "リマインダーの更新に失敗しました",
+    "settingsError": "設定を開けませんでした",
+    "presetOff": "通知がスケジュールされていません",
+    "presetSimple": "開始時に1回リマインダー",
+    "presetStandard": "24時間前 + 開始時",
+    "presetIntense": "7日前、24時間前、1時間前 + 開始時"
   },
   "notes": {
     "title": "メモ",
@@ -88,7 +91,8 @@
     "appInfo": "アプリ情報",
     "notes": "メモ",
     "notesDescription": "メモを表示および管理",
-    "actions": "アクション"
+    "actions": "アクション",
+    "appearance": "外観"
   },
   "time": {
     "now": "今",
@@ -215,5 +219,29 @@
         "bullet3": "AI駆動のタイミング提案"
       }
     }
+  },
+  "countdown": {
+    "endsToday": "今日終了",
+    "endsTomorrow": "明日終了",
+    "justStarted": "開始しました！",
+    "iconLabel": "アイコン：",
+    "longNotes": "長いメモ",
+    "upgradeNotes": "5000文字のメモ+広告なしのためにProにアップグレード",
+    "proEnabled": "Pro有効",
+    "pickDateError": "カレンダーで日付を選択してください。",
+    "futureDateError": "将来の日付と時刻を選択してください。",
+    "allDay": "終日",
+    "icon": "アイコン",
+    "dateTime": "日付と時刻",
+    "timeRemaining": "残り時間",
+    "notes": "メモ",
+    "notesOptional": "メモ（オプション）",
+    "reminders": "リマインダー",
+    "repeats": "繰り返し",
+    "viewEdit": "表示 / 編集",
+    "expired": "期限切れ",
+    "endsIn": "{{count}}日で終了",
+    "noNotificationsScheduled": "通知がスケジュールされていません",
+    "remindersEnabled": "リマインダーが有効"
   }
 }

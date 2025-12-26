@@ -77,7 +77,7 @@ const FilterChip = ({ label, selected, locked, showPro, onPress }) => {
   );
 };
 
-const UpsellCard = ({ onPress, isDark, accentColor }) => (
+const UpsellCard = ({ onPress, isDark, accentColor, t }) => (
   <TouchableOpacity
     onPress={onPress}
     activeOpacity={0.9}
@@ -94,13 +94,13 @@ const UpsellCard = ({ onPress, isDark, accentColor }) => (
       </View>
       <View style={styles.upsellTextWrap}>
         <Text style={[styles.upsellTitleNew, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-          Unlock full reminder schedule
+          {t('reminders.upsellTitle')}
         </Text>
         <Text
           style={[styles.upsellBody, { color: isDark ? '#CBD5E1' : '#475569' }]}
           numberOfLines={2}
         >
-          Get full filters, search, grouping, and unlimited reminders.
+          {t('reminders.upsellDescription')}
         </Text>
       </View>
     </View>
@@ -109,7 +109,7 @@ const UpsellCard = ({ onPress, isDark, accentColor }) => (
       style={[styles.upsellButtonNew, { backgroundColor: accentColor }]}
       activeOpacity={0.9}
     >
-      <Text style={styles.upsellButtonNewText}>Go Pro</Text>
+      <Text style={styles.upsellButtonNewText}>{t('reminders.upsellButton')}</Text>
     </TouchableOpacity>
   </TouchableOpacity>
 );
@@ -608,6 +608,7 @@ const RemindersScreen = ({ navigation }) => {
                 }}
                 isDark={isDark}
                 accentColor={accentColor}
+                t={t}
               />
             </View>
           )}
@@ -726,49 +727,6 @@ const RemindersScreen = ({ navigation }) => {
                 keyExtractor={(item, index) => `group_${item.date}_${index}`}
                 scrollEnabled={false}
               />
-              
-              {/* Free user upsell */}
-              {!isPro && filteredReminders.length > displayReminders.length && (
-                <View style={[
-                  styles.upsellCard,
-                  {
-                    backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
-                    borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
-                  }
-                ]}>
-                  <Ionicons
-                    name="lock-closed"
-                    size={wp('5%')}
-                    color={accentColor}
-                  />
-                  <View style={styles.upsellContent}>
-                    <Text style={[
-                      styles.upsellTitle,
-                      { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                    ]}>
-                      Unlock unlimited reminders
-                    </Text>
-                    <Text style={[
-                      styles.upsellText,
-                      { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>
-                      Upgrade to Pro for unlimited reminders + per-reminder toggles
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setPaywallVisible(true);
-                    }}
-                    style={[
-                      styles.upsellButton,
-                      { backgroundColor: accentColor }
-                    ]}
-                  >
-                    <Text style={styles.upsellButtonText}>Upgrade</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
             </>
           )}
         </ScrollView>

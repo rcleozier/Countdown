@@ -77,6 +77,7 @@
     "title": "Configuración",
     "language": "Idioma",
     "theme": "Tema",
+    "appearance": "Apariencia",
     "light": "Claro",
     "dark": "Oscuro",
     "clearAll": "Borrar Todos los Eventos",
@@ -186,7 +187,56 @@
       "expired": "Expirada",
       "none": "No hay suscripción activa"
     },
-    "manage": "Gestionar Suscripción"
+    "manage": "Gestionar Suscripción",
+    "upsell": {
+      "unlockPro": "Desbloquear Pro",
+      "notNow": "Ahora no"
+    }
+  },
+  "countdown": {
+    "endsToday": "Termina hoy",
+    "endsTomorrow": "Termina mañana",
+    "justStarted": "¡Acaba de comenzar!",
+    "iconLabel": "Icono:",
+    "icon": "Icono",
+    "longNotes": "Notas Largas",
+    "upgradeNotes": "Actualiza a Pro para notas de 5000 caracteres + sin anuncios",
+    "proEnabled": "Pro habilitado",
+    "pickDateError": "Por favor selecciona una fecha en el calendario.",
+    "futureDateError": "Por favor selecciona una fecha y hora en el futuro.",
+    "allDay": "Todo el Día",
+    "dateTime": "Fecha y Hora",
+    "timeRemaining": "Tiempo Restante",
+    "notes": "Notas",
+    "notesOptional": "Notas (opcional)",
+    "reminders": "Recordatorios",
+    "repeats": "Repite",
+    "viewEdit": "Ver / Editar",
+    "expired": "Expirado",
+    "endsIn": "Termina en {{count}} días",
+    "noNotificationsScheduled": "No hay notificaciones programadas",
+    "remindersEnabled": "Recordatorios habilitados"
+  },
+  "reminders": {
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "event": "Evento",
+    "reminder": "Recordatorio",
+    "untitledEvent": "Evento Sin Título",
+    "searchPlaceholder": "Buscar recordatorios por evento",
+    "date": "Fecha",
+    "filterProMessage": "es parte de Pro. Actualiza para organizar mejor tus recordatorios.",
+    "thisFilter": "Este filtro",
+    "updateError": "Error al actualizar recordatorio",
+    "updateErrorPlural": "Error al actualizar recordatorios",
+    "settingsError": "No se pudo abrir la configuración",
+    "presetOff": "No hay notificaciones programadas",
+    "presetSimple": "Un recordatorio a la hora de inicio",
+    "presetStandard": "24 horas antes + a la hora de inicio",
+    "presetIntense": "7 días, 24 horas, 1 hora antes + a la hora de inicio",
+    "upsellTitle": "Desbloquear horario completo de recordatorios",
+    "upsellDescription": "Obtén filtros completos, búsqueda, agrupación y recordatorios ilimitados.",
+    "upsellButton": "Ir a Pro"
   }
 }
 

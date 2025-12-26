@@ -458,35 +458,35 @@ const SettingsScreen = () => {
             <Text style={[
               styles.cardTitle,
               { color: accentColor }
-            ]}>Language</Text>
-            <View style={styles.languageRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={[
-                  styles.cardSubtext,
-                  { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>
-                  {SUPPORTED_LOCALES[locale]?.name || locale}
-                </Text>
-              </View>
-              <Pressable
-                onPressIn={() => handleCardPressIn('language')}
-                onPressOut={() => handleCardPressOut('language')}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setLanguageModalVisible(true);
-                }}
-              >
-                <Animated.View style={[
-                  { transform: [{ scale: getCardScale('language') }] }
-                ]}>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={wp('4%')}
-                    color={isDark ? '#6B7280' : '#9CA3AF'}
-                  />
-                </Animated.View>
-              </Pressable>
-            </View>
+            ]}>{t('settings.language')}</Text>
+            <Pressable
+              onPressIn={() => handleCardPressIn('language')}
+              onPressOut={() => handleCardPressOut('language')}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setLanguageModalVisible(true);
+              }}
+              style={styles.languageRow}
+            >
+              <Animated.View style={[
+                styles.languageRow,
+                { transform: [{ scale: getCardScale('language') }] }
+              ]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[
+                    styles.cardSubtext,
+                    { color: isDark ? '#A1A1A1' : '#6B7280' }
+                  ]}>
+                    {SUPPORTED_LOCALES[locale]?.name || locale}
+                  </Text>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={wp('4%')}
+                  color={isDark ? '#6B7280' : '#9CA3AF'}
+                />
+              </Animated.View>
+            </Pressable>
           </View>
 
           {/* Appearance */}
@@ -500,7 +500,7 @@ const SettingsScreen = () => {
             <Text style={[
               styles.cardTitle,
               { color: accentColor }
-            ]}>Appearance</Text>
+            ]}>{t('settings.appearance')}</Text>
             <View style={styles.themeToggleContainer}>
               <View>
                 <Text style={[
@@ -894,6 +894,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: wp('1%'),
+    paddingVertical: wp('1%'),
+    minHeight: wp('10%'),
   },
   helperText: {
     fontSize: wp('3%'),

@@ -62,6 +62,7 @@
     "title": "Settings",
     "language": "Language",
     "theme": "Theme",
+    "appearance": "Appearance",
     "light": "Light",
     "dark": "Dark",
     "clearAll": "Clear All Events",
@@ -206,12 +207,24 @@
     "endsTomorrow": "Ends tomorrow",
     "justStarted": "Just started!",
     "iconLabel": "Icon:",
+    "icon": "Icon",
     "longNotes": "Long Notes",
     "upgradeNotes": "Upgrade to Pro for 5000-char notes + no ads",
     "proEnabled": "Pro enabled",
     "pickDateError": "Please pick a date on the calendar.",
     "futureDateError": "Please select a date and time in the future.",
-    "allDay": "All Day"
+    "allDay": "All Day",
+    "dateTime": "Date & Time",
+    "timeRemaining": "Time Remaining",
+    "notes": "Notes",
+    "notesOptional": "Notes (optional)",
+    "reminders": "Reminders",
+    "repeats": "Repeats",
+    "viewEdit": "View / Edit",
+    "expired": "Expired",
+    "endsIn": "Ends in {{count}} days",
+    "noNotificationsScheduled": "No notifications scheduled",
+    "remindersEnabled": "Reminders enabled"
   },
   "reminders": {
     "chill": "Chill",
@@ -240,7 +253,14 @@
     "thisFilter": "This filter",
     "updateError": "Failed to update reminder",
     "updateErrorPlural": "Failed to update reminders",
-    "settingsError": "Could not open settings"
+    "settingsError": "Could not open settings",
+    "presetOff": "No notifications scheduled",
+    "presetSimple": "One reminder at start time",
+    "presetStandard": "24 hours before + at start time",
+    "presetIntense": "7 days, 24 hours, 1 hour before + at start time",
+    "upsellTitle": "Unlock full reminder schedule",
+    "upsellDescription": "Get full filters, search, grouping, and unlimited reminders.",
+    "upsellButton": "Go Pro"
   }
 }
 

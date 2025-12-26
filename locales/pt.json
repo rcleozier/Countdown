@@ -55,7 +55,11 @@
     "monthsBefore_plural": "{{count}} meses antes",
     "addReminder": "Adicionar lembrete",
     "removeReminder": "Remover",
-    "noReminders": "Nenhum lembrete definido"
+    "noReminders": "Nenhum lembrete definido",
+    "presetOff": "Nenhuma notificação agendada",
+    "presetSimple": "Um lembrete no horário de início",
+    "presetStandard": "24 horas antes + no horário de início",
+    "presetIntense": "7 dias, 24 horas, 1 hora antes + no horário de início"
   },
   "notes": {
     "title": "Notas",
@@ -88,7 +92,8 @@
     "appInfo": "Informações do aplicativo",
     "notes": "Notas",
     "notesDescription": "Ver e gerenciar suas notas",
-    "actions": "Ações"
+    "actions": "Ações",
+    "appearance": "Aparência"
   },
   "time": {
     "now": "agora",
@@ -215,5 +220,19 @@
         "bullet3": "Sugestões de tempo alimentadas por IA"
       }
     }
+  },
+  "countdown": {
+    "icon": "Ícone",
+    "dateTime": "Data e Hora",
+    "timeRemaining": "Tempo Restante",
+    "notes": "Notas",
+    "notesOptional": "Notas (opcional)",
+    "reminders": "Lembretes",
+    "repeats": "Repete",
+    "viewEdit": "Ver / Editar",
+    "expired": "Expirado",
+    "endsIn": "Termina em {{count}} dias",
+    "noNotificationsScheduled": "Nenhuma notificação agendada",
+    "remindersEnabled": "Lembretes habilitados"
   }
 }

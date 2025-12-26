@@ -43,19 +43,22 @@
     "selectIcon": "Symbol auswählen"
   },
   "reminders": {
-    "chill": "Entspannt",
-    "standard": "Standard",
-    "intense": "Intensiv",
-    "custom": "Benutzerdefiniert",
-    "daysBefore": "{{count}} Tag vorher",
-    "daysBefore_plural": "{{count}} Tage vorher",
-    "weeksBefore": "{{count}} Woche vorher",
-    "weeksBefore_plural": "{{count}} Wochen vorher",
-    "monthsBefore": "{{count}} Monat vorher",
-    "monthsBefore_plural": "{{count}} Monate vorher",
-    "addReminder": "Erinnerung hinzufügen",
-    "removeReminder": "Entfernen",
-    "noReminders": "Keine Erinnerungen festgelegt"
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "event": "Ereignis",
+    "reminder": "Erinnerung",
+    "untitledEvent": "Unbenanntes Ereignis",
+    "searchPlaceholder": "Erinnerungen nach Ereignis suchen",
+    "date": "Datum",
+    "filterProMessage": "ist Teil von Pro. Upgrade für bessere Organisation Ihrer Erinnerungen.",
+    "thisFilter": "Dieser Filter",
+    "updateError": "Fehler beim Aktualisieren der Erinnerung",
+    "updateErrorPlural": "Fehler beim Aktualisieren der Erinnerungen",
+    "settingsError": "Einstellungen konnten nicht geöffnet werden",
+    "presetOff": "Keine Benachrichtigungen geplant",
+    "presetSimple": "Eine Erinnerung zur Startzeit",
+    "presetStandard": "24 Stunden vorher + zur Startzeit",
+    "presetIntense": "7 Tage, 24 Stunden, 1 Stunde vorher + zur Startzeit"
   },
   "notes": {
     "title": "Notizen",
@@ -88,7 +91,8 @@
     "appInfo": "App-Informationen",
     "notes": "Notizen",
     "notesDescription": "Ihre Notizen anzeigen und verwalten",
-    "actions": "Aktionen"
+    "actions": "Aktionen",
+    "appearance": "Erscheinungsbild"
   },
   "time": {
     "now": "jetzt",
@@ -215,5 +219,29 @@
         "bullet3": "KI-gestützte Zeitvorschläge"
       }
     }
+  },
+  "countdown": {
+    "endsToday": "Endet heute",
+    "endsTomorrow": "Endet morgen",
+    "justStarted": "Gerade gestartet!",
+    "iconLabel": "Symbol:",
+    "longNotes": "Lange Notizen",
+    "upgradeNotes": "Upgrade auf Pro für 5000-Zeichen-Notizen + keine Werbung",
+    "proEnabled": "Pro aktiviert",
+    "pickDateError": "Bitte wählen Sie ein Datum im Kalender aus.",
+    "futureDateError": "Bitte wählen Sie ein Datum und eine Uhrzeit in der Zukunft aus.",
+    "allDay": "Ganztägig",
+    "icon": "Symbol",
+    "dateTime": "Datum und Uhrzeit",
+    "timeRemaining": "Verbleibende Zeit",
+    "notes": "Notizen",
+    "notesOptional": "Notizen (optional)",
+    "reminders": "Erinnerungen",
+    "repeats": "Wiederholt",
+    "viewEdit": "Anzeigen / Bearbeiten",
+    "expired": "Abgelaufen",
+    "endsIn": "Endet in {{count}} Tagen",
+    "noNotificationsScheduled": "Keine Benachrichtigungen geplant",
+    "remindersEnabled": "Erinnerungen aktiviert"
   }
 }

@@ -73,7 +73,8 @@
     "appInfo": "应用信息",
     "notes": "笔记",
     "notesDescription": "查看和管理您的笔记",
-    "actions": "操作"
+    "actions": "操作",
+    "appearance": "外观"
   },
   "time": {
     "now": "现在",
@@ -211,7 +212,19 @@
     "proEnabled": "Pro已启用",
     "pickDateError": "请在日历上选择日期。",
     "futureDateError": "请选择未来的日期和时间。",
-    "allDay": "全天"
+    "allDay": "全天",
+    "icon": "图标",
+    "dateTime": "日期和时间",
+    "timeRemaining": "剩余时间",
+    "notes": "笔记",
+    "notesOptional": "笔记（可选）",
+    "reminders": "提醒",
+    "repeats": "重复",
+    "viewEdit": "查看 / 编辑",
+    "expired": "已过期",
+    "endsIn": "{{count}}天后结束",
+    "noNotificationsScheduled": "未安排通知",
+    "remindersEnabled": "已启用提醒"
   },
   "reminders": {
     "chill": "轻松",
@@ -240,6 +253,10 @@
     "thisFilter": "此筛选器",
     "updateError": "无法更新提醒",
     "updateErrorPlural": "无法更新提醒",
-    "settingsError": "无法打开设置"
+    "settingsError": "无法打开设置",
+    "presetOff": "未安排通知",
+    "presetSimple": "开始时提醒一次",
+    "presetStandard": "24小时前 + 开始时",
+    "presetIntense": "7天前、24小时前、1小时前 + 开始时"
   }
 }

@@ -556,7 +556,7 @@ const HomeScreen = () => {
 
   const handleConfirmDate = () => {
     if (!tempSelectedDate) {
-      Alert.alert("Please pick a date on the calendar.");
+      Alert.alert(t('common.error'), t('countdown.pickDateError'));
       return;
     }
     const [year, month, day] = tempSelectedDate.split("-");
@@ -707,7 +707,7 @@ const HomeScreen = () => {
           'Notifications Disabled',
           'To receive event notifications, please enable notifications in Settings.',
           [
-            { text: 'Cancel', style: 'cancel' },
+            { text: t('common.cancel'), style: 'cancel' },
             { 
               text: 'Open Settings', 
               onPress: () => Linking.openSettings() 
@@ -1108,7 +1108,7 @@ const HomeScreen = () => {
               ]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', zIndex: 1 }}>
                   <Ionicons name="add" size={wp('5%')} color="#FFFFFF" style={{ marginRight: wp('2%') }} />
-                  <Text style={styles.emptyActionText}>Create Your First Event</Text>
+                  <Text style={styles.emptyActionText}>{t('home.createButton')}</Text>
                 </View>
               </Animated.View>
             </Pressable>
@@ -1166,21 +1166,101 @@ const HomeScreen = () => {
                 transform: [{ scale: modalScale }],
               }
             ]}>
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={(e) => e.stopPropagation()}
-                pointerEvents={iconPickerVisible || calendarModalVisible || timePickerVisible ? 'none' : 'auto'}
-              >
+              {/* Icon Picker Overlay - Inside create modal */}
+              {iconPickerVisible && (
+                <View style={[
+                  styles.iconPickerOverlay,
+                  {
+                    backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
+                    overflow: 'hidden',
+                  }
+                ]}>
+                  <Pressable
+                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+                    onPress={() => setIconPickerVisible(false)}
+                  >
+                    <Pressable onPress={(e) => e.stopPropagation()}>
+                      <Animated.View style={[
+                        styles.iconModalContent,
+                        {
+                          backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                          shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                          transform: [{ scale: iconModalScale }],
+                        }
+                      ]}>
+                        <Text style={[
+                          styles.iconModalTitle,
+                          { color: isDark ? '#F3F3F6' : '#111111' }
+                        ]}>{t('create.selectIcon')}</Text>
+                        <View style={[
+                          styles.iconModalDivider,
+                          { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
+                        ]} />
+                        <ScrollView 
+                          style={styles.iconModalScroll}
+                          contentContainerStyle={styles.iconModalScrollContent}
+                          showsVerticalScrollIndicator={false}
+                          bounces={true}
+                        >
+                          <View style={styles.iconList}>
+                            {eventIcons.map((icon, index) => (
+                              <IconItem
+                                key={`${icon}-${index}`}
+                                icon={icon}
+                                isSelected={newIcon === icon}
+                                isDark={isDark}
+                                onPress={() => {
+                                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                  setNewIcon(icon);
+                                  setIconPickerVisible(false);
+                                }}
+                              />
+                            ))}
+                          </View>
+                        </ScrollView>
+                        <TouchableOpacity
+                          onPress={() => setIconPickerVisible(false)}
+                          style={{
+                            backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                            height: 48,
+                            borderRadius: wp('3%'),
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            paddingVertical: 12,
+                            paddingHorizontal: 16,
+                            marginTop: wp('2%'),
+                          }}
+                        >
+                          <Text 
+                            allowFontScaling={false}
+                            style={{
+                              color: isDark ? '#FFFFFF' : '#000000',
+                              fontSize: 16,
+                              fontWeight: '600',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {t('common.cancel')}
+                          </Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    </Pressable>
+                  </Pressable>
+                </View>
+              )}
               <ScrollView 
                 style={styles.modalFormScroll}
                 contentContainerStyle={styles.modalFormContent}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
+                scrollEnabled={true}
+                nestedScrollEnabled={true}
+                bounces={true}
               >
               <Text style={[
                 styles.modalTitle,
                 { color: isDark ? '#F5F5F5' : '#111111' }
-              ]}>Create Countdown</Text>
+              ]}>{t('create.title')}</Text>
               
               {/* Countdown Name Input */}
               <View style={styles.modalSection}>
@@ -1316,7 +1396,7 @@ const HomeScreen = () => {
                       ]}
                       onPress={handleConfirmDate}
                     >
-                      <Text style={styles.buttonTextSave}>Confirm</Text>
+                      <Text style={styles.buttonTextSave}>{t('common.confirm')}</Text>
                     </TouchableOpacity>
                   </View>
                 </Animated.View>
@@ -1390,13 +1470,13 @@ const HomeScreen = () => {
                       style={[styles.button, { backgroundColor: theme.colors.border }]}
                       onPress={() => setTimePickerVisible(false)}
                     >
-                      <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
+                      <Text style={[styles.buttonText, { color: theme.colors.text }]}>{t('common.cancel')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.button, { backgroundColor: theme.colors.primary }]}
                       onPress={() => setTimePickerVisible(false)}
                     >
-                      <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>Confirm</Text>
+                      <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>{t('common.confirm')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1409,7 +1489,7 @@ const HomeScreen = () => {
                   <Text style={[
                     styles.modalSectionLabel,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
-                  ]}>Reminders</Text>
+                  ]}>{t('countdown.reminders')}</Text>
                   {(reminderPreset === 'standard' || reminderPreset === 'intense') && (
                     <View style={{ marginLeft: wp('2%') }}>
                       <ProBadge size="small" />
@@ -1494,15 +1574,10 @@ const HomeScreen = () => {
                   ]}>
                     {(() => {
                       if (!reminderPreset || reminderPreset === 'off') {
-                        return 'No notifications scheduled';
+                        return t('countdown.noNotificationsScheduled');
                       }
-                      try {
-                        const description = getPresetDescription(reminderPreset);
-                        return description || 'Reminders enabled';
-                      } catch (error) {
-                        console.error('Error getting preset description:', error);
-                        return 'Reminders enabled';
-                      }
+                      const presetKey = `reminders.preset${reminderPreset.charAt(0).toUpperCase() + reminderPreset.slice(1)}`;
+                      return t(presetKey) || t('countdown.remindersEnabled');
                     })()}
                   </Text>
                 </View>
@@ -1554,7 +1629,7 @@ const HomeScreen = () => {
                   <Text style={[
                     styles.modalSectionLabel,
                     { color: isDark ? '#A1A1A1' : '#6B7280' }
-                  ]}>Repeats</Text>
+                  ]}>{t('countdown.repeats')}</Text>
                   {recurrence !== RECURRENCE_TYPES.NONE && (
                     <View style={{ marginLeft: wp('2%') }}>
                       <ProBadge size="small" />
@@ -1709,7 +1784,7 @@ const HomeScreen = () => {
                 <Text style={[
                   styles.iconLabel,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>Notes (optional)</Text>
+                ]}>{t('countdown.notesOptional')}</Text>
               </View>
               <TextInput
                 placeholder="Add plans, packing list, reminders…"
@@ -1782,7 +1857,7 @@ const HomeScreen = () => {
                   <Text style={[
                     styles.modalFooterButtonText,
                     { color: isDark ? '#E5E7EB' : '#111111' }
-                  ]}>Cancel</Text>
+                  ]}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleAddCountdown}
@@ -1804,11 +1879,10 @@ const HomeScreen = () => {
                       ? (isDark ? '#6B7280' : '#9CA3AF')
                       : '#FFFFFF'
                     }
-                  ]}>Create</Text>
+                  ]}>{t('common.add')}</Text>
                 </TouchableOpacity>
               </View>
               </ScrollView>
-              </TouchableOpacity>
             </Animated.View>
           </TouchableOpacity>
         </KeyboardAvoidingView>
@@ -1989,6 +2063,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     flexDirection: 'column',
     justifyContent: 'space-between',
+    overflow: 'hidden',
   },
   modalFormScroll: {
     flexShrink: 1,
@@ -2044,6 +2119,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
     paddingHorizontal: wp('5%'),
+    overflow: 'hidden',
   },
   iconModalContent: {
     width: '100%',
