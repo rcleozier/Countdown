@@ -41,7 +41,8 @@ const SettingsScreen = () => {
   const appInfo = appConfig.expo;
   const { theme, isDark, toggleTheme } = useTheme();
   const { locale, setLocale, t } = useLocale();
-  const { isPro, restore, isLoading: purchasesLoading } = usePurchases();
+  const purchases = usePurchases();
+  const { isPro, restore, isLoading: purchasesLoading } = purchases;
   const navigation = useNavigation();
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false);
@@ -631,55 +632,93 @@ const SettingsScreen = () => {
 
           {/* Developer Section (DEV ONLY) */}
           {__DEV__ && (
-            <View style={[
-              styles.card,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-              }
-            ]}>
-              <Text style={[
-                styles.sectionHeader,
-                { color: isDark ? '#A1A1A1' : '#6B7280' }
-              ]}>{t('settings.developer')}</Text>
-              <Pressable
-                onPress={async () => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  // Toggle Pro status for debugging
-                  const cached = await AsyncStorage.getItem('@entitlements_cache');
-                  const data = cached ? JSON.parse(cached) : { isPro: false };
-                  const newProStatus = !data.isPro;
-                  await AsyncStorage.setItem('@entitlements_cache', JSON.stringify({
-                    ...data,
-                    isPro: newProStatus,
-                    timestamp: Date.now(),
-                  }));
-                  Alert.alert(t('settings.debug'), t('settings.debugToggleMessage', { status: newProStatus ? t('settings.on') : t('settings.off') }));
-                }}
-              >
-                <View style={[
-                  styles.actionRow,
-                  {
-                    paddingVertical: wp('3%'),
-                    paddingHorizontal: wp('4%'),
-                    borderRadius: wp('2.5%'),
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                  }
-                ]}>
-                  <Ionicons
-                    name="bug"
-                    size={wp('5%')}
-                    color={isDark ? '#A1A1A1' : '#6B7280'}
-                  />
-                  <Text style={[
-                    styles.actionText,
-                    { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
+            <>
+              <View style={[
+                styles.card,
+                {
+                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+                }
+              ]}>
+                <Text style={[
+                  styles.sectionHeader,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>{t('settings.developer')}</Text>
+                <Pressable
+                  onPress={async () => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    // Toggle Pro status for debugging
+                    const cached = await AsyncStorage.getItem('@entitlements_cache');
+                    const data = cached ? JSON.parse(cached) : { isPro: false };
+                    const newProStatus = !data.isPro;
+                    await AsyncStorage.setItem('@entitlements_cache', JSON.stringify({
+                      ...data,
+                      isPro: newProStatus,
+                      timestamp: Date.now(),
+                    }));
+                    Alert.alert(t('settings.debug'), t('settings.debugToggleMessage', { status: newProStatus ? t('settings.on') : t('settings.off') }));
+                  }}
+                >
+                  <View style={[
+                    styles.actionRow,
+                    {
+                      paddingVertical: wp('3%'),
+                      paddingHorizontal: wp('4%'),
+                      borderRadius: wp('2.5%'),
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                    }
                   ]}>
-                    {t('settings.debugTogglePro', { status: isPro ? t('settings.on') : t('settings.off') })}
-                  </Text>
-                </View>
-              </Pressable>
-            </View>
+                    <Ionicons
+                      name="bug"
+                      size={wp('5%')}
+                      color={isDark ? '#A1A1A1' : '#6B7280'}
+                    />
+                    <Text style={[
+                      styles.actionText,
+                      { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
+                    ]}>
+                      {t('settings.debugTogglePro', { status: isPro ? t('settings.on') : t('settings.off') })}
+                    </Text>
+                  </View>
+                </Pressable>
+              </View>
+
+              {/* Subscription Debug Section (DEV ONLY) */}
+              <View style={[
+                styles.card,
+                {
+                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+                }
+              ]}>
+                <Text style={[
+                  styles.sectionHeader,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>Subscription Debug</Text>
+                {purchases.__debug && (
+                  <View style={{ padding: wp('3%') }}>
+                    <Text style={[styles.actionText, { color: isDark ? '#F5F5F5' : '#111111', marginBottom: wp('2%') }]}>
+                      isPro: {purchases.__debug.isPro ? 'true' : 'false'}
+                    </Text>
+                    <Text style={[styles.actionText, { color: isDark ? '#F5F5F5' : '#111111', marginBottom: wp('2%') }]}>
+                      Active Entitlement: {purchases.__debug.activeEntitlement || 'none'}
+                    </Text>
+                    <Text style={[styles.actionText, { color: isDark ? '#F5F5F5' : '#111111', marginBottom: wp('2%') }]}>
+                      Last CustomerInfo: {purchases.__debug.lastCustomerInfoFetch || 'never'}
+                    </Text>
+                    <Text style={[styles.actionText, { color: isDark ? '#F5F5F5' : '#111111', marginBottom: wp('2%') }]}>
+                      Last Refresh: {purchases.__debug.lastRefresh || 'never'}
+                    </Text>
+                    <Text style={[styles.actionText, { color: isDark ? '#F5F5F5' : '#111111', marginBottom: wp('2%') }]}>
+                      Current Offering ID: {purchases.__debug.currentOfferingId || 'none'}
+                    </Text>
+                    <Text style={[styles.actionText, { color: isDark ? '#F5F5F5' : '#111111' }]}>
+                      Monthly Package ID: {purchases.__debug.monthlyPackageId || 'none'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </>
           )}
 
           {/* Confirmation Modal */}

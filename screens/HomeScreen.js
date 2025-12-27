@@ -1465,7 +1465,8 @@ const HomeScreen = () => {
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             if (isLocked) {
                               // Show paywall for Pro presets
-                      openPaywall('reminders_presets');
+                              setPaywallFeature('advanced_reminders');
+                              setPaywallVisible(true);
                               // Don't change selection
                               return;
                             }

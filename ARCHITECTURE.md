@@ -159,12 +159,13 @@ When a recurring event's `nextOccurrenceAt` is in the past, it automatically "ro
 
 #### 1. Advanced Reminders
 - **Free**: `off`, `simple` (1 reminder at start time)
-- **Pro**: `standard` (24h before + at start), `intense` (7 days, 24h, 1h before + at start)
-- Pro users can toggle individual reminders on/off
-- Free users see locked presets with paywall on tap
+- **Pro**: `off`, `simple`, `standard` (24h before + at start), `intense` (7 days, 24h, 1h before + at start)
+- **No Custom Option**: Custom reminders have been removed entirely
+- Free users see locked presets (Standard🔒, Intense🔒) with paywall on tap
+- Tapping locked preset opens PaywallSheet with `feature='advanced_reminders'`
 
 #### 2. Extended Notes
-- **Free**: 500 characters max
+- **Free**: 100 characters max
 - **Pro**: 5,000 characters max
 - Character count enforced in UI
 
@@ -196,22 +197,21 @@ if (hasFeature('long_notes')) {
 ```
 
 **Pro Feature Constants:**
-- `custom_reminders` - Advanced reminder presets
+- `advanced_reminders` - Standard & Intense reminder tiers
 - `power_notes` - Extended notes features
 - `notes_search` - Search notes
 - `notes_overview` - All Notes screen
-- `long_notes` - 5000 char limit
+- `long_notes` - 5000 char limit (vs 100 for free)
 - `unit_controls` - Hide seconds, show weeks/months
-- `advanced_templates` - Premium templates
 - `advanced_analytics` - Enhanced analytics
 - `no_ads` - Ad-free experience
-- `recurring_countdowns` - Recurring events (implicit)
+- `recurring_countdowns` - Recurring events
 
 ### Paywall Integration
 
 - Paywall modal shown when free users try to access Pro features
 - Tapping locked features opens `PaywallSheet` component
-- Purchase flow handled via `expo-in-app-purchases`
+- Purchase flow handled via RevenueCat (`react-native-purchases`)
 - Entitlements checked via `PurchasesProvider` context
 
 ---

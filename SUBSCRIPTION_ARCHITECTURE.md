@@ -4,10 +4,29 @@
 The app implements a monthly subscription system using **RevenueCat** for iOS (Android support can be added later). RevenueCat simplifies subscription management by handling store connections, purchases, restore, entitlements, expiration validation, and receipt validation automatically.
 
 ## Product Configuration
+- **Bundle ID**: `com.chronox.app`
 - **Product ID**: `com.chronox.app.pro.monthly`
 - **Type**: Auto-renewable monthly subscription
 - **Price**: $1.99/month (configured in App Store Connect)
+- **RevenueCat API Key (iOS)**: `appl_lbJizGKaENVDSBTckaxkybVnxTo`
 - **Entitlement ID**: `pro`
+
+## Final Paywall Rules
+
+### Reminder Tiers
+- **Free**: `off`, `simple`
+- **Pro**: `off`, `simple`, `standard`, `intense`
+- **No Custom Option**: Custom reminders have been removed entirely
+
+### Notes Limit
+- **Free**: 100 characters max
+- **Pro**: 5,000 characters max
+
+### Pro Features
+- Advanced reminders (Standard & Intense tiers)
+- Extended notes (up to 5,000 characters)
+- Recurring countdowns
+- No ads
 
 ## File Structure
 
@@ -17,30 +36,32 @@ The app implements a monthly subscription system using **RevenueCat** for iOS (A
 **Purpose**: React Context Provider that manages subscription state using RevenueCat
 
 **Key Responsibilities**:
-- Initializes RevenueCat SDK
+- Configures RevenueCat SDK once on app boot
 - Manages subscription state (`isPro`, `isLoading`, `activeProductId`)
 - Handles purchase and restore flows
 - Loads product offerings for display
-- Refreshes subscription status on app resume
+- Refreshes subscription status on app resume (throttled)
 
 **Key State**:
-- `isPro` - Boolean indicating if user has active Pro subscription
+- `isPro` - Boolean derived ONLY from `customerInfo.entitlements.active['pro']` presence
 - `isLoading` - Loading state during initialization/purchases
 - `activeProductId` - Current subscription product ID
-- `offerings` - Product information (price, title, etc.)
+- `offerings` - Product information including full `current` offering and packages
+- `__debug` - Debug info (dev only): isPro, activeEntitlement, timestamps, offering/package IDs
 
 **Key Methods**:
-- `initializePurchases()` - Configures RevenueCat SDK
-- `refreshEntitlements()` - Fetches latest subscription status from RevenueCat
-- `purchase(pkgId)` - Initiates purchase flow with analytics tracking
-- `restore()` - Restores purchases and refreshes entitlements
+- `initializePurchases()` - Configures RevenueCat SDK (only once)
+- `refreshEntitlements()` - Fetches latest subscription status using `Purchases.getCustomerInfo()`
+- `purchase(pkgId)` - Initiates purchase flow using `Purchases.purchasePackage()`
+- `restore()` - Restores purchases using `Purchases.restorePurchases()` then updates state
 
 **Important Features**:
-- RevenueCat handles all store complexity (connection, purchases, expiration)
-- Automatic entitlement validation
-- No manual caching needed (RevenueCat handles it)
-- Automatically refreshes on app resume (AppState listener)
-- Handles user cancellation gracefully
+- `Purchases.configure()` called once on app boot
+- `Purchases.addCustomerInfoUpdateListener` keeps `isPro` reactive
+- `isPro` derived ONLY from `info.entitlements.active['pro']` presence
+- Offerings loaded via `Purchases.getOfferings()` and `offerings.current` stored
+- AppState refresh throttled (max once every 60 seconds) as backup
+- Restore calls `Purchases.restorePurchases()` then updates state
 
 #### 2. `src/billing/PaywallSheet.jsx`
 **Purpose**: UI component for the subscription paywall modal
@@ -54,14 +75,19 @@ The app implements a monthly subscription system using **RevenueCat** for iOS (A
 
 **Features Displayed**:
 - Advanced reminders (Standard & Intense)
-- Extended notes (up to 5000 characters)
+- Extended notes (up to 5,000 characters)
 - Recurring countdowns
 - No ads
 
 **User Actions**:
-- "Start Pro" - Initiates purchase
+- "Start Pro" - Initiates purchase via `Purchases.purchasePackage(selectedPackage)`
 - "Restore Purchases" - Restores previous purchases
 - "Not now" - Closes modal
+
+**Implementation Details**:
+- Uses `offerings.current.availablePackages` to find monthly package
+- Displays price from `package.storeProduct.priceString`
+- Handles `userCancelled` errors gracefully (no error shown)
 
 #### 3. `src/billing/useEntitlements.js`
 **Purpose**: Hook for feature gating throughout the app
@@ -69,28 +95,41 @@ The app implements a monthly subscription system using **RevenueCat** for iOS (A
 **Key Responsibilities**:
 - Provides `hasFeature(featureName)` to check if feature is available
 - Provides `getLimit(featureName)` to get feature limits (free vs pro)
+- Provides `getAllowedReminderTiers()` to get allowed reminder tiers based on Pro status
+- Provides `isReminderTierAllowed(tier)` to check if a specific tier is allowed
 - Defines FREE_FEATURES and PRO_FEATURES lists
-- Defines FEATURE_LIMITS for notes and reminders
+- Defines FEATURE_LIMITS for notes
 
 **Feature Lists**:
-- **FREE_FEATURES**: Basic reminders, basic notes (500 chars), unlimited countdowns, etc.
-- **PRO_FEATURES**: Custom reminders, long notes (5000 chars), no ads, etc.
+- **FREE_FEATURES**: Basic reminders (off, simple), basic notes (100 chars), unlimited countdowns, etc.
+- **PRO_FEATURES**: Advanced reminders (standard, intense), long notes (5,000 chars), no ads, recurring countdowns, etc.
 
 **Feature Limits**:
-- Notes: 100 chars (free) vs 5000 chars (pro)
-- Reminders: 1 per event (free) vs unlimited (pro)
+- Notes: 100 chars (free) vs 5,000 chars (pro)
+
+**Reminder Tiers**:
+- Free: `['off', 'simple']`
+- Pro: `['off', 'simple', 'standard', 'intense']`
+
+**Removed Features**:
+- ❌ Custom reminders (removed entirely)
+- ❌ Reminder count limits (replaced with tier-based gating)
 
 ## Data Flow
 
 ### 1. App Initialization
 ```
-App.js → PurchasesProvider → Purchases.configure()
+App.js → PurchasesProvider → Purchases.configure() (once)
   ↓
 Set user attributes
   ↓
+Add customerInfoUpdateListener (reactive updates)
+  ↓
 Refresh entitlements (getCustomerInfo)
   ↓
-Load offerings
+Load offerings (getOfferings)
+  ↓
+Store offerings.current
   ↓
 Update state
 ```
@@ -101,19 +140,17 @@ User taps "Start Pro"
   ↓
 PaywallSheet.handlePurchase()
   ↓
-PurchasesProvider.purchase()
+Get offerings.current.availablePackages
   ↓
-Purchases.getOfferings() → find package
+Find monthly package
   ↓
-Purchases.purchasePackage()
+Purchases.purchasePackage(selectedPackage)
   ↓
 Store shows native purchase dialog
   ↓
-RevenueCat validates purchase
+CustomerInfoUpdateListener fires
   ↓
-Refresh entitlements
-  ↓
-Update state
+Update isPro from customerInfo.entitlements.active['pro']
   ↓
 Show success alert
 ```
@@ -126,9 +163,9 @@ PurchasesProvider.restore()
   ↓
 Purchases.restorePurchases()
   ↓
-RevenueCat validates restored purchases
+Update isPro from customerInfo.entitlements.active['pro']
   ↓
-Refresh entitlements
+Refresh offerings
   ↓
 Update state
   ↓
@@ -137,15 +174,15 @@ Show success/failure alert
 
 ### 4. Subscription Status Check
 ```
-App resumes (AppState listener)
+App resumes (AppState listener, throttled 60s)
   ↓
 PurchasesProvider.refreshEntitlements()
   ↓
 Purchases.getCustomerInfo()
   ↓
-Check entitlements.active['pro']
+Check customerInfo.entitlements.active['pro']
   ↓
-Update state
+Update isPro state
 ```
 
 ## RevenueCat Benefits
@@ -159,15 +196,16 @@ Update state
 ✅ **Cross-Platform**: Easy Android support later
 ✅ **Webhooks**: Real-time subscription updates
 ✅ **Analytics**: Built-in subscription analytics
+✅ **Reactive Updates**: CustomerInfoUpdateListener keeps state in sync
 
 ### Simplified Code
-- **Before**: ~426 lines (ExpoStoreAdapter) + ~268 lines (PurchasesProvider) = ~694 lines
-- **After**: ~200 lines (PurchasesProvider only) = **~70% reduction**
+- **Before**: ~694 lines (ExpoStoreAdapter + PurchasesProvider)
+- **After**: ~300 lines (PurchasesProvider only) = **~57% reduction**
 
 ## Error Handling
 
 ### Purchase Errors
-- **User Cancellation**: `err.userCancelled` flag, not treated as error
+- **User Cancellation**: `err.userCancelled` flag, not treated as error (no alert shown)
 - **Purchase Failed**: Shows error alert, tracks analytics
 - **Network Errors**: Handled by RevenueCat SDK
 
@@ -178,13 +216,14 @@ Update state
 ## Production Readiness Features
 
 ✅ **New Subscriptions**: Fully implemented via RevenueCat
-✅ **Restore Purchases**: Single method call
+✅ **Restore Purchases**: Single method call with state update
 ✅ **Cancellations**: Detected via entitlement status
 ✅ **Expirations**: Automatic validation by RevenueCat
 ✅ **Error Handling**: Comprehensive error handling
-✅ **App State Refresh**: Automatically refreshes on app resume
+✅ **App State Refresh**: Throttled refresh on app resume (60s)
 ✅ **Analytics**: Tracks purchase events (started, success, failed, restore)
 ✅ **Server-Side Validation**: RevenueCat handles receipt validation
+✅ **Reactive Updates**: CustomerInfoUpdateListener keeps state in sync
 
 ## Usage Examples
 
@@ -209,6 +248,13 @@ const { getLimit } = useEntitlements();
 const notesLimit = getLimit('notes'); // 100 (free) or 5000 (pro)
 ```
 
+### Get Allowed Reminder Tiers
+```javascript
+const { getAllowedReminderTiers, isReminderTierAllowed } = useEntitlements();
+const allowedTiers = getAllowedReminderTiers(); // ['off', 'simple'] or ['off', 'simple', 'standard', 'intense']
+const canUseStandard = isReminderTierAllowed('standard'); // false (free) or true (pro)
+```
+
 ### Show Paywall
 ```javascript
 import PaywallSheet from './src/billing/PaywallSheet';
@@ -216,7 +262,7 @@ import PaywallSheet from './src/billing/PaywallSheet';
 <PaywallSheet 
   visible={showPaywall} 
   onClose={() => setShowPaywall(false)}
-  feature="recurring_countdowns"
+  feature="advanced_reminders"
 />
 ```
 
@@ -246,12 +292,19 @@ import PaywallSheet from './src/billing/PaywallSheet';
 - Shows "Pro Active" status for Pro users
 - Provides "Restore Purchases" button
 - Provides "Manage Subscription" link
+- **Dev Only**: Subscription Debug section showing isPro, activeEntitlement, timestamps, offering/package IDs
 
 ### Feature Gating
 - Recurring countdowns: Pro-only
 - Advanced reminders (Standard/Intense): Pro-only
-- Long notes (5000 chars): Pro-only
+- Long notes (5,000 chars): Pro-only
 - No ads: Pro-only
+
+### Reminder Selector UI
+- Create/Edit Countdown modals show 4 options: Off, Simple, Standard🔒, Intense🔒
+- Tapping locked option opens PaywallSheet with `feature='advanced_reminders'`
+- Free users can only select Off or Simple
+- Pro users can select any tier
 
 ## Testing Considerations
 
@@ -270,7 +323,10 @@ import PaywallSheet from './src/billing/PaywallSheet';
 
 ### What Changed
 - ❌ Removed: `ExpoStoreAdapter.js` (426 lines)
-- ✅ Simplified: `PurchasesProvider.jsx` (reduced from 268 to ~200 lines)
+- ✅ Simplified: `PurchasesProvider.jsx` (reduced from 268 to ~300 lines with better features)
+- ✅ Added: CustomerInfoUpdateListener for reactive updates
+- ✅ Added: Throttled AppState refresh (60s)
+- ✅ Added: Debug info in dev mode
 - ✅ Removed: Manual caching logic (RevenueCat handles it)
 - ✅ Removed: Manual expiration validation (RevenueCat handles it)
 - ✅ Removed: Manual store connection management (RevenueCat handles it)
@@ -299,3 +355,5 @@ import PaywallSheet from './src/billing/PaywallSheet';
 - No manual caching or expiration checking needed
 - All user-facing strings are internationalized through the locale system
 - The code is much simpler and easier to maintain
+- CustomerInfoUpdateListener ensures state stays in sync automatically
+- Throttled AppState refresh prevents excessive API calls

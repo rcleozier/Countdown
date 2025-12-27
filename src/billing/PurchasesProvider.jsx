@@ -1,7 +1,19 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Platform, AppState } from 'react-native';
-import Purchases from 'react-native-purchases';
 import { Analytics } from '../../util/analytics';
+
+// Conditionally import RevenueCat (may not be available in Expo Go)
+let Purchases = null;
+let PurchasesAvailable = false;
+
+try {
+  Purchases = require('react-native-purchases').default;
+  if (Purchases && typeof Purchases.configure === 'function') {
+    PurchasesAvailable = true;
+  }
+} catch (error) {
+  console.warn('[Billing] react-native-purchases not available:', error.message);
+}
 
 // RevenueCat API Key
 const REVENUECAT_API_KEY = Platform.OS === 'ios' 
@@ -9,6 +21,9 @@ const REVENUECAT_API_KEY = Platform.OS === 'ios'
   : 'goog_YOUR_ANDROID_KEY'; // Update when adding Android
 
 const ENTITLEMENT_ID = 'pro';
+
+// Throttle AppState refresh (max once per 60 seconds)
+const REFRESH_THROTTLE_MS = 60000;
 
 const PurchasesContext = createContext(undefined);
 
@@ -18,36 +33,87 @@ export const PurchasesProvider = ({ children }) => {
   const [activeProductId, setActiveProductId] = useState(undefined);
   const [offerings, setOfferings] = useState(undefined);
   const [error, setError] = useState(undefined);
+  const [lastRefreshTime, setLastRefreshTime] = useState(null);
+  const [customerInfoTimestamp, setCustomerInfoTimestamp] = useState(null);
+  
+  const lastRefreshRef = useRef(0);
+  const isConfiguredRef = useRef(false);
 
-  // Initialize RevenueCat
+  // Initialize RevenueCat once on app boot
   useEffect(() => {
+    if (!PurchasesAvailable || !Purchases) {
+      console.warn('[Billing] RevenueCat not available (Expo Go or simulator)');
+      setIsLoading(false);
+      return;
+    }
+
     initializePurchases();
     
-    // Refresh entitlements when app comes to foreground
+    // Set up customer info update listener for reactive updates
+    let customerInfoUpdateListener = null;
+    try {
+      if (Purchases && typeof Purchases.addCustomerInfoUpdateListener === 'function') {
+        customerInfoUpdateListener = Purchases.addCustomerInfoUpdateListener((customerInfo) => {
+          updateProStatus(customerInfo);
+          setCustomerInfoTimestamp(new Date().toISOString());
+        });
+      }
+    } catch (err) {
+      console.warn('[Billing] Could not set up customer info listener:', err);
+    }
+
+    // Throttled AppState refresh as backup
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'active') {
-        refreshEntitlements().catch(err => {
-          console.error('[Billing] Error refreshing on app resume:', err);
-        });
+        const now = Date.now();
+        const timeSinceLastRefresh = now - lastRefreshRef.current;
+        
+        // Only refresh if it's been more than throttle period
+        if (timeSinceLastRefresh >= REFRESH_THROTTLE_MS) {
+          refreshEntitlements().catch(err => {
+            console.error('[Billing] Error refreshing on app resume:', err);
+          });
+        }
       }
     });
     
     return () => {
+      if (customerInfoUpdateListener) {
+        try {
+          customerInfoUpdateListener.remove();
+        } catch (err) {
+          console.warn('[Billing] Error removing customer info listener:', err);
+        }
+      }
       subscription.remove();
     };
   }, []);
 
   const initializePurchases = async () => {
+    // Only configure once
+    if (isConfiguredRef.current) {
+      return;
+    }
+
+    if (!PurchasesAvailable || !Purchases) {
+      console.warn('[Billing] RevenueCat not available');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       
-      // Configure RevenueCat
+      // Configure RevenueCat (only once)
       await Purchases.configure({ apiKey: REVENUECAT_API_KEY });
+      isConfiguredRef.current = true;
       
       // Set user attributes (optional, for analytics)
-      await Purchases.setAttributes({
-        platform: Platform.OS,
-      });
+      if (Purchases.setAttributes) {
+        await Purchases.setAttributes({
+          platform: Platform.OS,
+        });
+      }
 
       // Load offerings and check entitlements
       await refreshEntitlements();
@@ -60,37 +126,53 @@ export const PurchasesProvider = ({ children }) => {
     }
   };
 
+  const updateProStatus = (customerInfo) => {
+    // Derive isPro ONLY from entitlements.active['pro'] presence
+    const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+    
+    setIsPro(isPremium);
+    
+    // Get active product ID if premium
+    if (isPremium) {
+      const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
+      setActiveProductId(entitlement.productIdentifier);
+    } else {
+      setActiveProductId(undefined);
+    }
+  };
+
   const refreshEntitlements = useCallback(async () => {
+    if (!PurchasesAvailable || !Purchases) {
+      return;
+    }
+
     try {
       // Get customer info (includes entitlements)
       const customerInfo = await Purchases.getCustomerInfo();
       
-      // Check if user has pro entitlement
-      const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      // Update Pro status
+      updateProStatus(customerInfo);
+      setCustomerInfoTimestamp(new Date().toISOString());
       
-      setIsPro(isPremium);
-      
-      // Get active product ID if premium
-      if (isPremium) {
-        const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
-        setActiveProductId(entitlement.productIdentifier);
-      } else {
-        setActiveProductId(undefined);
-      }
-
-      // Load offerings for display
+      // Load offerings and store offerings.current
       const offeringsData = await Purchases.getOfferings();
       
       if (offeringsData.current) {
-        const monthlyPackage = offeringsData.current.availablePackages.find(
+        // Store the full current offering
+        const currentOffering = offeringsData.current;
+        
+        // Find monthly package (or first package as fallback)
+        const monthlyPackage = currentOffering.availablePackages.find(
           pkg => pkg.identifier === 'monthly' || pkg.packageType === 'MONTHLY'
-        ) || offeringsData.current.availablePackages[0];
+        ) || currentOffering.availablePackages[0];
 
         if (monthlyPackage) {
           const product = monthlyPackage.storeProduct;
           setOfferings({
+            current: currentOffering,
             monthly: {
               identifier: monthlyPackage.identifier,
+              package: monthlyPackage, // Store full package for purchase
               product: {
                 identifier: product.identifier,
                 title: product.title,
@@ -101,9 +183,19 @@ export const PurchasesProvider = ({ children }) => {
               },
             },
           });
+        } else {
+          // Store offering even if no packages found
+          setOfferings({
+            current: currentOffering,
+            monthly: undefined,
+          });
         }
+      } else {
+        setOfferings(undefined);
       }
 
+      setLastRefreshTime(new Date().toISOString());
+      lastRefreshRef.current = Date.now();
       setError(undefined);
     } catch (err) {
       console.error('[Billing] Error refreshing entitlements:', err);
@@ -112,13 +204,13 @@ export const PurchasesProvider = ({ children }) => {
   }, []);
 
   const purchase = useCallback(async (pkgId) => {
+    if (!PurchasesAvailable || !Purchases) {
+      throw new Error('RevenueCat not available');
+    }
+
     try {
       setIsLoading(true);
       setError(undefined);
-
-      Analytics.trackEvent('purchase_started', {
-        product: pkgId,
-      });
 
       // Get offerings to find the package
       const offeringsData = await Purchases.getOfferings();
@@ -127,7 +219,7 @@ export const PurchasesProvider = ({ children }) => {
         throw new Error('No offerings available');
       }
 
-      // Find the package (use identifier or default to first monthly)
+      // Find the package (use identifier or default to monthly)
       const packageToPurchase = offeringsData.current.availablePackages.find(
         pkg => pkg.identifier === pkgId || (pkgId === 'monthly' && pkg.packageType === 'MONTHLY')
       ) || offeringsData.current.availablePackages[0];
@@ -136,8 +228,16 @@ export const PurchasesProvider = ({ children }) => {
         throw new Error('Package not found');
       }
 
-      // Make purchase
+      Analytics.trackEvent('purchase_started', {
+        product: packageToPurchase.identifier,
+      });
+
+      // Make purchase using purchasePackage
       const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
+      
+      // Update status from customerInfo
+      updateProStatus(customerInfo);
+      setCustomerInfoTimestamp(new Date().toISOString());
       
       // Check if purchase was successful
       const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
@@ -147,7 +247,7 @@ export const PurchasesProvider = ({ children }) => {
           product: packageToPurchase.identifier,
         });
         
-        // Refresh entitlements to update state
+        // Refresh offerings
         await refreshEntitlements();
       } else {
         throw new Error('Purchase completed but entitlement not active');
@@ -175,6 +275,10 @@ export const PurchasesProvider = ({ children }) => {
   }, [refreshEntitlements]);
 
   const restore = useCallback(async () => {
+    if (!PurchasesAvailable || !Purchases) {
+      throw new Error('RevenueCat not available');
+    }
+
     try {
       setIsLoading(true);
       setError(undefined);
@@ -183,6 +287,10 @@ export const PurchasesProvider = ({ children }) => {
 
       // Restore purchases
       const customerInfo = await Purchases.restorePurchases();
+      
+      // Update status from customerInfo
+      updateProStatus(customerInfo);
+      setCustomerInfoTimestamp(new Date().toISOString());
       
       // Check if user has active entitlement
       const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
@@ -215,6 +323,15 @@ export const PurchasesProvider = ({ children }) => {
     refresh: refreshEntitlements,
     offerings,
     error,
+    // Debug info (dev only)
+    __debug: __DEV__ ? {
+      isPro,
+      activeEntitlement: isPro ? ENTITLEMENT_ID : null,
+      lastCustomerInfoFetch: customerInfoTimestamp,
+      lastRefresh: lastRefreshTime,
+      currentOfferingId: offerings?.current?.identifier,
+      monthlyPackageId: offerings?.monthly?.identifier,
+    } : undefined,
   };
 
   return (

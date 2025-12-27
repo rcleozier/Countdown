@@ -1,9 +1,10 @@
 import { usePurchases } from './PurchasesProvider';
+import { REMINDER_PRESETS } from '../../util/reminderPresets';
 
 // Feature flags
 export const FREE_FEATURES = [
   'unlimited_countdowns',
-  'basic_reminders', // 1 reminder per event
+  'basic_reminders', // Off, Simple reminder tiers
   'basic_charts',
   'search_title',
   'dark_mode',
@@ -11,18 +12,19 @@ export const FREE_FEATURES = [
   'progress_bar',
   'filters',
   'basic_sort',
-  'basic_notes', // Basic notes (500 chars) - FREE
+  'basic_notes', // Basic notes (100 chars) - FREE
 ];
 
 export const PRO_FEATURES = [
-  'custom_reminders', // Multiple reminders + custom offsets
+  'advanced_reminders', // Standard & Intense reminder tiers
   'power_notes', // Power notes features (search, overview, longer notes)
   'notes_search', // Search notes across all events
   'notes_overview', // All Notes overview screen
-  'long_notes', // 5000 character limit (vs 500 for free)
+  'long_notes', // 5000 character limit (vs 100 for free)
   'unit_controls', // Hide seconds, show weeks/months
   'advanced_analytics',
   'no_ads',
+  'recurring_countdowns', // Recurring events
 ];
 
 // Feature limits configuration
@@ -31,10 +33,12 @@ export const FEATURE_LIMITS = {
     free: 100,
     pro: 5000,
   },
-  reminders: {
-    free: 1, // Single reminder only
-    pro: -1, // Unlimited
-  },
+};
+
+// Reminder tiers configuration
+export const REMINDER_TIERS = {
+  free: ['off', 'simple'],
+  pro: ['off', 'simple', 'standard', 'intense'],
 };
 
 export const useEntitlements = () => {
@@ -66,6 +70,24 @@ export const useEntitlements = () => {
     return FEATURE_LIMITS[featureName].free;
   };
 
+  /**
+   * Get allowed reminder tiers based on Pro status
+   * @returns {string[]} Array of allowed preset IDs
+   */
+  const getAllowedReminderTiers = () => {
+    return purchases.isPro ? REMINDER_TIERS.pro : REMINDER_TIERS.free;
+  };
+
+  /**
+   * Check if a reminder tier is allowed
+   * @param {string} tier - Preset ID (off, simple, standard, intense)
+   * @returns {boolean} True if tier is allowed
+   */
+  const isReminderTierAllowed = (tier) => {
+    const allowedTiers = getAllowedReminderTiers();
+    return allowedTiers.includes(tier);
+  };
+
   return {
     isPro: purchases.isPro,
     isLoading: purchases.isLoading,
@@ -78,5 +100,7 @@ export const useEntitlements = () => {
     hasFeature,
     canUse,
     getLimit,
+    getAllowedReminderTiers,
+    isReminderTierAllowed,
   };
 };

@@ -10,6 +10,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import * as Haptics from 'expo-haptics';
+// Conditionally import RevenueCat (may not be available in Expo Go)
+let Purchases = null;
+try {
+  Purchases = require('react-native-purchases').default;
+} catch (error) {
+  console.warn('[PaywallSheet] react-native-purchases not available:', error.message);
+}
 import { useTheme } from '../../context/ThemeContext';
 import { useLocale } from '../../context/LocaleContext';
 import { usePurchases } from './PurchasesProvider';
@@ -19,7 +26,7 @@ import BottomSheet from '../../components/BottomSheet';
 const PaywallSheet = ({ visible, onClose, feature }) => {
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
-  const { purchase, restore, offerings, isLoading, error } = usePurchases();
+  const { offerings, isLoading, error, restore } = usePurchases();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [forceShow, setForceShow] = useState(false);
@@ -31,27 +38,62 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
     }
   }, [visible, feature]);
 
-  const handlePurchase = async (pkgId) => {
+  const handlePurchase = async () => {
+    if (!Purchases) {
+      Alert.alert(
+        t('subscription.purchaseFailed'),
+        'RevenueCat not available. Please use a development build.',
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+
     try {
       setIsPurchasing(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       
-      await purchase(pkgId);
-      
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert(
-        t('subscription.upsell.unlockPro'),
-        t('subscription.proUnlocked'),
-        [{ text: t('common.ok'), onPress: onClose }]
-      );
-    } catch (err) {
-      if (!err.userCancelled) {
-        Alert.alert(
-          t('subscription.purchaseFailed'),
-          err.message || t('subscription.purchaseFailedMessage'),
-          [{ text: t('common.ok') }]
-        );
+      // Use offerings.current.availablePackages
+      if (!offerings?.current) {
+        throw new Error('No offerings available');
       }
+
+      // Choose monthly package (or first package as fallback)
+      const selectedPackage = offerings.current.availablePackages.find(
+        pkg => pkg.identifier === 'monthly' || pkg.packageType === 'MONTHLY'
+      ) || offerings.current.availablePackages[0];
+
+      if (!selectedPackage) {
+        throw new Error('Package not found');
+      }
+
+      // Implement purchasePackage
+      const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
+      
+      // Check if purchase was successful
+      const isPremium = customerInfo.entitlements.active['pro'] !== undefined;
+      
+      if (isPremium) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert(
+          t('subscription.upsell.unlockPro'),
+          t('subscription.proUnlocked'),
+          [{ text: t('common.ok'), onPress: onClose }]
+        );
+      } else {
+        throw new Error('Purchase completed but entitlement not active');
+      }
+    } catch (err) {
+      // Handle userCancelled errors gracefully
+      if (err.userCancelled) {
+        // User cancelled, don't show error
+        return;
+      }
+      
+      Alert.alert(
+        t('subscription.purchaseFailed'),
+        err.message || t('subscription.purchaseFailedMessage'),
+        [{ text: t('common.ok') }]
+      );
     } finally {
       setIsPurchasing(false);
     }
@@ -81,7 +123,16 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
     }
   };
 
-  const monthlyPkg = offerings?.monthly;
+  // Get monthly package from offerings
+  const monthlyPackage = offerings?.monthly?.package || 
+    offerings?.current?.availablePackages?.find(
+      pkg => pkg.identifier === 'monthly' || pkg.packageType === 'MONTHLY'
+    ) || 
+    offerings?.current?.availablePackages?.[0];
+
+  // Display price from the package product
+  const priceString = monthlyPackage?.storeProduct?.priceString || 
+    offerings?.monthly?.product?.priceString;
 
   return (
     <BottomSheet visible={visible} onClose={onClose} showHandle={true}>
@@ -135,8 +186,8 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
               backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
             }
           ]}
-          onPress={() => handlePurchase(monthlyPkg?.identifier)}
-          disabled={isPurchasing || isRestoring || isLoading}
+          onPress={handlePurchase}
+          disabled={isPurchasing || isRestoring || isLoading || !monthlyPackage}
         >
           {isPurchasing ? (
             <ActivityIndicator color="#FFFFFF" />
@@ -146,9 +197,9 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
         </TouchableOpacity>
 
         {/* Pricing Transparency */}
-        {monthlyPkg?.product?.priceString && (
+        {priceString && (
           <Text style={[styles.pricingText, { color: theme.colors.textSecondary }]}>
-            {t('subscription.pricingTransparency', { price: monthlyPkg.product.priceString })}
+            {t('subscription.pricingTransparency', { price: priceString })}
           </Text>
         )}
 

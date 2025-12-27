@@ -1510,7 +1510,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                         onPress={() => {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                           if (isLocked) {
-                            setPaywallFeature('reminders_presets');
+                            setPaywallFeature('advanced_reminders');
                             setPaywallVisible(true);
                             return;
                           }
