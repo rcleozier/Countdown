@@ -87,13 +87,17 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
       // If there's an error, it will be displayed in the error message area
       // If isFinishingSetup is true, the UI will show the "Finishing setup..." message
     } catch (err) {
+      // Check if this is an authentication error (sandbox account issue)
+      const isAuthError = err.message?.includes('Authentication failed');
+      
       // Handle userCancelled errors gracefully - don't show error
-      if (err.userCancelled || err.message?.includes('cancelled') || err.message?.includes('canceled')) {
+      // But don't treat auth errors as cancellations
+      if (!isAuthError && (err.userCancelled || err.message?.includes('cancelled') || err.message?.includes('canceled'))) {
         // User cancelled - silently return
         return;
       }
       
-      // Only show error if it's not already being handled by the purchase function
+      // Show error alert (authentication errors and other errors)
       if (err.message && !err.message.includes('entitlement not active')) {
         Alert.alert(
           t('subscription.purchaseFailed'),

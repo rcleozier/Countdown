@@ -32,6 +32,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../context/LocaleContext';
+import BottomSheet from '../components/BottomSheet';
 import { ReviewManager } from '../util/reviewManager';
 import { ENABLE_ADS, USE_TEST_ADS } from '../util/config';
 import { AD_UNIT_IDS } from '../util/adConfig';
@@ -49,6 +50,7 @@ import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/remin
 import { isPresetPro, getPresetDescription } from '../util/reminderPresets';
 import { syncScheduledReminders } from '../util/reminderScheduler';
 import { rollForwardIfNeeded, RECURRENCE_TYPES, getRecurrenceLabel, isRecurrencePro } from '../util/recurrence';
+import OptimizedBannerAd from '../components/Ads';
 
 const IconItem = ({ icon, isSelected, onPress, isDark }) => {
   const iconScale = useRef(new Animated.Value(1)).current;
@@ -262,14 +264,12 @@ const HomeScreen = () => {
           console.error('🔍 [LOAD DEBUG] Raw data that failed:', storedCountdowns.substring(0, 500));
           setCountdowns([]);
         }
-      } else if (!hasLaunchedBefore) {
-        // First time user - seed with test data
-        console.log('🔍 [LOAD DEBUG] First time user - seeding test data');
-        await seedTestDataForNewUser();
-        await AsyncStorage.setItem("hasLaunchedBefore", "true");
       } else {
-        console.log('🔍 [LOAD DEBUG] No stored data and has launched before - setting empty array');
+        // No stored data - set empty array
+        console.log('🔍 [LOAD DEBUG] No stored data - setting empty array');
         setCountdowns([]);
+        // Mark as launched to prevent future seeding
+        await AsyncStorage.setItem("hasLaunchedBefore", "true");
       }
     } catch (error) {
       console.error("Error loading countdowns", error);
@@ -949,8 +949,16 @@ const HomeScreen = () => {
   };
 
   const renderItem = ({ item, index }) => {
+    // Show banner ad every 6 countdowns (after index 5, 11, 17, etc.) for free users
+    const shouldShowAd = !isPro && (index + 1) % 6 === 0 && index > 0;
+    
     return (
-      <CountdownItem event={item} index={index} onDelete={deleteCountdown} onEdit={editCountdown} />
+      <>
+        <CountdownItem event={item} index={index} onDelete={deleteCountdown} onEdit={editCountdown} />
+        {shouldShowAd && (
+          <OptimizedBannerAd screen="HomeScreen" />
+        )}
+      </>
     );
   };
 
@@ -1084,132 +1092,21 @@ const HomeScreen = () => {
         </>
       )}
 
-      {/* Modal for creating a new countdown */}
-      <Modal
-        animationType="fade"
-        transparent
+      {/* Bottom Sheet for creating a new countdown */}
+      <BottomSheet
         visible={modalVisible}
-        onRequestClose={closeCreationModal}
+        onClose={() => {
+          if (iconPickerVisible || calendarModalVisible || timePickerVisible || recurrencePickerVisible) return;
+          closeCreationModal();
+        }}
+        title={t('create.title')}
+        height="90%"
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: wp('4%') }}
         >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              if (iconPickerVisible || calendarModalVisible || timePickerVisible) return;
-              closeCreationModal();
-            }}
-            style={[
-              styles.modalContainer,
-              { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-            ]}
-          >
-            <Animated.View style={[
-              styles.modalContent,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
-                transform: [{ scale: modalScale }],
-              }
-            ]}>
-              {/* Icon Picker Overlay - Inside create modal */}
-              {iconPickerVisible && (
-                <View style={[
-                  styles.iconPickerOverlay,
-                  {
-                    backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
-                    overflow: 'hidden',
-                  }
-                ]}>
-                  <Pressable
-                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-                    onPress={() => setIconPickerVisible(false)}
-                  >
-                    <Pressable onPress={(e) => e.stopPropagation()}>
-                      <Animated.View style={[
-                        styles.iconModalContent,
-                        {
-                          backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                          shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
-                          transform: [{ scale: iconModalScale }],
-                        }
-                      ]}>
-                        <Text style={[
-                          styles.iconModalTitle,
-                          { color: isDark ? '#F3F3F6' : '#111111' }
-                        ]}>{t('create.selectIcon')}</Text>
-                        <View style={[
-                          styles.iconModalDivider,
-                          { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
-                        ]} />
-                        <ScrollView 
-                          style={styles.iconModalScroll}
-                          contentContainerStyle={styles.iconModalScrollContent}
-                          showsVerticalScrollIndicator={false}
-                          bounces={true}
-                        >
-                          <View style={styles.iconList}>
-                            {eventIcons.map((icon, index) => (
-                              <IconItem
-                                key={`${icon}-${index}`}
-                                icon={icon}
-                                isSelected={newIcon === icon}
-                                isDark={isDark}
-                                onPress={() => {
-                                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                  setNewIcon(icon);
-                                  setIconPickerVisible(false);
-                                }}
-                              />
-                            ))}
-                          </View>
-                        </ScrollView>
-                        <TouchableOpacity
-                          onPress={() => setIconPickerVisible(false)}
-                          style={{
-                            backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                            height: 48,
-                            borderRadius: wp('3%'),
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            paddingVertical: 12,
-                            paddingHorizontal: 16,
-                            marginTop: wp('2%'),
-                          }}
-                        >
-                          <Text 
-                            allowFontScaling={false}
-                            style={{
-                              color: isDark ? '#FFFFFF' : '#000000',
-                              fontSize: 16,
-                              fontWeight: '600',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {t('common.cancel')}
-                          </Text>
-                        </TouchableOpacity>
-                      </Animated.View>
-                    </Pressable>
-                  </Pressable>
-                </View>
-              )}
-              <ScrollView 
-                style={styles.modalFormScroll}
-                contentContainerStyle={styles.modalFormContent}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                scrollEnabled={true}
-                nestedScrollEnabled={true}
-                bounces={true}
-              >
-              <Text style={[
-                styles.modalTitle,
-                { color: isDark ? '#F5F5F5' : '#111111' }
-              ]}>{t('create.title')}</Text>
-              
               {/* Countdown Name Input */}
               <View style={styles.modalSection}>
                 <Text style={[
@@ -1831,10 +1728,91 @@ const HomeScreen = () => {
                   ]}>{t('common.add')}</Text>
                 </TouchableOpacity>
               </View>
-              </ScrollView>
-            </Animated.View>
-          </TouchableOpacity>
-        </KeyboardAvoidingView>
+        </ScrollView>
+      </BottomSheet>
+
+      {/* Icon Picker Modal - Separate modal */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={iconPickerVisible}
+        onRequestClose={() => setIconPickerVisible(false)}
+      >
+        <View style={[
+          styles.modalContainer,
+          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+        ]}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setIconPickerVisible(false)}
+          >
+            <View style={{ flex: 1 }} />
+          </Pressable>
+          <Animated.View style={[
+            styles.iconModalContent,
+            {
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+              transform: [{ scale: iconModalScale }],
+            }
+          ]}>
+            <Text style={[
+              styles.iconModalTitle,
+              { color: isDark ? '#F3F3F6' : '#111111' }
+            ]}>{t('create.selectIcon')}</Text>
+            <View style={[
+              styles.iconModalDivider,
+              { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
+            ]} />
+            <ScrollView 
+              style={styles.iconModalScroll}
+              contentContainerStyle={styles.iconModalScrollContent}
+              showsVerticalScrollIndicator={false}
+              bounces={true}
+            >
+              <View style={styles.iconList}>
+                {eventIcons.map((icon, index) => (
+                  <IconItem
+                    key={`${icon}-${index}`}
+                    icon={icon}
+                    isSelected={newIcon === icon}
+                    isDark={isDark}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setNewIcon(icon);
+                      setIconPickerVisible(false);
+                    }}
+                  />
+                ))}
+              </View>
+            </ScrollView>
+            <TouchableOpacity
+              onPress={() => setIconPickerVisible(false)}
+              style={{
+                backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                height: 48,
+                borderRadius: wp('3%'),
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                marginTop: wp('2%'),
+              }}
+            >
+              <Text 
+                allowFontScaling={false}
+                style={{
+                  color: isDark ? '#FFFFFF' : '#000000',
+                  fontSize: 16,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                }}
+              >
+                {t('common.cancel')}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
       </Modal>
 
       {/* Confetti overlay (re-mounts per key to replay) */}
@@ -1998,6 +1976,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp("5%"),
     zIndex: 1000,
   },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   modalContent: {
     width: '100%',
     maxWidth: wp('90%'),
@@ -2011,11 +1996,10 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
     flexDirection: 'column',
-    justifyContent: 'space-between',
     overflow: 'hidden',
   },
   modalFormScroll: {
-    flexShrink: 1,
+    flex: 1,
   },
   modalFormContent: {
     paddingBottom: wp('1%'),

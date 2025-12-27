@@ -360,8 +360,32 @@ export const PurchasesProvider = ({ children }) => {
         }
       }
     } catch (err) {
-      // Check for user cancellation first - this is not an error
-      if (err.userCancelled || err.message?.includes('cancelled') || err.message?.includes('canceled')) {
+      // Extract error details for better detection
+      const errorMessage = err.message || '';
+      const errorString = JSON.stringify(err).toLowerCase();
+      const errorCode = err.code;
+      
+      // Check for authentication failures (sandbox account issues)
+      // These often come wrapped as "cancelled" by RevenueCat but are actually auth failures
+      const isAuthError = 
+        errorMessage.includes('Authentication Failed') ||
+        errorMessage.includes('authentication failed') ||
+        errorMessage.includes('Password reuse not available') ||
+        errorMessage.includes('AMSErrorDomain') ||
+        errorString.includes('amserrordomain') ||
+        errorString.includes('authentication failed') ||
+        errorString.includes('password reuse') ||
+        errorCode === 530 ||
+        (errorCode === 100 && errorString.includes('authentication'));
+      
+      // Check for user cancellation - this is not an error
+      // Only treat as cancellation if it's NOT an auth error
+      const isUserCancelled = 
+        (err.userCancelled && !isAuthError) || 
+        (errorMessage.includes('cancelled') && !isAuthError) ||
+        (errorMessage.includes('canceled') && !isAuthError);
+      
+      if (isUserCancelled) {
         // User cancelled - log at info level, not error
         if (__DEV__) {
           console.log('[Billing] Purchase cancelled by user');
@@ -369,10 +393,28 @@ export const PurchasesProvider = ({ children }) => {
         return;
       }
       
+      // Handle authentication failures with helpful message
+      if (isAuthError) {
+        const authErrorMsg = 'Authentication failed. Please check your sandbox account settings or try signing out and back in.';
+        console.warn('[Billing] Purchase authentication failure:', {
+          message: errorMessage,
+          code: errorCode,
+          error: err
+        });
+        setError(authErrorMsg);
+        
+        Analytics.trackEvent('purchase_failed', {
+          error: 'authentication_failed',
+          product: pkgId,
+        });
+        
+        throw new Error(authErrorMsg);
+      }
+      
       // Log actual errors
       console.error('[Billing] Error purchasing:', err);
 
-      const errorMsg = err.message || 'Purchase failed';
+      const errorMsg = errorMessage || 'Purchase failed';
       setError(errorMsg);
       
       Analytics.trackEvent('purchase_failed', {

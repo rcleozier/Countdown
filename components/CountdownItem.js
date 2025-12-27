@@ -19,6 +19,7 @@ import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../context/LocaleContext';
+import BottomSheet from './BottomSheet';
 import { useEntitlements } from '../src/billing/useEntitlements';
 import { getRecurrenceLabel, RECURRENCE_TYPES } from '../util/recurrence';
 import PaywallSheet from '../src/billing/PaywallSheet';
@@ -443,22 +444,22 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   </Text>
                 )}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: wp('1%') }}>
-                  <Text style={[
-                    styles.date,
-                    {
-                      color: isDark ? '#A1A1A1' : '#6B7280',
-                      fontSize: wp('3.5%'), // 13-14px
-                    }
-                  ]}>
-                    {(() => {
+                <Text style={[
+                  styles.date,
+                  {
+                    color: isDark ? '#A1A1A1' : '#6B7280',
+                    fontSize: wp('3.5%'), // 13-14px
+                  }
+                ]}>
+                  {(() => {
                       const m = moment(displayDate);
-                      if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
-                        return m.format("MMM D, YYYY") + " (All Day)";
-                      } else {
-                        return m.format("MMM D, YYYY [at] hh:mm A");
-                      }
-                    })()}
-                  </Text>
+                    if (m.hours() === 0 && m.minutes() === 0 && m.seconds() === 0) {
+                      return m.format("MMM D, YYYY") + " (All Day)";
+                    } else {
+                      return m.format("MMM D, YYYY [at] hh:mm A");
+                    }
+                  })()}
+                </Text>
                   {event.recurrence && event.recurrence !== RECURRENCE_TYPES.NONE && (
                     <Text style={[
                       styles.date,
@@ -991,157 +992,21 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
         </View>
       </Modal>
 
-      {/* Edit Modal */}
-      <Modal
-        animationType="fade"
-        transparent
+      {/* Bottom Sheet for editing countdown */}
+      <BottomSheet
         visible={editModalVisible}
-        onRequestClose={() => setEditModalVisible(false)}
+        onClose={() => {
+          if (iconPickerVisible || calendarModalVisible || timePickerVisible) return;
+          setEditModalVisible(false);
+        }}
+        title={t('common.edit')}
+        height="90%"
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: wp('4%') }}
         >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              if (iconPickerVisible || calendarModalVisible || timePickerVisible) return;
-              setEditModalVisible(false);
-            }}
-            style={[
-              styles.modalContainer,
-              { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-            ]}
-          >
-            <Animated.View style={[
-              styles.modalContent,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
-                transform: [{ scale: modalScale }],
-              }
-            ]}>
-              {/* Icon Picker Overlay - Inside edit modal */}
-              {iconPickerVisible && (
-                <View style={[
-                  styles.iconPickerOverlay,
-                  {
-                    backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
-                    overflow: 'hidden',
-                  }
-                ]}>
-                  <Pressable
-                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-                    onPress={() => setIconPickerVisible(false)}
-                  >
-                    <Pressable onPress={(e) => e.stopPropagation()}>
-                      <Animated.View style={[
-                        {
-                          width: '100%',
-                          maxWidth: wp('90%'),
-                          maxHeight: hp('75%'),
-                          borderRadius: wp('5%'),
-                          paddingHorizontal: wp('5%'),
-                          paddingTop: wp('6%'),
-                          paddingBottom: wp('6%'),
-                          shadowOffset: { width: 0, height: 4 },
-                          shadowOpacity: 1,
-                          shadowRadius: 16,
-                          elevation: 8,
-                          backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                          shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
-                          transform: [{ scale: iconModalScale }],
-                        }
-                      ]}>
-                        <Text style={[
-                          {
-                            fontSize: wp('4.5%'),
-                            fontWeight: '600',
-                            fontFamily: 'System',
-                            textAlign: 'center',
-                            marginBottom: wp('4%'),
-                            color: isDark ? '#F3F4F6' : '#111111',
-                          }
-                        ]}>{t('create.selectIcon')}</Text>
-                        <View style={[
-                          {
-                            height: 1,
-                            marginBottom: wp('3%'),
-                            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-                          }
-                        ]} />
-                        <ScrollView 
-                          style={{ maxHeight: hp('55%') }}
-                          contentContainerStyle={{ paddingBottom: wp('5%') }}
-                          showsVerticalScrollIndicator={false}
-                          bounces={true}
-                        >
-                          <View style={{
-                            flexDirection: "row",
-                            flexWrap: "wrap",
-                            justifyContent: "flex-start",
-                            gap: wp('2.5%'),
-                          }}>
-                            {eventIcons.map((icon, index) => (
-                              <IconItem
-                                key={`${icon}-${index}`}
-                                icon={icon}
-                                isSelected={editIcon === icon}
-                                isDark={isDark}
-                                onPress={() => {
-                                  setEditIcon(icon);
-                                  setIconPickerVisible(false);
-                                }}
-                              />
-                            ))}
-                          </View>
-                        </ScrollView>
-                        <TouchableOpacity
-                          onPress={() => {
-                            setIconPickerVisible(false);
-                          }}
-                          style={{
-                            backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                            height: 48,
-                            borderRadius: wp('3%'),
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            paddingVertical: 12,
-                            paddingHorizontal: 16,
-                            marginTop: wp('2%'),
-                          }}
-                        >
-                          <Text 
-                            allowFontScaling={false}
-                            style={{
-                              color: isDark ? '#FFFFFF' : '#000000',
-                              fontSize: 16,
-                              fontWeight: '600',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {t('common.cancel')}
-                          </Text>
-                        </TouchableOpacity>
-                      </Animated.View>
-                    </Pressable>
-                  </Pressable>
-                </View>
-              )}
-              <ScrollView 
-                style={styles.modalFormScroll}
-                contentContainerStyle={styles.modalFormContent}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                scrollEnabled={true}
-                nestedScrollEnabled={true}
-                bounces={true}
-              >
-              <Text style={[
-                styles.modalTitle,
-                { color: isDark ? '#F5F5F5' : '#111111' }
-              ]}>{t('edit.title')}</Text>
-              
               {/* Countdown Name Input */}
               <View style={styles.modalSection}>
                 <Text style={[
@@ -1194,95 +1059,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             </TouchableOpacity>
               </View>
 
-            {/* Calendar Modal */}
-            <Modal
-              animationType="fade"
-              transparent
-              visible={calendarModalVisible}
-              onRequestClose={() => {
-                setCalendarModalVisible(false);
-              }}
-            >
-              <View style={[
-                styles.modalContainer,
-                { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-              ]}>
-                <Animated.View style={[
-                  styles.calendarModalContent,
-                  {
-                    backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                    shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
-                    transform: [{ scale: modalScale }],
-                  }
-                ]}>
-                  <Text style={[
-                    styles.modalTitle,
-                    { color: isDark ? '#F5F5F5' : '#111111' }
-                  ]}>Select a Date</Text>
-                  <Calendar
-                    key={theme.name}
-                    style={styles.calendar}
-                    onDayPress={handleDayPress}
-                    minDate={moment().format("YYYY-MM-DD")}
-                    theme={{
-                      backgroundColor: 'transparent',
-                      calendarBackground: 'transparent',
-                      textSectionTitleColor: isDark ? '#A1A1A1' : '#6B7280',
-                      dayTextColor: isDark ? '#F5F5F5' : '#111111',
-                      todayTextColor: '#4E9EFF',
-                      monthTextColor: isDark ? '#A1A1A1' : '#6B7280',
-                      arrowColor: '#4E9EFF',
-                      selectedDayBackgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
-                      selectedDayTextColor: '#FFFFFF',
-                      textDisabledColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-                      dotColor: '#4E9EFF',
-                      selectedDotColor: '#FFFFFF',
-                      "stylesheet.calendar.header": {
-                        week: {
-                          marginTop: wp('2%'),
-                          marginBottom: wp('1%'),
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                        },
-                      },
-                    }}
-                  />
-                  <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                      style={[
-                        styles.button,
-                        {
-                          backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                        }
-                      ]}
-                      onPress={() => setCalendarModalVisible(false)}
-                    >
-                      <Text style={[
-                        styles.buttonText,
-                        { color: isDark ? '#E5E7EB' : '#111111' }
-                      ]}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.button,
-                        {
-                          backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
-                          shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
-                          shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 1,
-                          shadowRadius: 4,
-                          elevation: 3,
-                        }
-                      ]}
-                      onPress={handleConfirmDate}
-                    >
-                      <Text style={styles.buttonTextSave}>{t('common.confirm')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </Animated.View>
-              </View>
-            </Modal>
-
             {/* Time Section */}
             <View style={styles.modalSection}>
               <Text style={[
@@ -1307,176 +1083,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               </Text>
             </TouchableOpacity>
               </View>
-
-            {/* Time Picker Modal */}
-            <Modal
-              animationType="fade"
-              transparent
-              visible={timePickerVisible}
-              onRequestClose={() => setTimePickerVisible(false)}
-            >
-              <View style={[styles.timePickerOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
-                <View style={[styles.timePickerContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Time</Text>
-                  {Picker ? (
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                      <Picker
-                        selectedValue={selectedHour}
-                        style={{ width: wp('25%') }}
-                        onValueChange={(itemValue) => setSelectedHour(itemValue)}
-                      >
-                        {[...Array(24).keys()].map((h) => (
-                          <Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
-                        ))}
-                      </Picker>
-                      <Text style={{ fontSize: wp('6%'), marginHorizontal: wp('2%') }}>:</Text>
-                      <Picker
-                        selectedValue={selectedMinute}
-                        style={{ width: wp('25%') }}
-                        onValueChange={(itemValue) => setSelectedMinute(itemValue)}
-                      >
-                        {[...Array(60).keys()].map((m) => (
-                          <Picker.Item key={m} label={m.toString().padStart(2, '0')} value={m} />
-                        ))}
-                      </Picker>
-                    </View>
-                  ) : (
-                    <View style={{ padding: 20, alignItems: 'center' }}>
-                      <Text style={{ color: theme.colors.text }}>Loading time picker...</Text>
-                    </View>
-                  )}
-                  <View style={styles.timePickerButtonContainer}>
-                    <TouchableOpacity
-                      style={[styles.button, { backgroundColor: theme.colors.border }]}
-                      onPress={() => setTimePickerVisible(false)}
-                    >
-                      <Text style={[styles.buttonText, { color: theme.colors.text }]}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.button, { backgroundColor: theme.colors.primary }]}
-                      onPress={() => setTimePickerVisible(false)}
-                    >
-                      <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>Confirm</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </Modal>
-
-              {/* Icon Section */}
-              <View style={styles.modalSection}>
-                <Text style={[
-                  styles.modalSectionLabel,
-                  { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>{t('countdown.icon')}</Text>
-                <TouchableOpacity
-                  onPress={() => setIconPickerVisible(true)}
-                  style={[
-                    styles.iconButton,
-                    {
-                      backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
-                      borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
-                    }
-                  ]}
-                >
-                  <Text style={[
-                    styles.iconButtonText,
-                    { color: isDark ? '#F5F5F5' : '#111111' }
-                  ]}>
-                    {editIcon ? `${t('countdown.iconLabel')} ${editIcon}` : t('edit.selectIcon')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Notes Section */}
-              <View style={styles.modalSection}>
-              <View style={styles.notesHeader}>
-                <Ionicons
-                  name="document-text-outline"
-                  size={wp('4%')}
-                  color={isDark ? '#6B7280' : '#9CA3AF'}
-                  style={styles.notesIcon}
-                />
-                <Text style={[
-                  styles.iconLabel,
-                  { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>{t('countdown.notesOptional')}</Text>
-              </View>
-              <TextInput
-                placeholder={t('countdown.notesPlaceholder')}
-                placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
-                value={editNotes}
-                onChangeText={(text) => {
-                  const maxLength = isPro ? 5000 : 100;
-                  if (text.length <= maxLength) {
-                    setEditNotes(text);
-                  }
-                }}
-                editable={true}
-                multiline
-                textAlignVertical="top"
-                maxLength={isPro ? 5000 : 100}
-                style={[
-                  styles.notesInput,
-                  {
-                    backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
-                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
-                    color: isDark ? '#F5F5F5' : '#111111',
-                  }
-                ]}
-              />
-              <View style={styles.notesCounterContainer}>
-                <Text style={[
-                  styles.notesCharCount,
-                  { 
-                    color: (!isPro && editNotes.length >= 100) 
-                      ? (isDark ? '#E74C3C' : '#DC2626')
-                      : (isDark ? '#6B7280' : '#9CA3AF')
-                  }
-                ]}>
-                  {editNotes.length}/{isPro ? 5000 : 100}
-                </Text>
-                {!isPro && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setPaywallFeature(t('countdown.longNotes'));
-                      setPaywallVisible(true);
-                    }}
-                    activeOpacity={0.7}
-                    style={styles.notesUpsellRow}
-                  >
-                    <Text style={[
-                      styles.notesUpsellText,
-                      { color: isDark ? '#6B7280' : '#9CA3AF' }
-                    ]}>
-                      {t('countdown.upgradeNotes')}
-                    </Text>
-                    <Ionicons
-                      name="lock-closed"
-                      size={wp('3%')}
-                      color={isDark ? '#6B7280' : '#9CA3AF'}
-                      style={{ marginLeft: wp('1%') }}
-                    />
-                  </TouchableOpacity>
-                )}
-                {isPro && (
-                  <View style={styles.proEnabledRow}>
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={wp('3%')}
-                      color={isDark ? 'rgba(60,196,162,0.5)' : 'rgba(78,158,255,0.5)'}
-                    />
-                    <Text style={[
-                      styles.proEnabledText,
-                      { color: isDark ? 'rgba(60,196,162,0.5)' : 'rgba(78,158,255,0.5)' }
-                    ]}>
-                      {t('countdown.proEnabled')}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
 
               {/* Reminders Section */}
               <View style={styles.modalSection}>
@@ -1508,13 +1114,20 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       <TouchableOpacity
                         key={preset}
                         onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          if (isLocked) {
-                            setPaywallFeature('advanced_reminders');
-                            setPaywallVisible(true);
-                            return;
+                          try {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            if (isLocked) {
+                              // Show paywall for Pro presets
+                              setPaywallFeature('advanced_reminders');
+                              setPaywallVisible(true);
+                              // Don't change selection
+                              return;
+                            }
+                            setEditReminderPreset(preset);
+                          } catch (error) {
+                            console.error('Error handling reminder preset selection:', error);
+                            Alert.alert('Error', 'Something went wrong. Please try again.');
                           }
-                          setEditReminderPreset(preset);
                         }}
                         style={[
                           styles.reminderButton,
@@ -1589,8 +1202,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   onPress={() => {
                     if (!isPro) {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setPaywallFeature('recurring_countdowns');
-                      setPaywallVisible(true);
+                      openPaywall('recurring_countdowns');
                       return;
                     }
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1623,95 +1235,97 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 </TouchableOpacity>
               </View>
 
-              {/* Recurrence Picker Modal */}
-              <Modal
-                animationType="slide"
-                transparent
-                visible={recurrencePickerVisible}
-                onRequestClose={() => setRecurrencePickerVisible(false)}
-              >
+              {/* Icon Section */}
+              <View style={styles.modalSection}>
+                <Text style={[
+                  styles.modalSectionLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>Icon</Text>
                 <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => setRecurrencePickerVisible(false)}
+                  onPress={() => setIconPickerVisible(true)}
                   style={[
-                    styles.modalContainer,
-                    { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+                    styles.iconButton,
+                    {
+                      backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                      borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                    }
                   ]}
                 >
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={(e) => e.stopPropagation()}
-                    style={[
-                      styles.recurrencePickerContent,
-                      {
-                        backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                        shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
-                      }
-                    ]}
-                  >
-                    <Text style={[
-                      styles.modalTitle,
-                      { color: isDark ? '#F5F5F5' : '#111111' }
-                    ]}>Select Recurrence</Text>
-                    <ScrollView>
-                      {Object.values(RECURRENCE_TYPES).map((type) => (
-                        <TouchableOpacity
-                          key={type}
-                          onPress={() => {
-                            setEditRecurrence(type);
-                            setRecurrencePickerVisible(false);
-                          }}
-                          style={[
-                            styles.recurrenceOption,
-                            {
-                              backgroundColor: editRecurrence === type
-                                ? (isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)')
-                                : 'transparent',
-                              borderColor: editRecurrence === type
-                                ? (isDark ? '#4E9EFF' : '#4A9EFF')
-                                : 'transparent',
-                            }
-                          ]}
-                        >
-                          <Text style={[
-                            styles.recurrenceOptionText,
-                            {
-                              color: editRecurrence === type
-                                ? (isDark ? '#4E9EFF' : '#4A9EFF')
-                                : (isDark ? '#F5F5F5' : '#111111'),
-                              fontWeight: editRecurrence === type ? '600' : '400',
-                            }
-                          ]}>
-                            {type === RECURRENCE_TYPES.NONE ? t('countdown.recurrenceNone') : getRecurrenceLabel(type)}
-                          </Text>
-                          {editRecurrence === type && (
-                            <Ionicons
-                              name="checkmark"
-                              size={wp('4%')}
-                              color={isDark ? '#4E9EFF' : '#4A9EFF'}
-                            />
-                          )}
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                    <TouchableOpacity
-                      onPress={() => setRecurrencePickerVisible(false)}
-                      style={[
-                        styles.button,
-                        {
-                          backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                          marginTop: wp('2%'),
-                        }
-                      ]}
-                    >
-                      <Text style={[
-                        styles.buttonText,
-                        { color: isDark ? '#E5E7EB' : '#111111' }
-                      ]}>Cancel</Text>
-                    </TouchableOpacity>
-                  </TouchableOpacity>
+                  <Text style={[
+                    styles.iconButtonText,
+                    { color: isDark ? '#F5F5F5' : '#111111' }
+                  ]}>
+                    {editIcon ? `${t('create.selectIcon')}: ${editIcon}` : t('create.selectIcon')}
+                  </Text>
                 </TouchableOpacity>
-              </Modal>
+              </View>
+
+              {/* Notes Section */}
+              <View style={styles.modalSection}>
+              <View style={styles.notesHeader}>
+                <Ionicons
+                  name="document-text-outline"
+                  size={wp('4%')}
+                  color={isDark ? '#6B7280' : '#9CA3AF'}
+                  style={styles.notesIcon}
+                />
+                <Text style={[
+                  styles.iconLabel,
+                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+                ]}>{t('countdown.notesOptional')}</Text>
+              </View>
+              <TextInput
+                placeholder={t('countdown.notesPlaceholder')}
+                placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+                value={editNotes}
+                onChangeText={(text) => {
+                  const maxLength = isPro ? 5000 : 100;
+                  if (text.length <= maxLength) {
+                    setEditNotes(text);
+                  }
+                }}
+                editable={true}
+                multiline
+                textAlignVertical="top"
+                maxLength={isPro ? 5000 : 100}
+                style={[
+                  styles.notesInput,
+                  {
+                    backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                    color: isDark ? '#F5F5F5' : '#111111',
+                  }
+                ]}
+              />
+              <View style={styles.notesCounterContainer}>
+                <Text style={[
+                  styles.notesCharCount,
+                  { 
+                    color: (!isPro && editNotes.length >= 100) 
+                      ? (isDark ? '#E74C3C' : '#DC2626')
+                      : (isDark ? '#6B7280' : '#9CA3AF')
+                  }
+                ]}>
+                  {editNotes.length}/{isPro ? 5000 : 100}
+                </Text>
+                {!isPro && editNotes.length >= 100 && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      openPaywall('Long Notes');
+                    }}
+                    activeOpacity={0.7}
+                    style={styles.notesUpsellRow}
+                  >
+                    <Ionicons
+                      name="lock-closed"
+                      size={wp('3%')}
+                      color={isDark ? '#6B7280' : '#9CA3AF'}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
 
               {/* Footer Buttons */}
               <View style={styles.modalFooter}>
@@ -1731,7 +1345,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   <Text style={[
                     styles.modalFooterButtonText,
                     { color: isDark ? '#E5E7EB' : '#111111' }
-                  ]}>Cancel</Text>
+                  ]}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleSaveEdit}
@@ -1756,134 +1370,331 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   ]}>{t('common.save')}</Text>
                 </TouchableOpacity>
               </View>
-              </ScrollView>
-            </Animated.View>
-          </TouchableOpacity>
-        </KeyboardAvoidingView>
+        </ScrollView>
+      </BottomSheet>
+
+      {/* Icon Picker Modal - Separate modal */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={iconPickerVisible}
+        onRequestClose={() => setIconPickerVisible(false)}
+      >
+        <View style={[
+          styles.modalContainer,
+          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+        ]}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setIconPickerVisible(false)}
+          >
+            <View style={{ flex: 1 }} />
+          </Pressable>
+          <Animated.View style={[
+            {
+              width: '100%',
+              maxWidth: wp('90%'),
+              maxHeight: hp('75%'),
+              borderRadius: wp('5%'),
+              paddingHorizontal: wp('5%'),
+              paddingTop: wp('6%'),
+              paddingBottom: wp('6%'),
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 16,
+              elevation: 8,
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+              transform: [{ scale: iconModalScale }],
+            }
+          ]}>
+            <Text style={[
+              styles.iconModalTitle,
+              { color: isDark ? '#F3F3F6' : '#111111' }
+            ]}>{t('create.selectIcon')}</Text>
+            <View style={[
+              styles.iconModalDivider,
+              { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
+            ]} />
+            <ScrollView 
+              style={{ maxHeight: hp('55%') }}
+              contentContainerStyle={{ paddingBottom: wp('5%') }}
+              showsVerticalScrollIndicator={false}
+              bounces={true}
+            >
+              <View style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                justifyContent: "flex-start",
+                gap: wp('2.5%'),
+              }}>
+                {eventIcons.map((icon, index) => (
+                  <IconItem
+                    key={`${icon}-${index}`}
+                    icon={icon}
+                    isSelected={editIcon === icon}
+                    isDark={isDark}
+                    onPress={() => {
+                      setEditIcon(icon);
+                      setIconPickerVisible(false);
+                    }}
+                  />
+                ))}
+              </View>
+            </ScrollView>
+              <TouchableOpacity
+              onPress={() => {
+                setIconPickerVisible(false);
+              }}
+              style={{
+                backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                height: 48,
+                borderRadius: wp('3%'),
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                marginTop: wp('2%'),
+              }}
+            >
+              <Text 
+                allowFontScaling={false}
+                style={{
+                  color: isDark ? '#FFFFFF' : '#000000',
+                  fontSize: 16,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                }}
+              >
+                {t('common.cancel')}
+              </Text>
+              </TouchableOpacity>
+          </Animated.View>
+        </View>
       </Modal>
 
       {/* Calendar Modal */}
-      <Modal
-        animationType="fade"
-        transparent
-        visible={calendarModalVisible}
-        onRequestClose={() => {
-          setCalendarModalVisible(false);
-        }}
-      >
-        <View style={styles.calendarModalOverlay}>
-          <View style={styles.calendarModalContent}>
-            <Text style={styles.modalTitle}>Select a Date</Text>
-            <Calendar
-              key={theme.name}
-              style={styles.calendar}
-              onDayPress={handleDayPress}
-              minDate={moment().format("YYYY-MM-DD")}
-              markedDates={{
-                [moment(selectedDate).format("YYYY-MM-DD")]: {
-                  selected: true,
-                  selectedColor: theme.colors.primary,
-                },
-                ...(tempSelectedDate && {
-                  [tempSelectedDate]: {
-                    selected: true,
-                    selectedColor: theme.colors.success,
-                  },
-                }),
+            {/* Calendar Modal */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={calendarModalVisible}
+              onRequestClose={() => {
+                setCalendarModalVisible(false);
               }}
-              theme={{
-                backgroundColor: theme.colors.background,
-                calendarBackground: theme.colors.card,
-                textSectionTitleColor: theme.colors.textSecondary,
-                dayTextColor: theme.colors.text,
-                todayTextColor: theme.colors.primary,
-                monthTextColor: theme.colors.text,
-                arrowColor: theme.colors.primary,
-                selectedDayBackgroundColor: theme.colors.primary,
-                selectedDayTextColor: theme.colors.buttonText,
-                textDisabledColor: theme.colors.border,
-                dotColor: theme.colors.primary,
-                selectedDotColor: theme.colors.buttonText,
-              }}
-            />
-            <View style={styles.calendarButtonContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#444" }]}
-                onPress={() => {
-                  setCalendarModalVisible(false);
-                }}
-              >
-                <Text style={styles.modalButtonText}>{t('common.cancel')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
-                onPress={() => {
-                  handleConfirmDate();
-                  setCalendarModalVisible(false);
-                }}
-              >
-                <Text style={styles.modalButtonText}>Confirm</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+            >
+              <View style={[
+                styles.modalContainer,
+                { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+              ]}>
+                <Animated.View style={[
+                  styles.calendarModalContent,
+                  {
+                    backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                    shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+                    transform: [{ scale: calendarModalScale }],
+                  }
+                ]}>
+                  <Text style={[
+                    styles.modalTitle,
+                    { color: isDark ? '#F5F5F5' : '#111111' }
+                  ]}>{t('create.selectDate')}</Text>
+                  <Calendar
+                    key={theme.name}
+                    style={styles.calendar}
+                    onDayPress={(day) => {
+                      const newDate = moment(day.dateString);
+                      setSelectedDate(newDate.toDate());
+                      setCalendarModalVisible(false);
+                    }}
+                    minDate={moment().format("YYYY-MM-DD")}
+                    theme={{
+                      backgroundColor: 'transparent',
+                      calendarBackground: 'transparent',
+                      textSectionTitleColor: isDark ? '#A1A1A1' : '#6B7280',
+                      dayTextColor: isDark ? '#F5F5F5' : '#111111',
+                      todayTextColor: '#4E9EFF',
+                      monthTextColor: isDark ? '#A1A1A1' : '#6B7280',
+                      arrowColor: '#4E9EFF',
+                      selectedDayBackgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                      selectedDayTextColor: '#FFFFFF',
+                      textDisabledColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                      dotColor: '#4E9EFF',
+                      selectedDotColor: '#FFFFFF',
+                      "stylesheet.calendar.header": {
+                        week: {
+                          marginTop: wp('2%'),
+                          marginBottom: wp('1%'),
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        },
+                      },
+                    }}
+                  />
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.button,
+                        {
+                          backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                        }
+                      ]}
+                      onPress={() => setCalendarModalVisible(false)}
+                    >
+                      <Text style={[
+                        styles.buttonText,
+                        { color: isDark ? '#E5E7EB' : '#111111' }
+                      ]}>{t('common.cancel')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.button,
+                        {
+                          backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                          shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 1,
+                          shadowRadius: 4,
+                          elevation: 3,
+                        }
+                      ]}
+                      onPress={() => setCalendarModalVisible(false)}
+                    >
+                      <Text style={styles.buttonTextSave}>{t('common.confirm')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Animated.View>
+              </View>
+            </Modal>
 
-      {/* Time Picker Modal */}
-      <Modal
-        animationType="fade"
-        transparent
-        visible={timePickerVisible}
-        onRequestClose={() => {
-          setTimePickerVisible(false);
-        }}
-      >
-        <View style={styles.timePickerOverlay}>
-          <View style={styles.timePickerContent}>
-            <Text style={styles.modalTitle}>Select Time</Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-              <Picker
-                selectedValue={selectedHour}
-                style={{ width: wp('25%') }}
-                onValueChange={(itemValue) => setSelectedHour(itemValue)}
-              >
-                {[...Array(24).keys()].map((h) => (
-                  <Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
-                ))}
-              </Picker>
-              <Text style={{ fontSize: wp('6%'), marginHorizontal: wp('2%') }}>:</Text>
-              <Picker
-                selectedValue={selectedMinute}
-                style={{ width: wp('25%') }}
-                onValueChange={(itemValue) => setSelectedMinute(itemValue)}
-              >
-                {[...Array(60).keys()].map((m) => (
-                  <Picker.Item key={m} label={m.toString().padStart(2, '0')} value={m} />
-                ))}
-              </Picker>
-            </View>
-            <View style={styles.timePickerButtonContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#444" }]}
-                onPress={() => {
-                  setTimePickerVisible(false);
-                }}
-              >
-                <Text style={styles.modalButtonText}>{t('common.cancel')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
-                onPress={() => {
-                  setTimePickerVisible(false);
-                }}
-              >
-                <Text style={styles.modalButtonText}>Confirm</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+            {/* Time Picker Modal */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={timePickerVisible}
+              onRequestClose={() => setTimePickerVisible(false)}
+            >
+              <View style={[styles.timePickerOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
+                <View style={[styles.timePickerContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
+                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>{t('create.selectTime')}</Text>
+                  {PickerModule ? (
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                      <PickerModule.Picker
+                        selectedValue={selectedHour}
+                        style={{ width: wp('25%') }}
+                        onValueChange={(itemValue) => setSelectedHour(itemValue)}
+                      >
+                        {[...Array(24).keys()].map((h) => (
+                          <PickerModule.Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
+                        ))}
+                      </PickerModule.Picker>
+                      <Text style={{ fontSize: wp('6%'), marginHorizontal: wp('2%') }}>:</Text>
+                      <PickerModule.Picker
+                        selectedValue={selectedMinute}
+                        style={{ width: wp('25%') }}
+                        onValueChange={(itemValue) => setSelectedMinute(itemValue)}
+                      >
+                        {[...Array(60).keys()].map((m) => (
+                          <PickerModule.Picker.Item key={m} label={m.toString().padStart(2, '0')} value={m} />
+                        ))}
+                      </PickerModule.Picker>
+                    </View>
+                  ) : (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                      <Text style={{ color: theme.colors.text }}>Loading time picker...</Text>
+                    </View>
+                  )}
+                  <View style={styles.timePickerButtonContainer}>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: theme.colors.border }]}
+                      onPress={() => setTimePickerVisible(false)}
+                    >
+                      <Text style={[styles.buttonText, { color: theme.colors.text }]}>{t('common.cancel')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: theme.colors.primary }]}
+                      onPress={() => setTimePickerVisible(false)}
+                    >
+                      <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>{t('common.confirm')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
 
+            {/* Recurrence Picker Modal */}
+            <Modal
+              animationType="slide"
+              transparent
+              visible={recurrencePickerVisible}
+              onRequestClose={() => setRecurrencePickerVisible(false)}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => setRecurrencePickerVisible(false)}
+                style={[
+                  styles.modalContainer,
+                  { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+                ]}
+              >
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={(e) => e.stopPropagation()}
+                  style={[
+                    styles.modalContent,
+                    {
+                      backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                      maxHeight: hp('50%'),
+                    }
+                  ]}
+                >
+                  <Text style={[
+                    styles.modalTitle,
+                    { color: isDark ? '#F5F5F5' : '#111111', marginBottom: wp('4%') }
+                  ]}>Select Recurrence</Text>
+                  <ScrollView>
+                    {Object.values(RECURRENCE_TYPES).map((type) => (
+                      <TouchableOpacity
+                        key={type}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          setEditRecurrence(type);
+                          setRecurrencePickerVisible(false);
+                        }}
+                        style={[
+                          styles.recurrenceOption,
+                          {
+                            backgroundColor: editRecurrence === type
+                              ? (isDark ? 'rgba(78,158,255,0.2)' : 'rgba(78,158,255,0.15)')
+                              : 'transparent',
+                            borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB',
+                          }
+                        ]}
+                      >
+                        <Text style={[
+                          styles.recurrenceOptionText,
+                          {
+                            color: editRecurrence === type
+                              ? (isDark ? '#4E9EFF' : '#4A9EFF')
+                              : (isDark ? '#F5F5F5' : '#111111'),
+                            fontWeight: editRecurrence === type ? '600' : '400',
+                          }
+                        ]}>
+                          {type === RECURRENCE_TYPES.NONE ? t('countdown.recurrenceNone') : getRecurrenceLabel(type)}
+                        </Text>
+                        {editRecurrence === type && (
+                          <Ionicons
+                            name="checkmark"
+                            size={wp('4%')}
+                            color={isDark ? '#4E9EFF' : '#4A9EFF'}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            </Modal>
 
       {/* Paywall Sheet */}
       <PaywallSheet
@@ -2060,10 +1871,9 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
     flexDirection: 'column',
-    justifyContent: 'space-between',
   },
   modalFormScroll: {
-    flexShrink: 1,
+    flex: 1,
   },
   modalFormContent: {
     paddingBottom: wp('1%'),
