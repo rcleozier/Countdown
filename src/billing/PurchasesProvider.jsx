@@ -162,11 +162,11 @@ export const PurchasesProvider = ({ children }) => {
         const currentOffering = offeringsData.current;
         
         // Find monthly package (or first package as fallback)
-        const monthlyPackage = currentOffering.availablePackages.find(
-          pkg => pkg.identifier === 'monthly' || pkg.packageType === 'MONTHLY'
-        ) || currentOffering.availablePackages[0];
+        const monthlyPackage = currentOffering.availablePackages?.find(
+          pkg => pkg && (pkg.identifier === 'monthly' || pkg.packageType === 'MONTHLY')
+        ) || currentOffering.availablePackages?.[0];
 
-        if (monthlyPackage) {
+        if (monthlyPackage && monthlyPackage.storeProduct) {
           const product = monthlyPackage.storeProduct;
           setOfferings({
             current: currentOffering,
@@ -174,12 +174,12 @@ export const PurchasesProvider = ({ children }) => {
               identifier: monthlyPackage.identifier,
               package: monthlyPackage, // Store full package for purchase
               product: {
-                identifier: product.identifier,
-                title: product.title,
-                description: product.description,
-                price: product.priceString,
-                priceString: product.priceString,
-                currencyCode: product.currencyCode,
+                identifier: product.identifier || '',
+                title: product.title || '',
+                description: product.description || '',
+                price: product.priceString || '',
+                priceString: product.priceString || '',
+                currencyCode: product.currencyCode || 'USD',
               },
             },
           });
