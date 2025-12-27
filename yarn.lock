@@ -1578,6 +1578,23 @@
   dependencies:
     nanoid "^3.1.23"
 
+"@revenuecat/purchases-js-hybrid-mappings@17.25.0":
+  version "17.25.0"
+  resolved "https://registry.npmjs.org/@revenuecat/purchases-js-hybrid-mappings/-/purchases-js-hybrid-mappings-17.25.0.tgz"
+  integrity sha512-+2GCH8OAAU5BJW6q+2vgvcqiKTxYpHK57SCl0tWhMZnqvC6TkZMEexnIv81LIxbLUUasI0QQhDZL3S1Dn4gsyA==
+  dependencies:
+    "@revenuecat/purchases-js" "1.22.1"
+
+"@revenuecat/purchases-js@1.22.1":
+  version "1.22.1"
+  resolved "https://registry.npmjs.org/@revenuecat/purchases-js/-/purchases-js-1.22.1.tgz"
+  integrity sha512-ktjSk8je7t2uVA5krnO8GnIfKudF3hxdIGXxN8Grs9RF7anjS0rWUrZgsCIswi9LvE6/NwkuNOkX/NMBtop/sQ==
+
+"@revenuecat/purchases-typescript-internal@17.25.0":
+  version "17.25.0"
+  resolved "https://registry.npmjs.org/@revenuecat/purchases-typescript-internal/-/purchases-typescript-internal-17.25.0.tgz"
+  integrity sha512-LHJrpmhIi5u7V/zNiKR8iZS1shXeFeGJMZkEUEywvJwhdFJvC8GK6+QL6b1nYsL3uhccqNk6ksl29qcf7eemKg==
+
 "@sentry-internal/browser-utils@10.12.0":
   version "10.12.0"
   resolved "https://registry.npmjs.org/@sentry-internal/browser-utils/-/browser-utils-10.12.0.tgz"
@@ -4542,6 +4559,14 @@ react-native-modal-datetime-picker@^18.0.0:
   dependencies:
     prop-types "^15.7.2"
 
+react-native-purchases@^9.6.12:
+  version "9.6.12"
+  resolved "https://registry.npmjs.org/react-native-purchases/-/react-native-purchases-9.6.12.tgz"
+  integrity sha512-cPjTB8ONNqDe6vMEEDM5m7k/OY02glW3ZnLIN8VgQ76Q+HiaVphWG5K2zrI4ZsQ23CxXsNDKhzK1Zk6O3Dwp8g==
+  dependencies:
+    "@revenuecat/purchases-js-hybrid-mappings" "17.25.0"
+    "@revenuecat/purchases-typescript-internal" "17.25.0"
+
 react-native-responsive-screen@^1.4.1:
   version "1.4.2"
   resolved "https://registry.npmjs.org/react-native-responsive-screen/-/react-native-responsive-screen-1.4.2.tgz"
@@ -4580,7 +4605,7 @@ react-native-swipe-gestures@^1.0.5:
   resolved "https://registry.npmjs.org/react-native-swipe-gestures/-/react-native-swipe-gestures-1.0.5.tgz"
   integrity sha512-Ns7Bn9H/Tyw278+5SQx9oAblDZ7JixyzeOczcBK8dipQk2pD7Djkcfnf1nB/8RErAmMLL9iXgW0QHqiII8AhKw==
 
-react-native@*, "react-native@^0.0.0-0 || >=0.65 <1.0", "react-native@>= 0.30.0", react-native@>=0.35, react-native@>=0.65.0, react-native@>=0.81.4, react-native@0.81.5:
+react-native@*, "react-native@^0.0.0-0 || >=0.65 <1.0", "react-native@>= 0.30.0", "react-native@>= 0.73.0", react-native@>=0.35, react-native@>=0.65.0, react-native@>=0.81.4, react-native@0.81.5:
   version "0.81.5"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.81.5.tgz"
   integrity sha512-1w+/oSjEXZjMqsIvmkCRsOc8UBYv163bTWKTI8+1mxztvQPhCRYGTvZ/PL1w16xXHneIj/SLGfxWg2GWN2uexw==
@@ -4625,7 +4650,7 @@ react-refresh@^0.14.0, react-refresh@^0.14.2, "react-refresh@>=0.14.0 <1.0.0":
   resolved "https://registry.npmjs.org/react-refresh/-/react-refresh-0.14.2.tgz"
   integrity sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==
 
-react@*, "react@^16.14.0 || 17.x || 18.x || 19.x", react@^19.1.0, "react@>= 15.2.1", react@>=16.13, react@>=16.8, react@>=17.0.0, react@>=19.1.0, react@19.1.0:
+react@*, "react@^16.14.0 || 17.x || 18.x || 19.x", react@^19.1.0, "react@>= 15.2.1", "react@>= 16.6.3", react@>=16.13, react@>=16.8, react@>=17.0.0, react@>=19.1.0, react@19.1.0:
   version "19.1.0"
   resolved "https://registry.npmjs.org/react/-/react-19.1.0.tgz"
   integrity sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==

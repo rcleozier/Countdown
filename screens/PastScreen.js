@@ -158,7 +158,7 @@ const PastScreen = () => {
             keyExtractor={(item) => item.key}
             renderItem={({ item, index }) => {
               if (item.type === 'ad') {
-                return <OptimizedBannerAd />;
+                return <OptimizedBannerAd screen="PastScreen" />;
               }
               // Pass the delete and edit functions to CountdownItem
               return <CountdownItem event={item} index={index} onDelete={deleteCountdown} onEdit={editCountdown} />;

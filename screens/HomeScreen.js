@@ -176,10 +176,6 @@ const HomeScreen = () => {
   const iconModalScale = useRef(new Animated.Value(0.95)).current;
   const [inputFocused, setInputFocused] = useState({});
   
-  // Interstitial ad cooldown (5 minutes)
-  const lastInterstitialTime = useRef(0);
-  const INTERSTITIAL_COOLDOWN = 5 * 60 * 1000; // 5 minutes in milliseconds
-  
   // Empty state animation refs
   const emptyStateOpacity = useRef(new Animated.Value(0)).current;
   const iconScale = useRef(new Animated.Value(0.95)).current;
@@ -926,54 +922,6 @@ const HomeScreen = () => {
     };
     
     setupNotifications();
-    
-    // Random interstitial: load after 10s on screen mount
-    let interstitialTimeout;
-    if (ENABLE_ADS) {
-      interstitialTimeout = setTimeout(async () => {
-        const now = Date.now();
-        // Check cooldown period
-        if (now - lastInterstitialTime.current < INTERSTITIAL_COOLDOWN) {
-          return; // Still in cooldown period
-        }
-        
-        // 30% chance to show an interstitial
-        const shouldShow = Math.random() < 0.3;
-        if (!shouldShow) return;
-        
-        try {
-          // Dynamically require to avoid native module when not available
-          // eslint-disable-next-line global-require
-          const { InterstitialAd, AdEventType, TestIds } = require('react-native-google-mobile-ads');
-          const { getAdRequestOptions } = require('../util/adConfig');
-          const unitId = USE_TEST_ADS ? TestIds.INTERSTITIAL : AD_UNIT_IDS.interstitial;
-          
-          // Get optimized ad request options for maximum revenue
-          const requestOptions = await getAdRequestOptions();
-          const interstitial = InterstitialAd.createForAdRequest(unitId, requestOptions);
-          const onLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
-            interstitial.show().catch(() => {});
-            // Update last shown time when ad is displayed
-            lastInterstitialTime.current = Date.now();
-          });
-          const onClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-            onLoaded();
-            onClosed();
-          });
-          const onError = interstitial.addAdEventListener(AdEventType.ERROR, () => {
-            onLoaded();
-            onClosed();
-          });
-          interstitial.load();
-        } catch (e) {
-          // Ignore if module not available in current runtime
-        }
-      }, 10000);
-    }
-    
-    return () => {
-      if (interstitialTimeout) clearTimeout(interstitialTimeout);
-    };
   }, []);
 
   // Test notification function (for debugging)

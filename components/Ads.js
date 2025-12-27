@@ -3,13 +3,15 @@ import { View, StyleSheet } from 'react-native';
 import { ENABLE_ADS, USE_TEST_ADS } from '../util/config';
 import { AD_UNIT_IDS, getAdRequestOptions } from '../util/adConfig';
 import { useTheme } from '../context/ThemeContext';
+import { useAds } from '../src/ads/AdProvider';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 
 const TEST_BANNER_ID = 'ca-app-pub-3940256099942544/6300978111';
 const bannerId = USE_TEST_ADS ? TEST_BANNER_ID : AD_UNIT_IDS.banner;
 
-const OptimizedBannerAd = ({ style, containerStyle }) => {
+const OptimizedBannerAd = ({ style, containerStyle, screen = 'HomeScreen' }) => {
   const { theme } = useTheme();
+  const { canShowBanner, adsEnabled } = useAds();
   const [requestOptions, setRequestOptions] = useState(null);
 
   useEffect(() => {
@@ -27,7 +29,8 @@ const OptimizedBannerAd = ({ style, containerStyle }) => {
     });
   }, []);
 
-  if (!ENABLE_ADS) {
+  // Don't show ads if disabled globally, if user is Pro, or if screen doesn't allow ads
+  if (!ENABLE_ADS || !adsEnabled || !canShowBanner(screen)) {
     return null;
   }
 
@@ -63,8 +66,10 @@ const styles = StyleSheet.create({
 });
 
 // Fallback ad component with different size for better fill rates
-export const FallbackBannerAd = ({ style, containerStyle }) => {
-  if (!ENABLE_ADS) {
+export const FallbackBannerAd = ({ style, containerStyle, screen = 'HomeScreen' }) => {
+  const { adsEnabled, canShowBanner } = useAds();
+  
+  if (!ENABLE_ADS || !adsEnabled || !canShowBanner(screen)) {
     return null;
   }
   const { theme } = useTheme();

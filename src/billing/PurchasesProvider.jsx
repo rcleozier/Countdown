@@ -1,16 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { AppState } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ExpoStoreAdapter } from './ExpoStoreAdapter';
+import { Platform, AppState } from 'react-native';
+import Purchases from 'react-native-purchases';
 import { Analytics } from '../../util/analytics';
 
-const ENTITLEMENTS_CACHE_KEY = '@entitlements_cache';
-const ENTITLEMENT_ID = 'pro';
+// RevenueCat API Key
+const REVENUECAT_API_KEY = Platform.OS === 'ios' 
+  ? 'appl_lbJizGKaENVDSBTckaxkybVnxTo'
+  : 'goog_YOUR_ANDROID_KEY'; // Update when adding Android
 
-// Product ID - should match what's configured in App Store Connect / Google Play Console
-// iOS: com.chronox.app.pro.monthly (configured in App Store Connect)
-// Android: (to be configured in Google Play Console)
-const PRODUCT_ID = 'com.chronox.app.pro.monthly';
+const ENTITLEMENT_ID = 'pro';
 
 const PurchasesContext = createContext(undefined);
 
@@ -20,164 +18,145 @@ export const PurchasesProvider = ({ children }) => {
   const [activeProductId, setActiveProductId] = useState(undefined);
   const [offerings, setOfferings] = useState(undefined);
   const [error, setError] = useState(undefined);
-  const [storeAdapter] = useState(() => new ExpoStoreAdapter());
 
-  // Initialize store
+  // Initialize RevenueCat
   useEffect(() => {
     initializePurchases();
     
+    // Refresh entitlements when app comes to foreground
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        refreshEntitlements().catch(err => {
+          console.error('[Billing] Error refreshing on app resume:', err);
+        });
+      }
+    });
+    
     return () => {
-      // Cleanup: disconnect from store
-      storeAdapter.disconnect().catch(() => {});
+      subscription.remove();
     };
   }, []);
 
   const initializePurchases = async () => {
     try {
-      // Load cached entitlements first for fast boot
-      await loadCachedEntitlements();
-
-      // Initialize store adapter
-      const connected = await storeAdapter.init();
+      setIsLoading(true);
       
-      if (!connected) {
-        console.warn('[Billing] Store not available. Using cached entitlements.');
-        setIsLoading(false);
-        return;
-      }
+      // Configure RevenueCat
+      await Purchases.configure({ apiKey: REVENUECAT_API_KEY });
+      
+      // Set user attributes (optional, for analytics)
+      await Purchases.setAttributes({
+        platform: Platform.OS,
+      });
 
-      // Then refresh from store
+      // Load offerings and check entitlements
       await refreshEntitlements();
     } catch (err) {
       console.error('[Billing] Error initializing purchases:', err);
       setError(err.message || 'Failed to initialize purchases');
-      // Fallback to cached value
-      await loadCachedEntitlements();
+      setIsPro(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadCachedEntitlements = async () => {
-    try {
-      const cached = await AsyncStorage.getItem(ENTITLEMENTS_CACHE_KEY);
-      if (cached) {
-        const data = JSON.parse(cached);
-        const now = Date.now();
-        const cacheAge = now - (data.timestamp || 0);
-        
-        // Check if cached subscription has expired
-        let isPro = data.isPro || false;
-        if (data.expirationDate) {
-          const expirationDate = new Date(data.expirationDate);
-          if (expirationDate <= new Date()) {
-            isPro = false;
-            // Clear expired cache
-            await AsyncStorage.removeItem(ENTITLEMENTS_CACHE_KEY);
-            setIsPro(false);
-            setActiveProductId(null);
-            return;
-          }
-        }
-        
-        // Use cache if less than 1 hour old
-        if (cacheAge < 3600000) {
-          setIsPro(isPro);
-          setActiveProductId(isPro ? data.activeProductId : null);
-        } else {
-          // Cache expired, clear it
-          await AsyncStorage.removeItem(ENTITLEMENTS_CACHE_KEY);
-        }
-      }
-    } catch (err) {
-      console.error('[Billing] Error loading cached entitlements:', err);
-    }
-  };
-
-  const saveCachedEntitlements = async (entitlements) => {
-    try {
-      // Check if subscription has expired
-      let isPremium = entitlements.isPremium || false;
-      if (entitlements.expirationDate) {
-        const expirationDate = new Date(entitlements.expirationDate);
-        const now = new Date();
-        if (expirationDate <= now) {
-          isPremium = false;
-          console.log('[Billing] Subscription expired:', expirationDate);
-        }
-      }
-
-      await AsyncStorage.setItem(ENTITLEMENTS_CACHE_KEY, JSON.stringify({
-        isPro: isPremium,
-        activeProductId: isPremium ? entitlements.activeProductId : null,
-        expirationDate: entitlements.expirationDate,
-        timestamp: Date.now(),
-      }));
-
-      setIsPro(isPremium);
-      setActiveProductId(isPremium ? entitlements.activeProductId : null);
-    } catch (err) {
-      console.error('[Billing] Error saving cached entitlements:', err);
-    }
-  };
-
   const refreshEntitlements = useCallback(async () => {
     try {
-      const entitlements = await storeAdapter.getEntitlements();
-      await saveCachedEntitlements(entitlements);
+      // Get customer info (includes entitlements)
+      const customerInfo = await Purchases.getCustomerInfo();
+      
+      // Check if user has pro entitlement
+      const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      
+      setIsPro(isPremium);
+      
+      // Get active product ID if premium
+      if (isPremium) {
+        const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
+        setActiveProductId(entitlement.productIdentifier);
+      } else {
+        setActiveProductId(undefined);
+      }
 
-      // Load product/offering
-      const products = await storeAdapter.getProducts([PRODUCT_ID]);
-      const monthly = products.find(p => p.productId === PRODUCT_ID);
+      // Load offerings for display
+      const offeringsData = await Purchases.getOfferings();
+      
+      if (offeringsData.current) {
+        const monthlyPackage = offeringsData.current.availablePackages.find(
+          pkg => pkg.identifier === 'monthly' || pkg.packageType === 'MONTHLY'
+        ) || offeringsData.current.availablePackages[0];
 
-      setOfferings({
-        monthly: monthly ? {
-          identifier: 'monthly',
-          product: {
-            identifier: monthly.productId,
-            title: monthly.title,
-            description: monthly.description,
-            price: monthly.price,
-            priceString: monthly.price,
-            currencyCode: monthly.currencyCode,
-          },
-        } : undefined,
-      });
+        if (monthlyPackage) {
+          const product = monthlyPackage.storeProduct;
+          setOfferings({
+            monthly: {
+              identifier: monthlyPackage.identifier,
+              product: {
+                identifier: product.identifier,
+                title: product.title,
+                description: product.description,
+                price: product.priceString,
+                priceString: product.priceString,
+                currencyCode: product.currencyCode,
+              },
+            },
+          });
+        }
+      }
 
       setError(undefined);
     } catch (err) {
       console.error('[Billing] Error refreshing entitlements:', err);
       setError(err.message || 'Failed to refresh entitlements');
     }
-  }, [storeAdapter]);
+  }, []);
 
   const purchase = useCallback(async (pkgId) => {
     try {
       setIsLoading(true);
       setError(undefined);
 
-      // Use the single product ID
-      const productId = PRODUCT_ID;
-
       Analytics.trackEvent('purchase_started', {
-        product: productId,
+        product: pkgId,
       });
 
-      const result = await storeAdapter.purchase(productId);
+      // Get offerings to find the package
+      const offeringsData = await Purchases.getOfferings();
       
-      if (result.success) {
+      if (!offeringsData.current) {
+        throw new Error('No offerings available');
+      }
+
+      // Find the package (use identifier or default to first monthly)
+      const packageToPurchase = offeringsData.current.availablePackages.find(
+        pkg => pkg.identifier === pkgId || (pkgId === 'monthly' && pkg.packageType === 'MONTHLY')
+      ) || offeringsData.current.availablePackages[0];
+
+      if (!packageToPurchase) {
+        throw new Error('Package not found');
+      }
+
+      // Make purchase
+      const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
+      
+      // Check if purchase was successful
+      const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      
+      if (isPremium) {
         Analytics.trackEvent('purchase_success', {
-          product: productId,
+          product: packageToPurchase.identifier,
         });
         
-        // Refresh entitlements after successful purchase
+        // Refresh entitlements to update state
         await refreshEntitlements();
+      } else {
+        throw new Error('Purchase completed but entitlement not active');
       }
     } catch (err) {
       console.error('[Billing] Error purchasing:', err);
       
       // User cancelled is not an error
-      if (err.message && err.message.includes('canceled')) {
+      if (err.userCancelled) {
         return;
       }
 
@@ -193,7 +172,7 @@ export const PurchasesProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [storeAdapter, refreshEntitlements]);
+  }, [refreshEntitlements]);
 
   const restore = useCallback(async () => {
     try {
@@ -202,10 +181,13 @@ export const PurchasesProvider = ({ children }) => {
 
       Analytics.trackEvent('restore_started', {});
 
-      const result = await storeAdapter.restore();
+      // Restore purchases
+      const customerInfo = await Purchases.restorePurchases();
       
-      if (result.restored) {
-        // Refresh entitlements to get active subscription
+      // Check if user has active entitlement
+      const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      
+      if (isPremium) {
         await refreshEntitlements();
         Analytics.trackEvent('restore_success', {});
       } else {
@@ -222,22 +204,6 @@ export const PurchasesProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [storeAdapter, refreshEntitlements]);
-
-  // Refresh entitlements when app comes to foreground
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'active') {
-        // App has come to the foreground, refresh subscription status
-        refreshEntitlements().catch(err => {
-          console.error('[Billing] Error refreshing on app resume:', err);
-        });
-      }
-    });
-    
-    return () => {
-      subscription.remove();
-    };
   }, [refreshEntitlements]);
 
   const value = {
