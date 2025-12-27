@@ -1085,7 +1085,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
                 }
               ]}
-              onPress={() => setCalendarModalVisible(true)}
+              onPress={() => {
+                setIconPickerVisible(false);
+                setCalendarModalVisible(true);
+              }}
             >
               <Text style={[
                 styles.iconButtonText,
@@ -1110,7 +1113,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
                 }
               ]}
-              onPress={() => setTimePickerVisible(true)}
+              onPress={() => {
+                setIconPickerVisible(false);
+                setTimePickerVisible(true);
+              }}
             >
               <Text style={[
                 styles.iconButtonText,
@@ -1280,10 +1286,6 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 ]}>Icon</Text>
                 <TouchableOpacity
                   onPress={() => {
-                    // Close other modals before opening icon picker to avoid nested modal errors
-                    setCalendarModalVisible(false);
-                    setTimePickerVisible(false);
-                    setRecurrencePickerVisible(false);
                     setIconPickerVisible(true);
                   }}
                   style={[
@@ -1414,39 +1416,17 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 </TouchableOpacity>
               </View>
         </ScrollView>
-      </BottomSheet>
 
-      {/* Icon Picker Modal - Separate modal */}
-      <Modal
-        animationType="fade"
-        transparent
-        presentationStyle="overFullScreen"
-        visible={iconPickerVisible}
-        onRequestClose={() => setIconPickerVisible(false)}
-      >
-        <View style={[
-          styles.modalContainer,
-          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-        ]}>
+      {/* Inline Icon Picker Overlay inside the BottomSheet (renders at sheet level for full coverage) */}
+      {iconPickerVisible && (
+        <View style={styles.inlineOverlay}>
           <Pressable
-            style={styles.modalBackdrop}
+            style={styles.inlineOverlayBackdrop}
             onPress={() => setIconPickerVisible(false)}
-          >
-            <View style={{ flex: 1 }} />
-          </Pressable>
+          />
           <Animated.View style={[
+            styles.inlineOverlayCard,
             {
-              width: '100%',
-              maxWidth: wp('90%'),
-              maxHeight: hp('75%'),
-              borderRadius: wp('5%'),
-              paddingHorizontal: wp('5%'),
-              paddingTop: wp('6%'),
-              paddingBottom: wp('6%'),
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 16,
-              elevation: 8,
               backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
               shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
               transform: [{ scale: iconModalScale }],
@@ -1460,18 +1440,13 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               styles.iconModalDivider,
               { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
             ]} />
-            <ScrollView 
-              style={{ maxHeight: hp('55%') }}
-              contentContainerStyle={{ paddingBottom: wp('5%') }}
+            <ScrollView
+              style={styles.iconModalScroll}
+              contentContainerStyle={styles.iconModalScrollContent}
               showsVerticalScrollIndicator={false}
               bounces={true}
             >
-              <View style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                justifyContent: "flex-start",
-                gap: wp('2.5%'),
-              }}>
+              <View style={styles.iconList}>
                 {eventIcons.map((icon, index) => (
                   <IconItem
                     key={`${icon}-${index}`}
@@ -1486,36 +1461,26 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 ))}
               </View>
             </ScrollView>
-              <TouchableOpacity
-              onPress={() => {
-                setIconPickerVisible(false);
-              }}
-              style={{
-                backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                height: 48,
-                borderRadius: wp('3%'),
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                marginTop: wp('2%'),
-              }}
+            <TouchableOpacity
+              onPress={() => setIconPickerVisible(false)}
+              style={styles.iconModalCloseButton}
             >
-              <Text 
+              <Text
                 allowFontScaling={false}
-                style={{
-                  color: isDark ? '#FFFFFF' : '#000000',
-                  fontSize: 16,
-                  fontWeight: '600',
-                  textAlign: 'center',
-                }}
+                style={[
+                  styles.iconModalCloseText,
+                  { color: isDark ? '#FFFFFF' : '#000000' }
+                ]}
               >
                 {t('common.cancel')}
               </Text>
-              </TouchableOpacity>
+            </TouchableOpacity>
           </Animated.View>
         </View>
-      </Modal>
+      )}
+
+      </BottomSheet>
+
 
       {/* Calendar Modal */}
             {/* Calendar Modal */}
@@ -2572,6 +2537,31 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
     textAlign: 'center',
     lineHeight: wp('3.8%'),
+  },
+  // Inline overlay (used for icon picker inside bottom sheet)
+  inlineOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10000,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: wp('5%'),
+  },
+  inlineOverlayBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  inlineOverlayCard: {
+    width: '100%',
+    maxWidth: wp('90%'),
+    maxHeight: hp('60%'),
+    borderRadius: wp('5%'),
+    paddingHorizontal: wp('5%'),
+    paddingTop: wp('6%'),
+    paddingBottom: wp('6%'),
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   reminderDescription: {
     fontSize: wp('3%'),

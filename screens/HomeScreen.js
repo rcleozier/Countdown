@@ -517,6 +517,7 @@ const HomeScreen = () => {
   }, [upcomingEvents, isLoading]);
 
   const handleOpenCalendar = () => {
+    setIconPickerVisible(false);
     setTempSelectedDate(null);
     setCalendarModalVisible(true);
   };
@@ -543,6 +544,7 @@ const HomeScreen = () => {
   }, [timePickerVisible, PickerModule]);
 
   const handleOpenTimePicker = () => {
+    setIconPickerVisible(false);
     setTimePickerVisible(true);
   };
 
@@ -1158,10 +1160,11 @@ const HomeScreen = () => {
             <Modal
               animationType="fade"
               transparent
+        presentationStyle="overFullScreen"
               visible={calendarModalVisible}
-              onRequestClose={() => {
-                setCalendarModalVisible(false);
-              }}
+        onRequestClose={() => {
+          setCalendarModalVisible(false);
+        }}
             >
               <View style={[
                 styles.modalContainer,
@@ -1215,7 +1218,9 @@ const HomeScreen = () => {
                           backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
                         }
                       ]}
-                      onPress={() => setCalendarModalVisible(false)}
+              onPress={() => {
+                setCalendarModalVisible(false);
+              }}
                     >
                       <Text style={[
                         styles.buttonText,
@@ -1272,8 +1277,11 @@ const HomeScreen = () => {
             <Modal
               animationType="fade"
               transparent
+        presentationStyle="overFullScreen"
               visible={timePickerVisible}
-              onRequestClose={() => setTimePickerVisible(false)}
+        onRequestClose={() => {
+          setTimePickerVisible(false);
+        }}
             >
               <View style={[styles.timePickerOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
                 <View style={[styles.timePickerContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
@@ -1308,13 +1316,17 @@ const HomeScreen = () => {
                   <View style={styles.timePickerButtonContainer}>
                     <TouchableOpacity
                       style={[styles.button, { backgroundColor: theme.colors.border }]}
-                      onPress={() => setTimePickerVisible(false)}
+                  onPress={() => {
+                    setTimePickerVisible(false);
+                  }}
                     >
                       <Text style={[styles.buttonText, { color: theme.colors.text }]}>{t('common.cancel')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.button, { backgroundColor: theme.colors.primary }]}
-                      onPress={() => setTimePickerVisible(false)}
+                  onPress={() => {
+                    setTimePickerVisible(false);
+                  }}
                     >
                       <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>{t('common.confirm')}</Text>
                     </TouchableOpacity>
@@ -1596,10 +1608,6 @@ const HomeScreen = () => {
                 ]}>Icon</Text>
                 <TouchableOpacity
                   onPress={() => {
-                    // Ensure other modals are closed before opening icon picker to avoid nested modal errors
-                    setCalendarModalVisible(false);
-                    setTimePickerVisible(false);
-                    setRecurrencePickerVisible(false);
                     setIconPickerVisible(true);
                   }}
                   style={[
@@ -1616,8 +1624,8 @@ const HomeScreen = () => {
                   ]}>
                     {newIcon ? `${t('create.selectIcon')}: ${newIcon}` : t('create.selectIcon')}
                   </Text>
-                </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
+            </View>
 
               {/* Notes Section */}
               <View style={styles.modalSection}>
@@ -1730,92 +1738,71 @@ const HomeScreen = () => {
                 </TouchableOpacity>
               </View>
         </ScrollView>
-      </BottomSheet>
 
-      {/* Icon Picker Modal - Separate modal */}
-      <Modal
-        animationType="fade"
-        transparent
-        presentationStyle="overFullScreen"
-        visible={iconPickerVisible}
-        onRequestClose={() => setIconPickerVisible(false)}
-      >
-        <View style={[
-          styles.modalContainer,
-          { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
-        ]}>
-          <Pressable
-            style={styles.modalBackdrop}
-            onPress={() => setIconPickerVisible(false)}
-          >
-            <View style={{ flex: 1 }} />
-          </Pressable>
-          <Animated.View style={[
-            styles.iconModalContent,
-            {
-              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
-              transform: [{ scale: iconModalScale }],
-            }
-          ]}>
-            <Text style={[
-              styles.iconModalTitle,
-              { color: isDark ? '#F3F3F6' : '#111111' }
-            ]}>{t('create.selectIcon')}</Text>
-            <View style={[
-              styles.iconModalDivider,
-              { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
-            ]} />
-            <ScrollView 
-              style={styles.iconModalScroll}
-              contentContainerStyle={styles.iconModalScrollContent}
-              showsVerticalScrollIndicator={false}
-              bounces={true}
-            >
-              <View style={styles.iconList}>
-                {eventIcons.map((icon, index) => (
-                  <IconItem
-                    key={`${icon}-${index}`}
-                    icon={icon}
-                    isSelected={newIcon === icon}
-                    isDark={isDark}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setNewIcon(icon);
-                      setIconPickerVisible(false);
-                    }}
-                  />
-                ))}
-              </View>
-            </ScrollView>
-            <TouchableOpacity
+        {/* Inline Icon Picker Overlay inside the BottomSheet (renders at sheet level for full coverage) */}
+        {iconPickerVisible && (
+          <View style={styles.inlineOverlay}>
+            <Pressable
+              style={styles.inlineOverlayBackdrop}
               onPress={() => setIconPickerVisible(false)}
-              style={{
-                backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
-                height: 48,
-                borderRadius: wp('3%'),
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                marginTop: wp('2%'),
-              }}
-            >
-              <Text 
-                allowFontScaling={false}
-                style={{
-                  color: isDark ? '#FFFFFF' : '#000000',
-                  fontSize: 16,
-                  fontWeight: '600',
-                  textAlign: 'center',
-                }}
+            />
+            <Animated.View style={[
+              styles.inlineOverlayCard,
+              {
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                transform: [{ scale: iconModalScale }],
+              }
+            ]}>
+              <Text style={[
+                styles.iconModalTitle,
+                { color: isDark ? '#F3F3F6' : '#111111' }
+              ]}>{t('create.selectIcon')}</Text>
+              <View style={[
+                styles.iconModalDivider,
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
+              ]} />
+              <ScrollView
+                style={styles.iconModalScroll}
+                contentContainerStyle={styles.iconModalScrollContent}
+                showsVerticalScrollIndicator={false}
+                bounces={true}
               >
-                {t('common.cancel')}
-              </Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-      </Modal>
+                <View style={styles.iconList}>
+                  {eventIcons.map((icon, index) => (
+                    <IconItem
+                      key={`${icon}-${index}`}
+                      icon={icon}
+                      isSelected={newIcon === icon}
+                      isDark={isDark}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setNewIcon(icon);
+                        setIconPickerVisible(false);
+                      }}
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+              <TouchableOpacity
+                onPress={() => setIconPickerVisible(false)}
+                style={styles.iconModalCloseButton}
+              >
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.iconModalCloseText,
+                    { color: isDark ? '#FFFFFF' : '#000000' }
+                  ]}
+                >
+                  {t('common.cancel')}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+        )}
+
+      </BottomSheet>
 
       {/* Confetti overlay (re-mounts per key to replay) */}
       {confettiKey > 0 && (
@@ -2085,6 +2072,31 @@ const styles = StyleSheet.create({
   },
   iconModalScrollContent: {
     paddingBottom: wp('5%'), // 20-24px bottom spacing
+  },
+  // Inline overlay (used for icon picker inside bottom sheet)
+  inlineOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10000,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: wp('5%'),
+  },
+  inlineOverlayBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  inlineOverlayCard: {
+    width: '100%',
+    maxWidth: wp('90%'),
+    maxHeight: hp('60%'),
+    borderRadius: wp('5%'),
+    paddingHorizontal: wp('5%'),
+    paddingTop: wp('6%'),
+    paddingBottom: wp('6%'),
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   iconList: {
     flexDirection: "row",
