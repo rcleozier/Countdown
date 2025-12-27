@@ -1593,7 +1593,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               <Text style={[
                 styles.iconModalTitle,
                 { color: isDark ? '#F3F3F6' : '#111111' }
-              ]}>{t('create.selectIcon')}</Text>
+            ]}>{t('create.selectIcon')}</Text>
               <View style={[
                 styles.iconModalDivider,
                 { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
@@ -2166,21 +2166,19 @@ const styles = StyleSheet.create({
   iconList: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "center",
+    justifyContent: "flex-start",
+    gap: wp('2.5%'), // match add sheet spacing
     marginBottom: wp("2.5%"),
   },
   iconItem: {
-    margin: wp("1%"),
-    padding: wp("2%"),
-    borderRadius: wp("1%"),
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
+    width: wp('13%'), // match add sheet cell size (~6 cols)
+    height: wp('13%'),
+    borderRadius: wp('3%'),
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF",
   },
   iconText: {
-    fontSize: wp("3%"),
+    fontSize: wp('7%'), // match add sheet icon size
   },
   notesSection: {
     marginTop: wp('3%'),
@@ -2722,6 +2720,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 8,
+  },
+  iconModalTitle: {
+    fontSize: wp('4.5%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+    textAlign: 'center',
+    marginBottom: wp('4%'),
+    alignSelf: 'center',
+  },
+  iconModalDivider: {
+    height: 1,
+    marginBottom: wp('3%'),
+  },
+  iconModalScroll: {
+    maxHeight: hp('55%'),
+  },
+  iconModalScrollContent: {
+    paddingBottom: wp('5%'),
   },
   iconModalCloseButton: {
     marginTop: wp('3%'),
