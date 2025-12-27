@@ -20,10 +20,19 @@ const REVENUECAT_API_KEY = Platform.OS === 'ios'
   ? 'appl_lbJizGKaENVDSBTckaxkybVnxTo'
   : 'goog_YOUR_ANDROID_KEY'; // Update when adding Android
 
-const ENTITLEMENT_ID = 'pro';
+// Export entitlement ID for use in other files
+export const ENTITLEMENT_ID = 'pro';
 
 // Throttle AppState refresh (max once per 60 seconds)
 const REFRESH_THROTTLE_MS = 60000;
+
+// Optional debug mode: set to true to use a fixed user ID for testing
+const DEBUG_MODE = __DEV__ && false; // Set to true to enable debug user ID
+const DEBUG_USER_ID = 'debug-user-1';
+
+// Retry configuration for entitlement propagation
+const ENTITLEMENT_RETRY_ATTEMPTS = 3;
+const ENTITLEMENT_RETRY_DELAY_MS = 2000; // 2 seconds between retries
 
 const PurchasesContext = createContext(undefined);
 
@@ -35,6 +44,7 @@ export const PurchasesProvider = ({ children }) => {
   const [error, setError] = useState(undefined);
   const [lastRefreshTime, setLastRefreshTime] = useState(null);
   const [customerInfoTimestamp, setCustomerInfoTimestamp] = useState(null);
+  const [isFinishingSetup, setIsFinishingSetup] = useState(false);
   
   const lastRefreshRef = useRef(0);
   const isConfiguredRef = useRef(false);
@@ -49,18 +59,19 @@ export const PurchasesProvider = ({ children }) => {
 
     initializePurchases();
     
-    // Set up customer info update listener for reactive updates
-    let customerInfoUpdateListener = null;
-    try {
-      if (Purchases && typeof Purchases.addCustomerInfoUpdateListener === 'function') {
-        customerInfoUpdateListener = Purchases.addCustomerInfoUpdateListener((customerInfo) => {
-          updateProStatus(customerInfo);
-          setCustomerInfoTimestamp(new Date().toISOString());
-        });
+      // Set up customer info update listener for reactive updates
+      let customerInfoUpdateListener = null;
+      try {
+        if (Purchases && typeof Purchases.addCustomerInfoUpdateListener === 'function') {
+          customerInfoUpdateListener = Purchases.addCustomerInfoUpdateListener((customerInfo) => {
+            logCustomerInfo(customerInfo, 'customerInfoUpdateListener');
+            updateProStatus(customerInfo);
+            setCustomerInfoTimestamp(new Date().toISOString());
+          });
+        }
+      } catch (err) {
+        console.warn('[Billing] Could not set up customer info listener:', err);
       }
-    } catch (err) {
-      console.warn('[Billing] Could not set up customer info listener:', err);
-    }
 
     // Throttled AppState refresh as backup
     const subscription = AppState.addEventListener('change', (nextAppState) => {
@@ -108,6 +119,17 @@ export const PurchasesProvider = ({ children }) => {
       await Purchases.configure({ apiKey: REVENUECAT_API_KEY });
       isConfiguredRef.current = true;
       
+      // Optional debug mode: log in with fixed user ID for testing
+      if (DEBUG_MODE && Purchases.logIn) {
+        try {
+          const { customerInfo } = await Purchases.logIn(DEBUG_USER_ID);
+          console.log(`[Billing] Debug mode: Logged in as ${DEBUG_USER_ID}`);
+          logCustomerInfo(customerInfo, 'debug login');
+        } catch (err) {
+          console.warn('[Billing] Debug login failed:', err);
+        }
+      }
+      
       // Set user attributes (optional, for analytics)
       if (Purchases.setAttributes) {
         await Purchases.setAttributes({
@@ -126,16 +148,41 @@ export const PurchasesProvider = ({ children }) => {
     }
   };
 
+  const logCustomerInfo = (customerInfo, context = '') => {
+    if (!__DEV__) return;
+    
+    try {
+      const activeEntitlementKeys = Object.keys(customerInfo.entitlements?.active || {});
+      const allEntitlementKeys = Object.keys(customerInfo.entitlements?.all || {});
+      const activeSubscriptions = customerInfo.activeSubscriptions || {};
+      const appUserID = customerInfo.originalAppUserId || 'unknown';
+      
+      console.log(`[Billing] Customer Info ${context}:`, {
+        appUserID,
+        activeEntitlementKeys,
+        allEntitlementKeys,
+        activeSubscriptions: Object.keys(activeSubscriptions),
+        hasProEntitlement: customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined,
+        proEntitlement: customerInfo.entitlements?.active?.[ENTITLEMENT_ID] || null,
+      });
+    } catch (err) {
+      console.warn('[Billing] Error logging customer info:', err);
+    }
+  };
+
   const updateProStatus = (customerInfo) => {
+    // Log customer info for debugging (dev only)
+    logCustomerInfo(customerInfo, 'updateProStatus');
+    
     // Derive isPro ONLY from entitlements.active['pro'] presence
-    const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+    const isPremium = customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
     
     setIsPro(isPremium);
     
     // Get active product ID if premium
     if (isPremium) {
       const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
-      setActiveProductId(entitlement.productIdentifier);
+      setActiveProductId(entitlement?.productIdentifier);
     } else {
       setActiveProductId(undefined);
     }
@@ -149,6 +196,9 @@ export const PurchasesProvider = ({ children }) => {
     try {
       // Get customer info (includes entitlements)
       const customerInfo = await Purchases.getCustomerInfo();
+      
+      // Log customer info for debugging (dev only)
+      logCustomerInfo(customerInfo, 'refreshEntitlements');
       
       // Update Pro status
       updateProStatus(customerInfo);
@@ -203,6 +253,37 @@ export const PurchasesProvider = ({ children }) => {
     }
   }, []);
 
+  // Helper function to check entitlement with retry logic
+  const checkEntitlementWithRetry = async (attempt = 1) => {
+    if (!PurchasesAvailable || !Purchases) {
+      return false;
+    }
+
+    try {
+      const customerInfo = await Purchases.getCustomerInfo();
+      logCustomerInfo(customerInfo, `checkEntitlementWithRetry (attempt ${attempt})`);
+      
+      const isPremium = customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
+      
+      if (isPremium) {
+        updateProStatus(customerInfo);
+        setCustomerInfoTimestamp(new Date().toISOString());
+        return true;
+      }
+      
+      // If not active and we have retries left, wait and retry
+      if (attempt < ENTITLEMENT_RETRY_ATTEMPTS) {
+        await new Promise(resolve => setTimeout(resolve, ENTITLEMENT_RETRY_DELAY_MS));
+        return checkEntitlementWithRetry(attempt + 1);
+      }
+      
+      return false;
+    } catch (err) {
+      console.error(`[Billing] Error checking entitlement (attempt ${attempt}):`, err);
+      return false;
+    }
+  };
+
   const purchase = useCallback(async (pkgId) => {
     if (!PurchasesAvailable || !Purchases) {
       throw new Error('RevenueCat not available');
@@ -211,6 +292,7 @@ export const PurchasesProvider = ({ children }) => {
     try {
       setIsLoading(true);
       setError(undefined);
+      setIsFinishingSetup(false);
 
       // Get offerings to find the package
       const offeringsData = await Purchases.getOfferings();
@@ -235,14 +317,18 @@ export const PurchasesProvider = ({ children }) => {
       // Make purchase using purchasePackage
       const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
       
-      // Update status from customerInfo
+      // Log customer info immediately after purchase
+      logCustomerInfo(customerInfo, 'after purchase');
+      
+      // Update status from customerInfo immediately
       updateProStatus(customerInfo);
       setCustomerInfoTimestamp(new Date().toISOString());
       
-      // Check if purchase was successful
-      const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      // Check if purchase was successful (with retry logic for race conditions)
+      const isPremium = customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
       
       if (isPremium) {
+        // Entitlement is active immediately
         Analytics.trackEvent('purchase_success', {
           product: packageToPurchase.identifier,
         });
@@ -250,12 +336,33 @@ export const PurchasesProvider = ({ children }) => {
         // Refresh offerings
         await refreshEntitlements();
       } else {
-        throw new Error('Purchase completed but entitlement not active');
+        // Entitlement not active yet - show "Finishing setup..." and retry
+        setIsFinishingSetup(true);
+        
+        const entitlementActivated = await checkEntitlementWithRetry();
+        
+        if (entitlementActivated) {
+          Analytics.trackEvent('purchase_success', {
+            product: packageToPurchase.identifier,
+            delayed: true,
+          });
+          
+          // Refresh offerings
+          await refreshEntitlements();
+        } else {
+          // Still not active after retries - this might be a real issue
+          console.warn('[Billing] Purchase completed but entitlement not active after retries');
+          setError('Purchase completed but entitlement not active. Please try restoring purchases or contact support.');
+          Analytics.trackEvent('purchase_entitlement_delayed', {
+            product: packageToPurchase.identifier,
+          });
+          // Don't throw - let the UI show the error message
+        }
       }
     } catch (err) {
       console.error('[Billing] Error purchasing:', err);
       
-      // User cancelled is not an error
+      // User cancelled is not an error - just return silently
       if (err.userCancelled) {
         return;
       }
@@ -271,6 +378,7 @@ export const PurchasesProvider = ({ children }) => {
       throw err;
     } finally {
       setIsLoading(false);
+      setIsFinishingSetup(false);
     }
   }, [refreshEntitlements]);
 
@@ -288,15 +396,21 @@ export const PurchasesProvider = ({ children }) => {
       // Restore purchases
       const customerInfo = await Purchases.restorePurchases();
       
+      // Log customer info for debugging (dev only)
+      logCustomerInfo(customerInfo, 'restore');
+      
       // Update status from customerInfo
       updateProStatus(customerInfo);
       setCustomerInfoTimestamp(new Date().toISOString());
       
-      // Check if user has active entitlement
-      const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      // Refresh entitlements to get latest state
+      await refreshEntitlements();
+      
+      // Check if user has active entitlement after refresh
+      const refreshedCustomerInfo = await Purchases.getCustomerInfo();
+      const isPremium = refreshedCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
       
       if (isPremium) {
-        await refreshEntitlements();
         Analytics.trackEvent('restore_success', {});
       } else {
         Analytics.trackEvent('restore_no_purchases', {});
@@ -309,6 +423,8 @@ export const PurchasesProvider = ({ children }) => {
       Analytics.trackEvent('restore_failed', {
         error: errorMsg,
       });
+      
+      // Don't throw - let the UI handle the error message
     } finally {
       setIsLoading(false);
     }
@@ -317,6 +433,7 @@ export const PurchasesProvider = ({ children }) => {
   const value = {
     isPro,
     isLoading,
+    isFinishingSetup,
     activeProductId,
     purchase,
     restore,
@@ -327,10 +444,13 @@ export const PurchasesProvider = ({ children }) => {
     __debug: __DEV__ ? {
       isPro,
       activeEntitlement: isPro ? ENTITLEMENT_ID : null,
+      entitlementId: ENTITLEMENT_ID,
       lastCustomerInfoFetch: customerInfoTimestamp,
       lastRefresh: lastRefreshTime,
       currentOfferingId: offerings?.current?.identifier,
       monthlyPackageId: offerings?.monthly?.identifier,
+      debugMode: DEBUG_MODE,
+      debugUserId: DEBUG_MODE ? DEBUG_USER_ID : null,
     } : undefined,
   };
 

@@ -19,14 +19,14 @@ try {
 }
 import { useTheme } from '../../context/ThemeContext';
 import { useLocale } from '../../context/LocaleContext';
-import { usePurchases } from './PurchasesProvider';
+import { usePurchases, ENTITLEMENT_ID } from './PurchasesProvider';
 import { Analytics } from '../../util/analytics';
 import BottomSheet from '../../components/BottomSheet';
 
 const PaywallSheet = ({ visible, onClose, feature }) => {
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
-  const { offerings, isLoading, error, restore } = usePurchases();
+  const { offerings, isLoading, isFinishingSetup, error, purchase, restore, isPro } = usePurchases();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [forceShow, setForceShow] = useState(false);
@@ -66,34 +66,40 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
         throw new Error('Package not found');
       }
 
-      // Implement purchasePackage
-      const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
+      // Use the purchase function from PurchasesProvider (handles retry logic)
+      // The purchase function will handle entitlement activation with retry logic
+      // and update isPro state when complete
+      await purchase(selectedPackage.identifier || 'monthly');
       
-      // Check if purchase was successful
-      const isPremium = customerInfo.entitlements.active['pro'] !== undefined;
+      // Wait a moment for state to update after purchase completes
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (isPremium) {
+      // Check if Pro is now active (purchase function handles retry internally)
+      // We use a small delay to allow state updates to propagate
+      if (isPro) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Alert.alert(
           t('subscription.upsell.unlockPro'),
           t('subscription.proUnlocked'),
           [{ text: t('common.ok'), onPress: onClose }]
         );
-      } else {
-        throw new Error('Purchase completed but entitlement not active');
       }
+      // If there's an error, it will be displayed in the error message area
+      // If isFinishingSetup is true, the UI will show the "Finishing setup..." message
     } catch (err) {
-      // Handle userCancelled errors gracefully
+      // Handle userCancelled errors gracefully - don't show error
       if (err.userCancelled) {
-        // User cancelled, don't show error
         return;
       }
       
-      Alert.alert(
-        t('subscription.purchaseFailed'),
-        err.message || t('subscription.purchaseFailedMessage'),
-        [{ text: t('common.ok') }]
-      );
+      // Only show error if it's not already being handled by the purchase function
+      if (err.message && !err.message.includes('entitlement not active')) {
+        Alert.alert(
+          t('subscription.purchaseFailed'),
+          err.message || t('subscription.purchaseFailedMessage'),
+          [{ text: t('common.ok') }]
+        );
+      }
     } finally {
       setIsPurchasing(false);
     }
@@ -187,10 +193,15 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
             }
           ]}
           onPress={handlePurchase}
-          disabled={isPurchasing || isRestoring || isLoading || !monthlyPackage}
+          disabled={isPurchasing || isRestoring || isLoading || isFinishingSetup || !monthlyPackage}
         >
-          {isPurchasing ? (
-            <ActivityIndicator color="#FFFFFF" />
+          {isPurchasing || isFinishingSetup ? (
+            <View style={styles.buttonContent}>
+              <ActivityIndicator color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={styles.primaryButtonText}>
+                {isFinishingSetup ? t('subscription.finishingSetup') || 'Finishing setup...' : t('subscription.processing') || 'Processing...'}
+              </Text>
+            </View>
           ) : (
             <Text style={styles.primaryButtonText}>{t('subscription.startPro')}</Text>
           )}
@@ -204,9 +215,16 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
         )}
 
         {/* Error Message */}
-        {error && (
+        {error && !isFinishingSetup && (
           <Text style={[styles.errorText, { color: theme.colors.error || '#E74C3C' }]}>
             {error}
+          </Text>
+        )}
+        
+        {/* Finishing Setup Message */}
+        {isFinishingSetup && (
+          <Text style={[styles.finishingText, { color: theme.colors.textSecondary }]}>
+            {t('subscription.finishingSetup') || 'Finishing setup... This may take a moment.'}
           </Text>
         )}
 
@@ -304,6 +322,17 @@ const styles = StyleSheet.create({
     fontSize: wp('3.5%'),
     textAlign: 'center',
     marginBottom: wp('3%'),
+  },
+  finishingText: {
+    fontSize: wp('3.5%'),
+    textAlign: 'center',
+    marginBottom: wp('3%'),
+    fontStyle: 'italic',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   secondaryActions: {
     flexDirection: 'row',
