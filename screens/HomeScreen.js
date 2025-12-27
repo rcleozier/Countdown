@@ -1595,7 +1595,13 @@ const HomeScreen = () => {
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>Icon</Text>
                 <TouchableOpacity
-                  onPress={() => setIconPickerVisible(true)}
+                  onPress={() => {
+                    // Ensure other modals are closed before opening icon picker to avoid nested modal errors
+                    setCalendarModalVisible(false);
+                    setTimePickerVisible(false);
+                    setRecurrencePickerVisible(false);
+                    setIconPickerVisible(true);
+                  }}
                   style={[
                     styles.iconButton,
                     {
@@ -1730,6 +1736,7 @@ const HomeScreen = () => {
       <Modal
         animationType="fade"
         transparent
+        presentationStyle="overFullScreen"
         visible={iconPickerVisible}
         onRequestClose={() => setIconPickerVisible(false)}
       >

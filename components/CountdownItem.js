@@ -1279,7 +1279,13 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>Icon</Text>
                 <TouchableOpacity
-                  onPress={() => setIconPickerVisible(true)}
+                  onPress={() => {
+                    // Close other modals before opening icon picker to avoid nested modal errors
+                    setCalendarModalVisible(false);
+                    setTimePickerVisible(false);
+                    setRecurrencePickerVisible(false);
+                    setIconPickerVisible(true);
+                  }}
                   style={[
                     styles.iconButton,
                     {
@@ -1414,6 +1420,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       <Modal
         animationType="fade"
         transparent
+        presentationStyle="overFullScreen"
         visible={iconPickerVisible}
         onRequestClose={() => setIconPickerVisible(false)}
       >
