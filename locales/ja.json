@@ -233,6 +233,7 @@
     "restoreCompleteMessage": "購入が復元されました。",
     "restoreFailed": "復元に失敗しました",
     "restoreFailedMessage": "購入を復元できませんでした。もう一度お試しください。",
+    "noActivePurchases": "アクティブな購入が見つかりませんでした。",
     "upgradeTitle": "Proにアップグレード",
     "upgradeSubtitle": "より多くの制御。より少ないノイズ。",
     "featureStandardReminders": "高度なリマインダー",

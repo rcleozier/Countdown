@@ -188,6 +188,7 @@
     "restoreCompleteMessage": "I tuoi acquisti sono stati ripristinati.",
     "restoreFailed": "Ripristino Fallito",
     "restoreFailedMessage": "Impossibile ripristinare gli acquisti. Riprova.",
+    "noActivePurchases": "Nessun acquisto attivo trovato.",
     "upgradeTitle": "Passa a Pro",
     "upgradeSubtitle": "Più controllo. Meno rumore.",
     "featureStandardReminders": "Promemoria avanzati",

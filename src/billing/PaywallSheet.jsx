@@ -88,7 +88,8 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
       // If isFinishingSetup is true, the UI will show the "Finishing setup..." message
     } catch (err) {
       // Handle userCancelled errors gracefully - don't show error
-      if (err.userCancelled) {
+      if (err.userCancelled || err.message?.includes('cancelled') || err.message?.includes('canceled')) {
+        // User cancelled - silently return
         return;
       }
       
@@ -110,15 +111,27 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
       setIsRestoring(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       
-      await restore();
+      const result = await restore();
       
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert(
-        t('subscription.restoreComplete'),
-        t('subscription.restoreCompleteMessage'),
-        [{ text: t('common.ok'), onPress: onClose }]
-      );
+      // Wait a moment for state to update
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (result?.hasActiveSubscription) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert(
+          t('subscription.restoreComplete'),
+          t('subscription.restoreCompleteMessage'),
+          [{ text: t('common.ok'), onPress: onClose }]
+        );
+      } else {
+        Alert.alert(
+          t('subscription.restoreComplete'),
+          t('subscription.noActivePurchases') || 'No active purchases found.',
+          [{ text: t('common.ok') }]
+        );
+      }
     } catch (err) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert(
         t('subscription.restoreFailed'),
         err.message || t('subscription.restoreFailedMessage'),

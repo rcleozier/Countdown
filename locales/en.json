@@ -188,6 +188,7 @@
     "restoreCompleteMessage": "Your purchases have been restored.",
     "restoreFailed": "Restore Failed",
     "restoreFailedMessage": "Could not restore purchases. Please try again.",
+    "noActivePurchases": "No active purchases found.",
     "upgradeTitle": "Upgrade to Pro",
     "upgradeSubtitle": "More control. Less noise.",
     "featureStandardReminders": "Advanced reminders",

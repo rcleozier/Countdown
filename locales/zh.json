@@ -188,6 +188,7 @@
     "restoreCompleteMessage": "您的购买已恢复。",
     "restoreFailed": "恢复失败",
     "restoreFailedMessage": "无法恢复购买。请重试。",
+    "noActivePurchases": "未找到有效购买。",
     "upgradeTitle": "升级到Pro",
     "upgradeSubtitle": "更多控制。更少干扰。",
     "featureStandardReminders": "高级提醒",

@@ -233,6 +233,7 @@
     "restoreCompleteMessage": "Ihre Käufe wurden wiederhergestellt.",
     "restoreFailed": "Wiederherstellung fehlgeschlagen",
     "restoreFailedMessage": "Käufe konnten nicht wiederhergestellt werden. Bitte versuchen Sie es erneut.",
+    "noActivePurchases": "Keine aktiven Käufe gefunden.",
     "upgradeTitle": "Auf Pro upgraden",
     "upgradeSubtitle": "Mehr Kontrolle. Weniger Lärm.",
     "featureStandardReminders": "Erweiterte Erinnerungen",

@@ -203,6 +203,7 @@
     "restoreCompleteMessage": "Tus compras han sido restauradas.",
     "restoreFailed": "Restauración fallida",
     "restoreFailedMessage": "No se pudieron restaurar las compras. Por favor, inténtalo de nuevo.",
+    "noActivePurchases": "No se encontraron compras activas.",
     "upgradeTitle": "Actualizar a Pro",
     "upgradeSubtitle": "Más control. Menos ruido.",
     "featureStandardReminders": "Recordatorios avanzados",

@@ -554,15 +554,27 @@ const SettingsScreen = () => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setIsRestoring(true);
                   try {
-                    await restore();
-                    Alert.alert(
-                      t('settings.restoreComplete'),
-                      isPro 
-                        ? t('settings.restoreCompleteMessage')
-                        : t('settings.noActivePurchases'),
-                      [{ text: t('common.ok') }]
-                    );
+                    const result = await restore();
+                    
+                    // Wait a moment for state to update
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    if (result?.hasActiveSubscription) {
+                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                      Alert.alert(
+                        t('settings.restoreComplete'),
+                        t('settings.restoreCompleteMessage'),
+                        [{ text: t('common.ok') }]
+                      );
+                    } else {
+                      Alert.alert(
+                        t('settings.restoreComplete'),
+                        t('settings.noActivePurchases') || 'No active purchases found.',
+                        [{ text: t('common.ok') }]
+                      );
+                    }
                   } catch (err) {
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
                     Alert.alert(
                       t('settings.restoreFailed'),
                       err.message || t('settings.restoreFailedMessage'),
@@ -633,56 +645,6 @@ const SettingsScreen = () => {
           {/* Developer Section (DEV ONLY) */}
           {__DEV__ && (
             <>
-              <View style={[
-                styles.card,
-                {
-                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-                }
-              ]}>
-                <Text style={[
-                  styles.sectionHeader,
-                  { color: isDark ? '#A1A1A1' : '#6B7280' }
-                ]}>{t('settings.developer')}</Text>
-                <Pressable
-                  onPress={async () => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    // Toggle Pro status for debugging
-                    const cached = await AsyncStorage.getItem('@entitlements_cache');
-                    const data = cached ? JSON.parse(cached) : { isPro: false };
-                    const newProStatus = !data.isPro;
-                    await AsyncStorage.setItem('@entitlements_cache', JSON.stringify({
-                      ...data,
-                      isPro: newProStatus,
-                      timestamp: Date.now(),
-                    }));
-                    Alert.alert(t('settings.debug'), t('settings.debugToggleMessage', { status: newProStatus ? t('settings.on') : t('settings.off') }));
-                  }}
-                >
-                  <View style={[
-                    styles.actionRow,
-                    {
-                      paddingVertical: wp('3%'),
-                      paddingHorizontal: wp('4%'),
-                      borderRadius: wp('2.5%'),
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                    }
-                  ]}>
-                    <Ionicons
-                      name="bug"
-                      size={wp('5%')}
-                      color={isDark ? '#A1A1A1' : '#6B7280'}
-                    />
-                    <Text style={[
-                      styles.actionText,
-                      { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
-                    ]}>
-                      {t('settings.debugTogglePro', { status: isPro ? t('settings.on') : t('settings.off') })}
-                    </Text>
-                  </View>
-                </Pressable>
-              </View>
-
               {/* Subscription Debug Section (DEV ONLY) */}
               <View style={[
                 styles.card,

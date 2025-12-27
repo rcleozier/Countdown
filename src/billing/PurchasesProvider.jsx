@@ -360,12 +360,17 @@ export const PurchasesProvider = ({ children }) => {
         }
       }
     } catch (err) {
-      console.error('[Billing] Error purchasing:', err);
-      
-      // User cancelled is not an error - just return silently
-      if (err.userCancelled) {
+      // Check for user cancellation first - this is not an error
+      if (err.userCancelled || err.message?.includes('cancelled') || err.message?.includes('canceled')) {
+        // User cancelled - log at info level, not error
+        if (__DEV__) {
+          console.log('[Billing] Purchase cancelled by user');
+        }
         return;
       }
+      
+      // Log actual errors
+      console.error('[Billing] Error purchasing:', err);
 
       const errorMsg = err.message || 'Purchase failed';
       setError(errorMsg);
@@ -399,21 +404,27 @@ export const PurchasesProvider = ({ children }) => {
       // Log customer info for debugging (dev only)
       logCustomerInfo(customerInfo, 'restore');
       
-      // Update status from customerInfo
+      // Update status from customerInfo immediately
       updateProStatus(customerInfo);
       setCustomerInfoTimestamp(new Date().toISOString());
       
       // Refresh entitlements to get latest state
       await refreshEntitlements();
       
-      // Check if user has active entitlement after refresh
+      // Get fresh customer info to check final status
       const refreshedCustomerInfo = await Purchases.getCustomerInfo();
+      logCustomerInfo(refreshedCustomerInfo, 'restore after refresh');
+      
       const isPremium = refreshedCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
       
       if (isPremium) {
+        // Update status one more time with fresh data
+        updateProStatus(refreshedCustomerInfo);
         Analytics.trackEvent('restore_success', {});
+        return { success: true, hasActiveSubscription: true };
       } else {
         Analytics.trackEvent('restore_no_purchases', {});
+        return { success: true, hasActiveSubscription: false };
       }
     } catch (err) {
       console.error('[Billing] Error restoring purchases:', err);
@@ -424,7 +435,8 @@ export const PurchasesProvider = ({ children }) => {
         error: errorMsg,
       });
       
-      // Don't throw - let the UI handle the error message
+      // Throw error so UI can handle it
+      throw err;
     } finally {
       setIsLoading(false);
     }

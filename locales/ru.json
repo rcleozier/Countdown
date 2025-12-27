@@ -188,6 +188,7 @@
     "restoreCompleteMessage": "Ваши покупки были восстановлены.",
     "restoreFailed": "Восстановление Не Удалось",
     "restoreFailedMessage": "Не удалось восстановить покупки. Пожалуйста, попробуйте снова.",
+    "noActivePurchases": "Активных покупок не найдено.",
     "upgradeTitle": "Обновить до Pro",
     "upgradeSubtitle": "Больше контроля. Меньше шума.",
     "featureStandardReminders": "Расширенные напоминания",
