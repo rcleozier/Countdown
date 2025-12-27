@@ -151,10 +151,12 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const [paywallFeature, setPaywallFeature] = useState('notes');
   const [reminderExplainerVisible, setReminderExplainerVisible] = useState(false);
   const { isPro, getLimit } = useEntitlements();
+  const [PickerModule, setPickerModule] = useState(null);
   
   // Modal animation refs
   const modalScale = useRef(new Animated.Value(0.95)).current;
   const iconModalScale = useRef(new Animated.Value(0.95)).current;
+  const calendarModalScale = useRef(new Animated.Value(0.95)).current;
 
   // Calculate time left down to seconds, or return null if expired
   function getTimeLeft(date) {
@@ -219,6 +221,41 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       iconModalScale.setValue(0.95);
     }
   }, [iconPickerVisible]);
+
+  // Lazy-load Picker to avoid issues in environments without the native module
+  useEffect(() => {
+    let isMounted = true;
+    const loadPicker = async () => {
+      if (!timePickerVisible || PickerModule) return;
+      try {
+        const { Picker } = await import('@react-native-picker/picker');
+        if (isMounted) {
+          setPickerModule({ Picker });
+        }
+      } catch (err) {
+        console.warn('Picker module not available', err);
+      }
+    };
+    loadPicker();
+    return () => {
+      isMounted = false;
+    };
+  }, [timePickerVisible, PickerModule]);
+
+  // Calendar modal animation
+  useEffect(() => {
+    if (calendarModalVisible) {
+      Animated.spring(calendarModalScale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }).start();
+    } else {
+      calendarModalScale.setValue(0.95);
+    }
+  }, [calendarModalVisible]);
 
   // Progress calculation
   const getProgress = () => {

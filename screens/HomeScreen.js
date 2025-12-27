@@ -911,11 +911,6 @@ const HomeScreen = () => {
           setNotificationPermission(permStatus.status);
         }
         
-        // Check if this is a new user and seed data
-        const stored = await AsyncStorage.getItem("countdowns");
-        if (!stored) {
-          await seedTestDataForNewUser();
-        }
       } catch (error) {
         console.error('Error setting up notifications:', error);
       }
