@@ -2067,6 +2067,19 @@ const styles = StyleSheet.create({
     height: 1,
     marginBottom: wp('3%'), // 12-16px spacing
   },
+  iconModalCloseButton: {
+    marginTop: wp('3%'),
+    height: 44,
+    borderRadius: wp('3%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  iconModalCloseText: {
+    fontSize: wp('4%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
   iconModalScroll: {
     maxHeight: hp('55%'),
   },

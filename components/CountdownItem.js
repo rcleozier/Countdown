@@ -2563,6 +2563,19 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
+  iconModalCloseButton: {
+    marginTop: wp('3%'),
+    height: 44,
+    borderRadius: wp('3%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  iconModalCloseText: {
+    fontSize: wp('4%'),
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
   reminderDescription: {
     fontSize: wp('3%'),
     fontWeight: '400',
