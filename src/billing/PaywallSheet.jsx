@@ -77,12 +77,12 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
       // Check if Pro is now active (purchase function handles retry internally)
       // We use a small delay to allow state updates to propagate
       if (isPro) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert(
-          t('subscription.upsell.unlockPro'),
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert(
+        t('subscription.upsell.unlockPro'),
           t('subscription.proUnlocked'),
           [{ text: t('common.ok'), onPress: onClose }]
-        );
+      );
       }
       // If there's an error, it will be displayed in the error message area
       // If isFinishingSetup is true, the UI will show the "Finishing setup..." message
@@ -121,12 +121,12 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       if (result?.hasActiveSubscription) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert(
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert(
           t('subscription.restoreComplete'),
           t('subscription.restoreCompleteMessage'),
           [{ text: t('common.ok'), onPress: onClose }]
-        );
+      );
       } else {
         Alert.alert(
           t('subscription.restoreComplete'),
@@ -202,16 +202,16 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
         </View>
 
         {/* Purchase Button */}
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            {
-              backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
-            }
-          ]}
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              {
+                backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+              }
+            ]}
           onPress={handlePurchase}
           disabled={isPurchasing || isRestoring || isLoading || isFinishingSetup || !monthlyPackage}
-        >
+          >
           {isPurchasing || isFinishingSetup ? (
             <View style={styles.buttonContent}>
               <ActivityIndicator color="#FFFFFF" style={{ marginRight: 8 }} />
@@ -221,8 +221,8 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
             </View>
           ) : (
             <Text style={styles.primaryButtonText}>{t('subscription.startPro')}</Text>
-          )}
-        </TouchableOpacity>
+            )}
+          </TouchableOpacity>
 
         {/* Pricing Transparency */}
         {priceString && (

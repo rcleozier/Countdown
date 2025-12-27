@@ -185,11 +185,11 @@ const SettingsScreen = () => {
       ].map((e, i) => {
         const eventDate = addDays(now, e.days);
         const event = {
-          id: `past-${i}`,
-          name: e.name,
-          icon: e.icon,
+        id: `past-${i}`,
+        name: e.name,
+        icon: e.icon,
           date: eventDate.toISOString(),
-          createdAt: addDays(now, e.days - 5).toISOString(),
+        createdAt: addDays(now, e.days - 5).toISOString(),
           nextOccurrenceAt: eventDate.toISOString(),
           recurrence: 'none',
           reminderPlan: createDefaultReminderPlan('off'), // Past events don't need reminders
@@ -392,24 +392,24 @@ const SettingsScreen = () => {
             </View>
             {isPro ? (
               <View style={{ marginTop: wp('3%') }}>
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    openSubscriptionManagement();
-                  }}
-                  style={[
-                    styles.proCtaButton,
-                    {
-                      backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
-                      borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
-                    }
-                  ]}
-                >
-                  <Text style={[
-                    styles.proCtaText,
-                    { color: accentColor }
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  openSubscriptionManagement();
+                }}
+                style={[
+                  styles.proCtaButton,
+                  {
+                    backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
+                    borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
+                  }
+                ]}
+              >
+                <Text style={[
+                  styles.proCtaText,
+                  { color: accentColor }
                   ]}>{t('settings.manageSubscription')}</Text>
-                </Pressable>
+              </Pressable>
                 <Text style={[
                   styles.proManageSubtext,
                   { color: isDark ? '#6B7280' : '#9CA3AF' }
@@ -460,19 +460,19 @@ const SettingsScreen = () => {
               styles.cardTitle,
               { color: accentColor }
             ]}>{t('settings.language')}</Text>
-            <Pressable
-              onPressIn={() => handleCardPressIn('language')}
-              onPressOut={() => handleCardPressOut('language')}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setLanguageModalVisible(true);
-              }}
+              <Pressable
+                onPressIn={() => handleCardPressIn('language')}
+                onPressOut={() => handleCardPressOut('language')}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setLanguageModalVisible(true);
+                }}
               style={styles.languageRow}
-            >
-              <Animated.View style={[
+              >
+                <Animated.View style={[
                 styles.languageRow,
-                { transform: [{ scale: getCardScale('language') }] }
-              ]}>
+                  { transform: [{ scale: getCardScale('language') }] }
+                ]}>
                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
                   {SUPPORTED_LOCALES[locale]?.flag && (
                     <Text style={{ fontSize: wp('4%'), marginRight: wp('2%') }}>
@@ -486,13 +486,13 @@ const SettingsScreen = () => {
                     {SUPPORTED_LOCALES[locale]?.name || locale}
                   </Text>
                 </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={wp('4%')}
-                  color={isDark ? '#6B7280' : '#9CA3AF'}
-                />
-              </Animated.View>
-            </Pressable>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={wp('4%')}
+                    color={isDark ? '#6B7280' : '#9CA3AF'}
+                  />
+                </Animated.View>
+              </Pressable>
           </View>
 
           {/* Appearance */}
@@ -549,11 +549,11 @@ const SettingsScreen = () => {
             
             {/* Restore Purchases - Only show when not Pro */}
             {!isPro && (
-              <Pressable
-                onPress={async () => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setIsRestoring(true);
-                  try {
+            <Pressable
+              onPress={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setIsRestoring(true);
+                try {
                     const result = await restore();
                     
                     // Wait a moment for state to update
@@ -561,7 +561,7 @@ const SettingsScreen = () => {
                     
                     if (result?.hasActiveSubscription) {
                       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                      Alert.alert(
+                  Alert.alert(
                         t('settings.restoreComplete'),
                         t('settings.restoreCompleteMessage'),
                         [{ text: t('common.ok') }]
@@ -571,44 +571,44 @@ const SettingsScreen = () => {
                         t('settings.restoreComplete'),
                         t('settings.noActivePurchases') || 'No active purchases found.',
                         [{ text: t('common.ok') }]
-                      );
+                  );
                     }
-                  } catch (err) {
+                } catch (err) {
                     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-                    Alert.alert(
+                  Alert.alert(
                       t('settings.restoreFailed'),
                       err.message || t('settings.restoreFailedMessage'),
                       [{ text: t('common.ok') }]
-                    );
-                  } finally {
-                    setIsRestoring(false);
-                  }
-                }}
-                disabled={isRestoring || purchasesLoading}
-                style={{ marginBottom: wp('3%') }}
-              >
-                <View style={[
-                  styles.actionRow,
-                  {
-                    paddingVertical: wp('3%'),
-                    paddingHorizontal: wp('4%'),
-                    borderRadius: wp('2.5%'),
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                  }
+                  );
+                } finally {
+                  setIsRestoring(false);
+                }
+              }}
+              disabled={isRestoring || purchasesLoading}
+              style={{ marginBottom: wp('3%') }}
+            >
+              <View style={[
+                styles.actionRow,
+                {
+                  paddingVertical: wp('3%'),
+                  paddingHorizontal: wp('4%'),
+                  borderRadius: wp('2.5%'),
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                }
+              ]}>
+                <Ionicons
+                  name="refresh"
+                  size={wp('5%')}
+                  color={isDark ? '#A1A1A1' : '#6B7280'}
+                />
+                <Text style={[
+                  styles.actionText,
+                  { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
                 ]}>
-                  <Ionicons
-                    name="refresh"
-                    size={wp('5%')}
-                    color={isDark ? '#A1A1A1' : '#6B7280'}
-                  />
-                  <Text style={[
-                    styles.actionText,
-                    { color: isDark ? '#F5F5F5' : '#111111', marginLeft: wp('3%') }
-                  ]}>
                     {isRestoring ? t('settings.restoring') : t('settings.restorePurchases')}
-                  </Text>
-                </View>
-              </Pressable>
+                </Text>
+              </View>
+            </Pressable>
             )}
             
             {/* Destructive: Clear All Events */}
@@ -646,16 +646,16 @@ const SettingsScreen = () => {
           {__DEV__ && (
             <>
               {/* Subscription Debug Section (DEV ONLY) */}
-              <View style={[
-                styles.card,
-                {
-                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                  shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-                }
-              ]}>
-                <Text style={[
-                  styles.sectionHeader,
-                  { color: isDark ? '#A1A1A1' : '#6B7280' }
+            <View style={[
+              styles.card,
+              {
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+              }
+            ]}>
+              <Text style={[
+                styles.sectionHeader,
+                { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>Subscription Debug</Text>
                 {purchases.__debug && (
                   <View style={{ padding: wp('3%') }}>
@@ -676,10 +676,10 @@ const SettingsScreen = () => {
                     </Text>
                     <Text style={[styles.actionText, { color: isDark ? '#F5F5F5' : '#111111' }]}>
                       Monthly Package ID: {purchases.__debug.monthlyPackageId || 'none'}
-                    </Text>
-                  </View>
+                  </Text>
+                </View>
                 )}
-              </View>
+            </View>
             </>
           )}
 
@@ -796,10 +796,10 @@ const SettingsScreen = () => {
                       <Text style={{ fontSize: wp('5%'), marginRight: wp('3%') }}>
                         {localeData.flag}
                       </Text>
-                      <Text style={[
-                        styles.languageOptionText,
-                        { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                      ]}>{localeData.name}</Text>
+                    <Text style={[
+                      styles.languageOptionText,
+                      { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                    ]}>{localeData.name}</Text>
                     </View>
                     {locale === code && (
                       <Ionicons 

@@ -45,7 +45,7 @@ export const PurchasesProvider = ({ children }) => {
   const [lastRefreshTime, setLastRefreshTime] = useState(null);
   const [customerInfoTimestamp, setCustomerInfoTimestamp] = useState(null);
   const [isFinishingSetup, setIsFinishingSetup] = useState(false);
-  
+
   const lastRefreshRef = useRef(0);
   const isConfiguredRef = useRef(false);
 
@@ -118,7 +118,7 @@ export const PurchasesProvider = ({ children }) => {
       // Configure RevenueCat (only once)
       await Purchases.configure({ apiKey: REVENUECAT_API_KEY });
       isConfiguredRef.current = true;
-      
+
       // Optional debug mode: log in with fixed user ID for testing
       if (DEBUG_MODE && Purchases.logIn) {
         try {
@@ -203,7 +203,7 @@ export const PurchasesProvider = ({ children }) => {
       // Update Pro status
       updateProStatus(customerInfo);
       setCustomerInfoTimestamp(new Date().toISOString());
-      
+
       // Load offerings and store offerings.current
       const offeringsData = await Purchases.getOfferings();
       
@@ -218,19 +218,19 @@ export const PurchasesProvider = ({ children }) => {
 
         if (monthlyPackage && monthlyPackage.storeProduct) {
           const product = monthlyPackage.storeProduct;
-          setOfferings({
+      setOfferings({
             current: currentOffering,
             monthly: {
               identifier: monthlyPackage.identifier,
               package: monthlyPackage, // Store full package for purchase
-              product: {
+          product: {
                 identifier: product.identifier || '',
                 title: product.title || '',
                 description: product.description || '',
                 price: product.priceString || '',
                 priceString: product.priceString || '',
                 currencyCode: product.currencyCode || 'USD',
-              },
+          },
             },
           });
         } else {
@@ -392,7 +392,7 @@ export const PurchasesProvider = ({ children }) => {
         }
         return;
       }
-      
+
       // Handle authentication failures with helpful message
       if (isAuthError) {
         const authErrorMsg = 'Authentication failed. Please check your sandbox account settings or try signing out and back in.';
@@ -451,7 +451,7 @@ export const PurchasesProvider = ({ children }) => {
       setCustomerInfoTimestamp(new Date().toISOString());
       
       // Refresh entitlements to get latest state
-      await refreshEntitlements();
+        await refreshEntitlements();
       
       // Get fresh customer info to check final status
       const refreshedCustomerInfo = await Purchases.getCustomerInfo();

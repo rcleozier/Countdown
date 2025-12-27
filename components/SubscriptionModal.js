@@ -168,37 +168,37 @@ const SubscriptionModal = ({ visible, onClose, onSubscribe }) => {
             {/* Plan Pricing */}
             <View style={styles.plansContainer}>
               <View style={[
-                styles.planCard,
-                {
+                    styles.planCard,
+                    {
                   backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
                   borderColor: isDark ? '#3CC4A2' : '#4E9EFF',
                   borderWidth: 2,
-                }
+                    }
               ]}>
-                <View style={styles.planHeader}>
-                  <Text style={[
-                    styles.planName,
-                    { color: isDark ? '#F5F5F5' : '#111111' }
-                  ]}>
+                  <View style={styles.planHeader}>
+                    <Text style={[
+                      styles.planName,
+                      { color: isDark ? '#F5F5F5' : '#111111' }
+                    ]}>
                     {t('subscription.plans.monthly.name') || 'Monthly'}
-                  </Text>
-                </View>
-                
-                <View style={styles.planPricing}>
-                  <Text style={[
-                    styles.planPrice,
-                    { color: isDark ? '#F5F5F5' : '#111111' }
-                  ]}>
-                    {plan.price}
-                  </Text>
-                  <Text style={[
-                    styles.planPricePerMonth,
-                    { color: isDark ? '#A1A1A1' : '#6B7280' }
-                  ]}>
+                      </Text>
+                  </View>
+                  
+                  <View style={styles.planPricing}>
+                    <Text style={[
+                      styles.planPrice,
+                      { color: isDark ? '#F5F5F5' : '#111111' }
+                    ]}>
+                      {plan.price}
+                    </Text>
+                    <Text style={[
+                      styles.planPricePerMonth,
+                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+                    ]}>
                     {t('subscription.perMonth') || 'per month'}
-                  </Text>
-                </View>
-              </View>
+                    </Text>
+                  </View>
+                    </View>
             </View>
 
             {/* Subscribe Button */}

@@ -288,11 +288,11 @@ const RemindersScreen = ({ navigation }) => {
     const now = moment();
     let groupKey;
 
-    if (fireAt.isSame(now, 'day')) {
+      if (fireAt.isSame(now, 'day')) {
       groupKey = t('reminders.today');
-    } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
+      } else if (fireAt.isSame(now.clone().add(1, 'day'), 'day')) {
       groupKey = t('reminders.tomorrow');
-    } else {
+      } else {
       // Use the actual date as the group key for upcoming reminders
       // This ensures each date gets its own group instead of lumping all into "UPCOMING"
       groupKey = fireAt.format('YYYY-MM-DD');
@@ -308,7 +308,7 @@ const RemindersScreen = ({ navigation }) => {
   // Sort groups: TODAY, TOMORROW, then UPCOMING (with dates sorted chronologically)
   const groupedArray = Object.entries(groupedReminders)
     .map(([date, reminders]) => ({
-      date,
+    date,
       reminders: reminders.sort((a, b) => moment(a.fireAtISO).diff(moment(b.fireAtISO))),
     }))
     .sort((a, b) => {
@@ -509,20 +509,20 @@ const RemindersScreen = ({ navigation }) => {
     }
     
     return (
-      <View style={styles.group}>
-        <Text style={[
-          styles.groupHeader,
-          { color: isDark ? '#A1A1A1' : '#6B7280' }
-        ]}>
+    <View style={styles.group}>
+      <Text style={[
+        styles.groupHeader,
+        { color: isDark ? '#A1A1A1' : '#6B7280' }
+      ]}>
           {headerText}
-        </Text>
-        {group.reminders.map((reminder, index) => (
-          <View key={reminder.id || index}>
-            {renderReminderItem({ item: reminder })}
-          </View>
-        ))}
-      </View>
-    );
+      </Text>
+      {group.reminders.map((reminder, index) => (
+        <View key={reminder.id || index}>
+          {renderReminderItem({ item: reminder })}
+        </View>
+      ))}
+    </View>
+  );
   };
 
   return (
@@ -667,22 +667,22 @@ const RemindersScreen = ({ navigation }) => {
 
           {/* Search bar (Pro only, moved under filters) */}
           {isPro && (
-            <TextInput
+                <TextInput
               placeholder={t('reminders.searchPlaceholder')}
-              placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              style={[
-                styles.searchInput,
-                {
-                  backgroundColor: isDark ? '#111827' : '#F3F4F6',
-                  color: isDark ? '#FFFFFF' : '#0F172A',
-                  borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                  placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  style={[
+                    styles.searchInput,
+                    {
+                      backgroundColor: isDark ? '#111827' : '#F3F4F6',
+                      color: isDark ? '#FFFFFF' : '#0F172A',
+                      borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
                   marginTop: wp('3%'),
                   marginBottom: wp('2%'),
-                }
-              ]}
-            />
+                    }
+                  ]}
+                />
           )}
 
 
@@ -779,32 +779,32 @@ const RemindersScreen = ({ navigation }) => {
                         ]}
                       >
                         <View style={styles.reminderLeft}>
-                          <View style={[
+                <View style={[
                             styles.eventIconContainer,
-                            {
+                  {
                               backgroundColor: isDark 
                                 ? 'rgba(78,158,255,0.15)' 
                                 : 'rgba(78,158,255,0.1)',
-                            }
-                          ]}>
+                  }
+                ]}>
                             <Text style={styles.eventIcon}>{reminder.event.icon}</Text>
                           </View>
                           <View style={styles.reminderInfo}>
-                            <Text style={[
+                    <Text style={[
                               styles.eventName,
-                              { color: isDark ? '#FFFFFF' : '#1A1A1A' }
-                            ]}>
+                      { color: isDark ? '#FFFFFF' : '#1A1A1A' }
+                    ]}>
                               {line1}
-                            </Text>
-                            <Text style={[
+                    </Text>
+                    <Text style={[
                               styles.typeLabel,
-                              { color: isDark ? '#A1A1A1' : '#6B7280' }
-                            ]}>
+                      { color: isDark ? '#A1A1A1' : '#6B7280' }
+                    ]}>
                               {filter === 'all'
                                 ? `${reminder.event.name || t('reminders.untitledEvent')} · ${line2}`
                                 : line2}
-                            </Text>
-                          </View>
+                    </Text>
+                  </View>
                         </View>
                         <View style={{
                           position: 'absolute',
@@ -827,13 +827,13 @@ const RemindersScreen = ({ navigation }) => {
                     );
                   })}
                   {filteredReminders.length - displayReminders.length > 3 && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  <TouchableOpacity
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setPaywallFeature('reminders');
-                        setPaywallVisible(true);
-                      }}
-                      style={[
+                      setPaywallVisible(true);
+                    }}
+                    style={[
                         styles.lockedReminderCTA,
                         {
                           backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
@@ -853,7 +853,7 @@ const RemindersScreen = ({ navigation }) => {
                       ]}>
                         {t('reminders.unlockMoreReminders', { count: filteredReminders.length - displayReminders.length })}
                       </Text>
-                    </TouchableOpacity>
+                  </TouchableOpacity>
                   )}
                 </View>
               )}

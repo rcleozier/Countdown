@@ -36,9 +36,9 @@ export const AdProvider = ({ children }) => {
   const loadAdStats = async () => {
     try {
       const sessionStart = await AsyncStorage.getItem(SESSION_START_KEY);
-      setAdStats({
-        sessionStartTime: parseInt(sessionStart || Date.now().toString(), 10),
-      });
+        setAdStats({
+          sessionStartTime: parseInt(sessionStart || Date.now().toString(), 10),
+        });
     } catch (error) {
       console.error('Error loading ad stats:', error);
     }

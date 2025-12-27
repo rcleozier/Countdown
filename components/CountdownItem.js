@@ -157,6 +157,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const modalScale = useRef(new Animated.Value(0.95)).current;
   const iconModalScale = useRef(new Animated.Value(0.95)).current;
   const calendarModalScale = useRef(new Animated.Value(0.95)).current;
+  const openPaywall = (feature = 'advanced_reminders') => {
+    setPaywallFeature(feature);
+    setPaywallVisible(true);
+  };
 
   // Calculate time left down to seconds, or return null if expired
   function getTimeLeft(date) {
@@ -1033,7 +1037,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
       <BottomSheet
         visible={editModalVisible}
         onClose={() => {
-          if (iconPickerVisible || calendarModalVisible || timePickerVisible) return;
+          // Close any open pickers and then close the sheet
+          if (iconPickerVisible) setIconPickerVisible(false);
+          if (calendarModalVisible) setCalendarModalVisible(false);
+          if (timePickerVisible) setTimePickerVisible(false);
           setEditModalVisible(false);
         }}
         title={t('common.edit')}
@@ -1099,6 +1106,100 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             </TouchableOpacity>
               </View>
 
+            {/* Calendar Modal */}
+            <Modal
+              animationType="fade"
+              transparent
+              presentationStyle="overFullScreen"
+              visible={calendarModalVisible}
+              onRequestClose={() => {
+                setCalendarModalVisible(false);
+              }}
+            >
+              <View style={[
+                styles.modalContainer,
+                { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.25)' }
+              ]}>
+                <Animated.View style={[
+                  styles.calendarModalContent,
+                  {
+                    backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                    shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+                    transform: [{ scale: calendarModalScale }],
+                  }
+                ]}>
+                  <Text style={[
+                    styles.modalTitle,
+                    { color: isDark ? '#F5F5F5' : '#111111' }
+                  ]}>{t('create.selectDate')}</Text>
+                  <Calendar
+                    key={theme.name}
+                    style={styles.calendar}
+                    onDayPress={(day) => {
+                      const newDate = moment(day.dateString);
+                      setSelectedDate(newDate.toDate());
+                      setCalendarModalVisible(false);
+                    }}
+                    minDate={moment().format("YYYY-MM-DD")}
+                    theme={{
+                      backgroundColor: 'transparent',
+                      calendarBackground: 'transparent',
+                      textSectionTitleColor: isDark ? '#A1A1A1' : '#6B7280',
+                      dayTextColor: isDark ? '#F5F5F5' : '#111111',
+                      todayTextColor: '#4E9EFF',
+                      monthTextColor: isDark ? '#A1A1A1' : '#6B7280',
+                      arrowColor: '#4E9EFF',
+                      selectedDayBackgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                      selectedDayTextColor: '#FFFFFF',
+                      textDisabledColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                      dotColor: '#4E9EFF',
+                      selectedDotColor: '#FFFFFF',
+                      "stylesheet.calendar.header": {
+                        week: {
+                          marginTop: wp('2%'),
+                          marginBottom: wp('1%'),
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        },
+                      },
+                    }}
+                  />
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.button,
+                        {
+                          backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                        }
+                      ]}
+                      onPress={() => setCalendarModalVisible(false)}
+                    >
+                      <Text style={[
+                        styles.buttonText,
+                        { color: isDark ? '#E5E7EB' : '#111111' }
+                      ]}>{t('common.cancel')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.button,
+                        {
+                          backgroundColor: isDark ? '#3CC4A2' : '#4E9EFF',
+                          shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 1,
+                          shadowRadius: 4,
+                          elevation: 3,
+                        }
+                      ]}
+                      onPress={() => setCalendarModalVisible(false)}
+                    >
+                      <Text style={styles.buttonTextSave}>{t('common.confirm')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Animated.View>
+              </View>
+            </Modal>
+
             {/* Time Section */}
             <View style={styles.modalSection}>
               <Text style={[
@@ -1126,6 +1227,62 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               </Text>
             </TouchableOpacity>
               </View>
+
+            {/* Time Picker Modal */}
+            <Modal
+              animationType="fade"
+              transparent
+              presentationStyle="overFullScreen"
+              visible={timePickerVisible}
+              onRequestClose={() => setTimePickerVisible(false)}
+            >
+              <View style={[styles.timePickerOverlay, { backgroundColor: theme.colors.modalOverlay }]}>
+                <View style={[styles.timePickerContent, { backgroundColor: theme.colors.modalBackground, borderColor: theme.colors.border }]}>
+                  <Text style={[styles.modalTitle, { color: theme.colors.text }]}>{t('create.selectTime')}</Text>
+                  {PickerModule ? (
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                      <PickerModule.Picker
+                        selectedValue={selectedHour}
+                        style={{ width: wp('25%') }}
+                        onValueChange={(itemValue) => setSelectedHour(itemValue)}
+                      >
+                        {[...Array(24).keys()].map((h) => (
+                          <PickerModule.Picker.Item key={h} label={h.toString().padStart(2, '0')} value={h} />
+                        ))}
+                      </PickerModule.Picker>
+                      <Text style={{ fontSize: wp('6%'), marginHorizontal: wp('2%') }}>:</Text>
+                      <PickerModule.Picker
+                        selectedValue={selectedMinute}
+                        style={{ width: wp('25%') }}
+                        onValueChange={(itemValue) => setSelectedMinute(itemValue)}
+                      >
+                        {[...Array(60).keys()].map((m) => (
+                          <PickerModule.Picker.Item key={m} label={m.toString().padStart(2, '0')} value={m} />
+                        ))}
+                      </PickerModule.Picker>
+                    </View>
+                  ) : (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                      <Text style={{ color: theme.colors.text }}>{t('create.selectTime')}</Text>
+                    </View>
+                  )}
+                  <View style={styles.timePickerButtonContainer}>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: theme.colors.border }]}
+                      onPress={() => setTimePickerVisible(false)}
+                    >
+                      <Text style={[styles.buttonText, { color: theme.colors.text }]}>{t('common.cancel')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: theme.colors.primary }]}
+                      onPress={() => setTimePickerVisible(false)}
+                    >
+                      <Text style={[styles.buttonText, { color: theme.colors.buttonText }]}>{t('common.confirm')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
 
               {/* Reminders Section */}
               <View style={styles.modalSection}>
@@ -1161,10 +1318,8 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             if (isLocked) {
                               // Show paywall for Pro presets
-                              setPaywallFeature('advanced_reminders');
-                              setPaywallVisible(true);
-                              // Don't change selection
-                              return;
+                              openPaywall('advanced_reminders');
+                              return; // Don't change selection
                             }
                             setEditReminderPreset(preset);
                           } catch (error) {
@@ -1284,25 +1439,28 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                   styles.modalSectionLabel,
                   { color: isDark ? '#A1A1A1' : '#6B7280' }
                 ]}>Icon</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setIconPickerVisible(true);
-                  }}
-                  style={[
-                    styles.iconButton,
-                    {
-                      backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
-                      borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
-                    }
-                  ]}
-                >
-                  <Text style={[
-                    styles.iconButtonText,
-                    { color: isDark ? '#F5F5F5' : '#111111' }
-                  ]}>
-                    {editIcon ? `${t('create.selectIcon')}: ${editIcon}` : t('create.selectIcon')}
-                  </Text>
-                </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                // Close other pickers, then open icon picker modal
+                setCalendarModalVisible(false);
+                setTimePickerVisible(false);
+                setIconPickerVisible(true);
+              }}
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: isDark ? '#2B2B2B' : '#F9FAFB',
+                  borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                }
+              ]}
+            >
+              <Text style={[
+                styles.iconButtonText,
+                { color: isDark ? '#F5F5F5' : '#111111' }
+              ]}>
+                {editIcon ? `${t('create.selectIcon')}: ${editIcon}` : t('create.selectIcon')}
+              </Text>
+            </TouchableOpacity>
               </View>
 
               {/* Notes Section */}
@@ -1417,67 +1575,67 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
               </View>
         </ScrollView>
 
-      {/* Inline Icon Picker Overlay inside the BottomSheet (renders at sheet level for full coverage) */}
-      {iconPickerVisible && (
-        <View style={styles.inlineOverlay}>
-          <Pressable
-            style={styles.inlineOverlayBackdrop}
-            onPress={() => setIconPickerVisible(false)}
-          />
-          <Animated.View style={[
-            styles.inlineOverlayCard,
-            {
-              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
-              transform: [{ scale: iconModalScale }],
-            }
-          ]}>
-            <Text style={[
-              styles.iconModalTitle,
-              { color: isDark ? '#F3F3F6' : '#111111' }
-            ]}>{t('create.selectIcon')}</Text>
-            <View style={[
-              styles.iconModalDivider,
-              { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
-            ]} />
-            <ScrollView
-              style={styles.iconModalScroll}
-              contentContainerStyle={styles.iconModalScrollContent}
-              showsVerticalScrollIndicator={false}
-              bounces={true}
-            >
-              <View style={styles.iconList}>
-                {eventIcons.map((icon, index) => (
-                  <IconItem
-                    key={`${icon}-${index}`}
-                    icon={icon}
-                    isSelected={editIcon === icon}
-                    isDark={isDark}
-                    onPress={() => {
-                      setEditIcon(icon);
-                      setIconPickerVisible(false);
-                    }}
-                  />
-                ))}
-              </View>
-            </ScrollView>
-            <TouchableOpacity
+        {/* Inline Icon Picker Overlay inside the BottomSheet (matching add flow) */}
+        {iconPickerVisible && (
+          <View style={styles.inlineOverlay}>
+            <Pressable
+              style={styles.inlineOverlayBackdrop}
               onPress={() => setIconPickerVisible(false)}
-              style={styles.iconModalCloseButton}
-            >
-              <Text
-                allowFontScaling={false}
-                style={[
-                  styles.iconModalCloseText,
-                  { color: isDark ? '#FFFFFF' : '#000000' }
-                ]}
+            />
+            <Animated.View style={[
+              styles.inlineOverlayCard,
+              {
+                backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
+                transform: [{ scale: iconModalScale }],
+              }
+            ]}>
+              <Text style={[
+                styles.iconModalTitle,
+                { color: isDark ? '#F3F3F6' : '#111111' }
+              ]}>{t('create.selectIcon')}</Text>
+              <View style={[
+                styles.iconModalDivider,
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }
+              ]} />
+              <ScrollView
+                style={styles.iconModalScroll}
+                contentContainerStyle={styles.iconModalScrollContent}
+                showsVerticalScrollIndicator={false}
+                bounces={true}
               >
-                {t('common.cancel')}
-              </Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-      )}
+                <View style={styles.iconList}>
+                  {eventIcons.map((icon, index) => (
+                    <IconItem
+                      key={`${icon}-${index}`}
+                      icon={icon}
+                      isSelected={editIcon === icon}
+                      isDark={isDark}
+                      onPress={() => {
+                        setEditIcon(icon);
+                        setIconPickerVisible(false);
+                      }}
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+              <TouchableOpacity
+                onPress={() => setIconPickerVisible(false)}
+                style={styles.iconModalCloseButton}
+              >
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.iconModalCloseText,
+                    { color: isDark ? '#FFFFFF' : '#000000' }
+                  ]}
+                >
+                  {t('common.cancel')}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+        )}
 
       </BottomSheet>
 
@@ -1487,6 +1645,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             <Modal
               animationType="fade"
               transparent
+              presentationStyle="overFullScreen"
               visible={calendarModalVisible}
               onRequestClose={() => {
                 setCalendarModalVisible(false);
@@ -1580,6 +1739,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             <Modal
               animationType="fade"
               transparent
+              presentationStyle="overFullScreen"
               visible={timePickerVisible}
               onRequestClose={() => setTimePickerVisible(false)}
             >

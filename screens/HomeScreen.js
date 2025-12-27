@@ -166,6 +166,16 @@ const HomeScreen = () => {
   const [recurrencePickerVisible, setRecurrencePickerVisible] = useState(false);
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
+  // Paywall opener (single definition)
+  const openPaywall = (feature = 'advanced_reminders') => {
+    // Close child overlays to avoid stacking
+    setCalendarModalVisible(false);
+    setTimePickerVisible(false);
+    setIconPickerVisible(false);
+    setRecurrencePickerVisible(false);
+    setPaywallFeature(feature);
+    setPaywallVisible(true);
+  };
   
   // New state for templates, reminders, search, filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -599,19 +609,6 @@ const HomeScreen = () => {
       calendarModalScale.setValue(0.95);
       iconModalScale.setValue(0.95);
     }, 50);
-  };
-
-  const openPaywall = (feature) => {
-    // Close creation modal + its child overlays first
-    setCalendarModalVisible(false);
-    setTimePickerVisible(false);
-    setIconPickerVisible(false);
-    setModalVisible(false);
-    // Then open paywall shortly after to avoid overlay stacking
-    setTimeout(() => {
-      setPaywallFeature(feature);
-      setPaywallVisible(true);
-    }, 120);
   };
 
   // Schedules a notification only if the event time is in the future
@@ -1369,10 +1366,8 @@ const HomeScreen = () => {
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             if (isLocked) {
                               // Show paywall for Pro presets
-                              setPaywallFeature('advanced_reminders');
-                              setPaywallVisible(true);
-                              // Don't change selection
-                              return;
+                              openPaywall('advanced_reminders');
+                              return; // Don't change selection
                             }
                             setReminderPreset(preset);
                           } catch (error) {
