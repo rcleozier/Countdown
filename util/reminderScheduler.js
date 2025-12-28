@@ -26,6 +26,11 @@ export const syncScheduledReminders = async (events, isPro) => {
     // Get all currently scheduled notifications
     const allScheduled = await Notifications.getAllScheduledNotificationsAsync();
     const scheduledIds = new Set(allScheduled.map(n => n.identifier));
+    const scheduledReminderIds = new Set(
+      allScheduled
+        .map(n => n.content?.data?.reminderId)
+        .filter(Boolean)
+    );
 
     // Build reminders for all events
     // Always include reminders (even if reminderPlan.enabled is false, we still schedule "on time")
@@ -76,8 +81,11 @@ export const syncScheduledReminders = async (events, isPro) => {
         continue;
       }
 
-      // Check if already scheduled
+      // Check if already scheduled (by notificationId or reminderId)
       if (reminder.notificationId && scheduledIds.has(reminder.notificationId)) {
+        continue;
+      }
+      if (scheduledReminderIds.has(reminder.id)) {
         continue;
       }
 

@@ -1148,7 +1148,7 @@ const HomeScreen = () => {
                 styles.iconButtonText,
                 { color: isDark ? '#F5F5F5' : '#111111' }
               ]}>
-                {moment(selectedDate).format("ddd, D MMM YYYY")}
+                {moment(selectedDate).format("ddd, MMM D, YYYY")}
               </Text>
             </TouchableOpacity>
               </View>
@@ -2091,12 +2091,12 @@ const styles = StyleSheet.create({
   },
   inlineOverlayBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.65)', // darker to reduce bleed-through
   },
   inlineOverlayCard: {
     width: '100%',
     maxWidth: wp('90%'),
-    maxHeight: hp('60%'),
+    maxHeight: hp('70%'), // taller to cover more of the sheet
     borderRadius: wp('5%'),
     paddingHorizontal: wp('5%'),
     paddingTop: wp('6%'),
