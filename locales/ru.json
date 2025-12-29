@@ -16,7 +16,14 @@
     "loading": "Загрузка...",
     "error": "Ошибка",
     "success": "Успех",
-    "addNote": "Добавить заметку"
+    "addNote": "Добавить заметку",
+    "testNotificationSent": "Тест Отправлен",
+    "testNotificationMessage": "Тестовое уведомление появится через 2 секунды",
+    "permissionDenied": "Доступ Запрещен",
+    "enableNotificationsInSettings": "Пожалуйста, включите уведомления в Настройках",
+    "testFailed": "Тест Не Удался",
+    "testNotificationFailed": "Не удалось отправить тестовое уведомление",
+    "somethingWentWrong": "Что-то пошло не так. Пожалуйста, попробуйте снова."
   },
   "home": {
     "title": "Обратный отсчет",
@@ -34,7 +41,8 @@
     "selectTime": "Выберите Время",
     "selectIcon": "Выберите Иконку",
     "selectReminderPreset": "Пресет Напоминания",
-    "customReminders": "Пользовательские Напоминания"
+    "customReminders": "Пользовательские Напоминания",
+    "invalidDateTime": "Пожалуйста, выберите дату и время в будущем."
   },
   "edit": {
     "title": "Редактировать Обратный Отсчет",

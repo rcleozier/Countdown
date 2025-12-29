@@ -16,7 +16,14 @@
     "loading": "Carregando...",
     "error": "Erro",
     "success": "Sucesso",
-    "addNote": "Adicionar nota"
+    "addNote": "Adicionar nota",
+    "testNotificationSent": "Teste Enviado",
+    "testNotificationMessage": "A notificação de teste aparecerá em 2 segundos",
+    "permissionDenied": "Permissão Negada",
+    "enableNotificationsInSettings": "Por favor, ative as notificações nas Configurações",
+    "testFailed": "Teste Falhou",
+    "testNotificationFailed": "Não foi possível enviar a notificação de teste",
+    "somethingWentWrong": "Algo deu errado. Por favor, tente novamente."
   },
   "home": {
     "title": "Contagens regressivas",
@@ -34,7 +41,8 @@
     "selectTime": "Selecionar hora",
     "selectIcon": "Selecionar ícone",
     "selectReminderPreset": "Predefinição de lembrete",
-    "customReminders": "Lembretes personalizados"
+    "customReminders": "Lembretes personalizados",
+    "invalidDateTime": "Por favor, selecione uma data e hora no futuro."
   },
   "edit": {
     "title": "Editar contagem regressiva",

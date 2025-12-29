@@ -31,8 +31,8 @@ const DEBUG_MODE = __DEV__ && false; // Set to true to enable debug user ID
 const DEBUG_USER_ID = 'debug-user-1';
 
 // Retry configuration for entitlement propagation
-const ENTITLEMENT_RETRY_ATTEMPTS = 3;
-const ENTITLEMENT_RETRY_DELAY_MS = 2000; // 2 seconds between retries
+const ENTITLEMENT_RETRY_ATTEMPTS = 5; // Increased for sandbox delays
+const ENTITLEMENT_RETRY_DELAY_MS = 3000; // 3 seconds between retries (longer for sandbox)
 
 const PurchasesContext = createContext(undefined);
 
@@ -320,12 +320,26 @@ export const PurchasesProvider = ({ children }) => {
       // Log customer info immediately after purchase
       logCustomerInfo(customerInfo, 'after purchase');
       
-      // Update status from customerInfo immediately
-      updateProStatus(customerInfo);
+      // In sandbox, there can be a delay. Wait a moment before checking entitlement
+      // This gives RevenueCat time to sync with Apple's servers
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second initial wait
+      
+      // Get fresh customer info after brief wait (helps with sandbox delays)
+      let freshCustomerInfo = customerInfo;
+      try {
+        freshCustomerInfo = await Purchases.getCustomerInfo();
+        logCustomerInfo(freshCustomerInfo, 'after purchase + wait');
+      } catch (err) {
+        console.warn('[Billing] Error getting fresh customer info after purchase (non-fatal):', err);
+        // Use original customerInfo if fresh fetch fails
+      }
+      
+      // Update status from customerInfo
+      updateProStatus(freshCustomerInfo);
       setCustomerInfoTimestamp(new Date().toISOString());
       
       // Check if purchase was successful (with retry logic for race conditions)
-      const isPremium = customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
+      const isPremium = freshCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
       
       if (isPremium) {
         // Entitlement is active immediately
@@ -342,6 +356,7 @@ export const PurchasesProvider = ({ children }) => {
         const entitlementActivated = await checkEntitlementWithRetry();
         
         if (entitlementActivated) {
+          setIsFinishingSetup(false);
           Analytics.trackEvent('purchase_success', {
             product: packageToPurchase.identifier,
             delayed: true,
@@ -350,13 +365,49 @@ export const PurchasesProvider = ({ children }) => {
           // Refresh offerings
           await refreshEntitlements();
         } else {
-          // Still not active after retries - this might be a real issue
-          console.warn('[Billing] Purchase completed but entitlement not active after retries');
-          setError('Purchase completed but entitlement not active. Please try restoring purchases or contact support.');
-          Analytics.trackEvent('purchase_entitlement_delayed', {
-            product: packageToPurchase.identifier,
-          });
-          // Don't throw - let the UI show the error message
+          // Still not active after retries - try restoring purchases automatically
+          // This often fixes sandbox delays where purchase completed but entitlement not synced
+          console.warn('[Billing] Purchase completed but entitlement not active after retries. Attempting restore...');
+          
+          try {
+            // Try restoring purchases - this forces RevenueCat to sync with Apple
+            const restoredCustomerInfo = await Purchases.restorePurchases();
+            logCustomerInfo(restoredCustomerInfo, 'restore after purchase delay');
+            
+            const isPremiumAfterRestore = restoredCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
+            
+            if (isPremiumAfterRestore) {
+              // Restore fixed it!
+              setIsFinishingSetup(false);
+              updateProStatus(restoredCustomerInfo);
+              setCustomerInfoTimestamp(new Date().toISOString());
+              await refreshEntitlements();
+              
+              Analytics.trackEvent('purchase_success', {
+                product: packageToPurchase.identifier,
+                delayed: true,
+                restored: true,
+              });
+            } else {
+              // Still not active even after restore
+              setIsFinishingSetup(false);
+              console.warn('[Billing] Purchase completed but entitlement not active even after restore');
+              setError('Purchase completed but entitlement not active. This may be a sandbox delay. Please wait a moment and try restoring purchases manually.');
+              Analytics.trackEvent('purchase_entitlement_delayed', {
+                product: packageToPurchase.identifier,
+                restored: true,
+              });
+            }
+          } catch (restoreErr) {
+            // Restore failed - show error
+            setIsFinishingSetup(false);
+            console.error('[Billing] Error restoring after purchase:', restoreErr);
+            setError('Purchase completed but entitlement not active. Please try restoring purchases manually or contact support.');
+            Analytics.trackEvent('purchase_entitlement_delayed', {
+              product: packageToPurchase.identifier,
+              restore_failed: true,
+            });
+          }
         }
       }
     } catch (err) {

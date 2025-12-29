@@ -16,7 +16,14 @@
     "loading": "Caricamento...",
     "error": "Errore",
     "success": "Successo",
-    "addNote": "Aggiungi nota"
+    "addNote": "Aggiungi nota",
+    "testNotificationSent": "Test Inviato",
+    "testNotificationMessage": "La notifica di test apparirà tra 2 secondi",
+    "permissionDenied": "Permesso Negato",
+    "enableNotificationsInSettings": "Abilita le notifiche nelle Impostazioni",
+    "testFailed": "Test Fallito",
+    "testNotificationFailed": "Impossibile inviare la notifica di test",
+    "somethingWentWrong": "Qualcosa è andato storto. Riprova."
   },
   "home": {
     "title": "Conto alla rovescia",
@@ -34,7 +41,8 @@
     "selectTime": "Seleziona Ora",
     "selectIcon": "Seleziona Icona",
     "selectReminderPreset": "Preset Promemoria",
-    "customReminders": "Promemoria Personalizzati"
+    "customReminders": "Promemoria Personalizzati",
+    "invalidDateTime": "Seleziona una data e ora nel futuro."
   },
   "edit": {
     "title": "Modifica Conto alla Rovescia",

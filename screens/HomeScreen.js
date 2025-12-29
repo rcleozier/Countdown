@@ -943,13 +943,13 @@ const HomeScreen = () => {
           trigger: { seconds: 2 }, // Show in 2 seconds
         });
         console.log('Test notification scheduled:', testId);
-        Alert.alert('Test Sent', 'Test notification will appear in 2 seconds');
+        Alert.alert(t('common.testNotificationSent'), t('common.testNotificationMessage'));
       } else {
-        Alert.alert('Permission Denied', 'Please enable notifications in Settings');
+        Alert.alert(t('common.permissionDenied'), t('common.enableNotificationsInSettings'));
       }
     } catch (error) {
       console.error('Test notification failed:', error);
-      Alert.alert('Test Failed', 'Could not send test notification');
+      Alert.alert(t('common.testFailed'), t('common.testNotificationFailed'));
     }
   };
 
@@ -1383,7 +1383,7 @@ const HomeScreen = () => {
                             setReminderPreset(preset);
                           } catch (error) {
                             console.error('Error handling reminder preset selection:', error);
-                            Alert.alert('Error', 'Something went wrong. Please try again.');
+                            Alert.alert(t('common.error'), t('common.somethingWentWrong'));
                           }
                         }}
                         style={[
@@ -1435,7 +1435,7 @@ const HomeScreen = () => {
                       if (!reminderPreset || reminderPreset === 'off') {
                         return t('countdown.noNotificationsScheduled');
                       }
-                      const presetKey = `reminders.preset${reminderPreset.charAt(0).toUpperCase() + reminderPreset.slice(1)}`;
+                      const presetKey = `reminders.preset${reminderPreset.charAt(0).toUpperCase() + reminderPreset.slice(1)}Label`;
                       return t(presetKey) || t('countdown.remindersEnabled');
                     })()}
                   </Text>

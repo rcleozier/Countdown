@@ -16,7 +16,14 @@
     "loading": "加载中...",
     "error": "错误",
     "success": "成功",
-    "addNote": "添加备注"
+    "addNote": "添加备注",
+    "testNotificationSent": "测试已发送",
+    "testNotificationMessage": "测试通知将在2秒后出现",
+    "permissionDenied": "权限被拒绝",
+    "enableNotificationsInSettings": "请在设置中启用通知",
+    "testFailed": "测试失败",
+    "testNotificationFailed": "无法发送测试通知",
+    "somethingWentWrong": "出了点问题。请重试。"
   },
   "home": {
     "title": "倒计时",
@@ -34,7 +41,8 @@
     "selectTime": "选择时间",
     "selectIcon": "选择图标",
     "selectReminderPreset": "提醒预设",
-    "customReminders": "自定义提醒"
+    "customReminders": "自定义提醒",
+    "invalidDateTime": "请选择未来的日期和时间。"
   },
   "edit": {
     "title": "编辑倒计时",

@@ -16,7 +16,14 @@
     "loading": "Laden...",
     "error": "Fehler",
     "success": "Erfolg",
-    "addNote": "Notiz hinzufügen"
+    "addNote": "Notiz hinzufügen",
+    "testNotificationSent": "Test Gesendet",
+    "testNotificationMessage": "Testbenachrichtigung erscheint in 2 Sekunden",
+    "permissionDenied": "Berechtigung Verweigert",
+    "enableNotificationsInSettings": "Bitte aktivieren Sie Benachrichtigungen in den Einstellungen",
+    "testFailed": "Test Fehlgeschlagen",
+    "testNotificationFailed": "Testbenachrichtigung konnte nicht gesendet werden",
+    "somethingWentWrong": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut."
   },
   "home": {
     "title": "Countdowns",
@@ -34,7 +41,8 @@
     "selectTime": "Uhrzeit auswählen",
     "selectIcon": "Symbol auswählen",
     "selectReminderPreset": "Erinnerungsvoreinstellung",
-    "customReminders": "Benutzerdefinierte Erinnerungen"
+    "customReminders": "Benutzerdefinierte Erinnerungen",
+    "invalidDateTime": "Bitte wählen Sie ein Datum und eine Uhrzeit in der Zukunft."
   },
   "edit": {
     "title": "Countdown bearbeiten",

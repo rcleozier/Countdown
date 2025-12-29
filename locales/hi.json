@@ -16,7 +16,14 @@
     "loading": "लोड हो रहा है...",
     "error": "त्रुटि",
     "success": "सफल",
-    "addNote": "नोट जोड़ें"
+    "addNote": "नोट जोड़ें",
+    "testNotificationSent": "परीक्षण भेजा गया",
+    "testNotificationMessage": "परीक्षण सूचना 2 सेकंड में दिखाई देगी",
+    "permissionDenied": "अनुमति अस्वीकृत",
+    "enableNotificationsInSettings": "कृपया सेटिंग्स में सूचनाएं सक्षम करें",
+    "testFailed": "परीक्षण विफल",
+    "testNotificationFailed": "परीक्षण सूचना भेजी नहीं जा सकी",
+    "somethingWentWrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।"
   },
   "home": {
     "title": "काउंटडाउन",
@@ -34,7 +41,8 @@
     "selectTime": "समय चुनें",
     "selectIcon": "आइकन चुनें",
     "selectReminderPreset": "अनुस्मारक प्रीसेट",
-    "customReminders": "कस्टम अनुस्मारक"
+    "customReminders": "कस्टम अनुस्मारक",
+    "invalidDateTime": "कृपया भविष्य में एक तारीख और समय चुनें।"
   },
   "edit": {
     "title": "काउंटडाउन संपादित करें",

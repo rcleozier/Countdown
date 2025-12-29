@@ -16,7 +16,14 @@
     "sort": "Ordenar",
     "loading": "Cargando...",
     "error": "Error",
-    "success": "Éxito"
+    "success": "Éxito",
+    "testNotificationSent": "Prueba Enviada",
+    "testNotificationMessage": "La notificación de prueba aparecerá en 2 segundos",
+    "permissionDenied": "Permiso Denegado",
+    "enableNotificationsInSettings": "Por favor habilita las notificaciones en Configuración",
+    "testFailed": "Prueba Fallida",
+    "testNotificationFailed": "No se pudo enviar la notificación de prueba",
+    "somethingWentWrong": "Algo salió mal. Por favor intenta de nuevo."
   },
   "home": {
     "title": "Cuenta Regresiva",
@@ -34,7 +41,8 @@
     "selectTime": "Seleccionar Hora",
     "selectIcon": "Seleccionar Icono",
     "selectReminderPreset": "Preajuste de Recordatorio",
-    "customReminders": "Recordatorios Personalizados"
+    "customReminders": "Recordatorios Personalizados",
+    "invalidDateTime": "Por favor selecciona una fecha y hora en el futuro."
   },
   "edit": {
     "title": "Editar Cuenta Regresiva",

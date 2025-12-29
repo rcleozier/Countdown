@@ -16,7 +16,14 @@
     "loading": "Chargement...",
     "error": "Erreur",
     "success": "Succès",
-    "addNote": "Ajouter une note"
+    "addNote": "Ajouter une note",
+    "testNotificationSent": "Test Envoyé",
+    "testNotificationMessage": "La notification de test apparaîtra dans 2 secondes",
+    "permissionDenied": "Permission Refusée",
+    "enableNotificationsInSettings": "Veuillez activer les notifications dans les Paramètres",
+    "testFailed": "Test Échoué",
+    "testNotificationFailed": "Impossible d'envoyer la notification de test",
+    "somethingWentWrong": "Quelque chose s'est mal passé. Veuillez réessayer."
   },
   "home": {
     "title": "Compteurs",
@@ -34,7 +41,8 @@
     "selectTime": "Sélectionner l'heure",
     "selectIcon": "Sélectionner une icône",
     "selectReminderPreset": "Préréglage de rappel",
-    "customReminders": "Rappels personnalisés"
+    "customReminders": "Rappels personnalisés",
+    "invalidDateTime": "Veuillez sélectionner une date et une heure dans le futur."
   },
   "edit": {
     "title": "Modifier le compte à rebours",

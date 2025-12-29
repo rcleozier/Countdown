@@ -16,7 +16,14 @@
     "sort": "Sort",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "testNotificationSent": "Test Sent",
+    "testNotificationMessage": "Test notification will appear in 2 seconds",
+    "permissionDenied": "Permission Denied",
+    "enableNotificationsInSettings": "Please enable notifications in Settings",
+    "testFailed": "Test Failed",
+    "testNotificationFailed": "Could not send test notification",
+    "somethingWentWrong": "Something went wrong. Please try again."
   },
   "home": {
     "title": "Countdowns",
@@ -34,7 +41,8 @@
     "selectTime": "Select Time",
     "selectIcon": "Select Icon",
     "selectReminderPreset": "Reminder Preset",
-    "customReminders": "Custom Reminders"
+    "customReminders": "Custom Reminders",
+    "invalidDateTime": "Please select a date and time in the future."
   },
   "edit": {
     "title": "Edit Countdown",

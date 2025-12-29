@@ -1332,7 +1332,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                             setEditReminderPreset(preset);
                           } catch (error) {
                             console.error('Error handling reminder preset selection:', error);
-                            Alert.alert('Error', 'Something went wrong. Please try again.');
+                            Alert.alert(t('common.error'), t('common.somethingWentWrong'));
                           }
                         }}
                         style={[
@@ -1384,7 +1384,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                       if (!editReminderPreset || editReminderPreset === 'off') {
                         return t('countdown.noNotificationsScheduled');
                       }
-                      const presetKey = `reminders.preset${editReminderPreset.charAt(0).toUpperCase() + editReminderPreset.slice(1)}`;
+                      const presetKey = `reminders.preset${editReminderPreset.charAt(0).toUpperCase() + editReminderPreset.slice(1)}Label`;
                       return t(presetKey) || t('countdown.remindersEnabled');
                     })()}
                   </Text>
