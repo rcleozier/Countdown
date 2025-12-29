@@ -440,28 +440,47 @@ export const PurchasesProvider = ({ children }) => {
 
       Analytics.trackEvent('restore_started', {});
 
-      // Restore purchases
+      // Restore purchases - this syncs with the store
       const customerInfo = await Purchases.restorePurchases();
       
       // Log customer info for debugging (dev only)
       logCustomerInfo(customerInfo, 'restore');
       
+      // Check entitlement status immediately from restored customerInfo
+      const isPremium = customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
+      
       // Update status from customerInfo immediately
       updateProStatus(customerInfo);
       setCustomerInfoTimestamp(new Date().toISOString());
       
-      // Refresh entitlements to get latest state
+      // Refresh entitlements to get latest state (this also loads offerings)
+      try {
         await refreshEntitlements();
+      } catch (refreshErr) {
+        // If refresh fails, we still have the restored customerInfo, so log but don't fail
+        console.warn('[Billing] Error refreshing after restore (non-fatal):', refreshErr);
+      }
       
-      // Get fresh customer info to check final status
-      const refreshedCustomerInfo = await Purchases.getCustomerInfo();
-      logCustomerInfo(refreshedCustomerInfo, 'restore after refresh');
+      // Get fresh customer info to check final status (double-check)
+      let finalCustomerInfo = customerInfo;
+      try {
+        finalCustomerInfo = await Purchases.getCustomerInfo();
+        logCustomerInfo(finalCustomerInfo, 'restore after refresh');
+        
+        // Use the freshest entitlement status
+        const finalIsPremium = finalCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
+        if (finalIsPremium !== isPremium) {
+          // Status changed, update again
+          updateProStatus(finalCustomerInfo);
+        }
+      } catch (getInfoErr) {
+        // If getCustomerInfo fails, use the restored customerInfo
+        console.warn('[Billing] Error getting fresh customer info (non-fatal):', getInfoErr);
+      }
       
-      const isPremium = refreshedCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
+      const finalIsPremium = finalCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
       
-      if (isPremium) {
-        // Update status one more time with fresh data
-        updateProStatus(refreshedCustomerInfo);
+      if (finalIsPremium) {
         Analytics.trackEvent('restore_success', {});
         return { success: true, hasActiveSubscription: true };
       } else {
