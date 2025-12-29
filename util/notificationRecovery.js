@@ -171,7 +171,7 @@ export const recoverLegacyNotifications = async (events) => {
       // If we recovered notifications, ensure reminderPlan is set
       if (eventRecovered && (!updatedEvent.reminderPlan || !updatedEvent.reminderPlan.enabled)) {
         updatedEvent.reminderPlan = {
-          preset: 'chill', // Default to chill since they had notifications
+          preset: 'simple', // Default to simple since they had notifications
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           enabled: true,
         };

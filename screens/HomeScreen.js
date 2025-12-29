@@ -239,13 +239,24 @@ const HomeScreen = () => {
                 nextOccurrenceAt: event.nextOccurrenceAt !== undefined ? event.nextOccurrenceAt : event.date,
               };
               
+              // Normalize old/invalid reminder presets
+              if (normalized.reminderPlan?.preset === 'chill') {
+                normalized.reminderPlan.preset = 'simple';
+                needsSave = true;
+              }
+              // Ensure preset is valid
+              if (normalized.reminderPlan?.preset && !['off', 'simple', 'standard', 'intense'].includes(normalized.reminderPlan.preset)) {
+                normalized.reminderPlan.preset = 'off';
+                needsSave = true;
+              }
+              
               const rolled = rollForwardIfNeeded(normalized, now);
               
               // Check if we need to save (either rolled forward or normalized fields)
               if (rolled !== normalized) {
                 needsSave = true;
                 console.log('🔁 [RECURRENCE] Rolled forward event', event.id, 'from', normalized.nextOccurrenceAt, 'to', rolled.nextOccurrenceAt);
-              } else if (normalized.recurrence !== event.recurrence || normalized.nextOccurrenceAt !== event.nextOccurrenceAt) {
+              } else if (normalized.recurrence !== event.recurrence || normalized.nextOccurrenceAt !== event.nextOccurrenceAt || normalized.reminderPlan?.preset !== event.reminderPlan?.preset) {
                 // Normalized fields for old event - save for consistency
                 needsSave = true;
               }

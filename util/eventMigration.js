@@ -141,8 +141,8 @@ export const migrateEvents = async () => {
 
       // Add reminderPlan if missing
       if (migrated.reminderPlan === undefined) {
-        // Default to 'none' preset if no existing notification
-        const defaultPreset = migrated.notificationId ? 'chill' : 'none';
+        // Default to 'off' preset if no existing notification, 'simple' if notifications exist
+        const defaultPreset = migrated.notificationId ? 'simple' : 'off';
         migrated.reminderPlan = {
           preset: defaultPreset,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

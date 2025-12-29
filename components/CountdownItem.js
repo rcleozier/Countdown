@@ -906,11 +906,19 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                     { color: isDark ? '#FFFFFF' : '#1A1A1A', marginLeft: wp('6.5%') }
                   ]}>
                     {(() => {
-                      const preset = event.reminderPlan?.preset || 'off';
+                      let preset = event.reminderPlan?.preset || 'off';
+                      // Normalize old/invalid presets
+                      if (preset === 'chill') {
+                        preset = 'simple';
+                      }
+                      // Only allow valid presets
+                      if (!['off', 'simple', 'standard', 'intense'].includes(preset)) {
+                        preset = 'off';
+                      }
                       if (preset === 'off') {
                         return t('countdown.noNotificationsScheduled');
                       }
-                      const presetKey = `reminders.preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`;
+                      const presetKey = `reminders.preset${preset.charAt(0).toUpperCase() + preset.slice(1)}Label`;
                       return t(presetKey);
                     })()}
                   </Text>
