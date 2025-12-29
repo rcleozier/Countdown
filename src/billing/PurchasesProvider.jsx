@@ -2,6 +2,14 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { Platform, AppState } from 'react-native';
 import { Analytics } from '../../util/analytics';
 
+// Conditionally import Sentry (may not be available in all environments)
+let Sentry = null;
+try {
+  Sentry = require('@sentry/react-native');
+} catch (error) {
+  // Sentry not available, will skip Sentry logging
+}
+
 // Conditionally import RevenueCat (may not be available in Expo Go)
 let Purchases = null;
 let PurchasesAvailable = false;
@@ -31,8 +39,9 @@ const DEBUG_MODE = __DEV__ && false; // Set to true to enable debug user ID
 const DEBUG_USER_ID = 'debug-user-1';
 
 // Retry configuration for entitlement propagation
-const ENTITLEMENT_RETRY_ATTEMPTS = 5; // Increased for sandbox delays
-const ENTITLEMENT_RETRY_DELAY_MS = 3000; // 3 seconds between retries (longer for sandbox)
+// Using exponential backoff: 0.5s, 1.5s, 3s
+const ENTITLEMENT_RETRY_DELAYS = [500, 1500, 3000]; // 3 retries with increasing delays
+const ENTITLEMENT_RETRY_ATTEMPTS = ENTITLEMENT_RETRY_DELAYS.length;
 
 const PurchasesContext = createContext(undefined);
 
@@ -139,6 +148,14 @@ export const PurchasesProvider = ({ children }) => {
 
       // Load offerings and check entitlements
       await refreshEntitlements();
+      
+      // Log initial customer info after initialization
+      try {
+        const initialCustomerInfo = await Purchases.getCustomerInfo();
+        logCustomerInfo(initialCustomerInfo, 'after initializePurchases()');
+      } catch (err) {
+        console.warn('[Billing] Error getting customer info after initialization (non-fatal):', err);
+      }
     } catch (err) {
       console.error('[Billing] Error initializing purchases:', err);
       setError(err.message || 'Failed to initialize purchases');
@@ -148,25 +165,118 @@ export const PurchasesProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Deep debug logging for CustomerInfo
+   * Logs to console (dev) and Sentry (production) for debugging
+   */
   const logCustomerInfo = (customerInfo, context = '') => {
-    if (!__DEV__) return;
-    
     try {
       const activeEntitlementKeys = Object.keys(customerInfo.entitlements?.active || {});
       const allEntitlementKeys = Object.keys(customerInfo.entitlements?.all || {});
       const activeSubscriptions = customerInfo.activeSubscriptions || {};
       const appUserID = customerInfo.originalAppUserId || 'unknown';
+      const proEntitlement = customerInfo.entitlements?.active?.[ENTITLEMENT_ID];
       
-      console.log(`[Billing] Customer Info ${context}:`, {
-        appUserID,
-        activeEntitlementKeys,
-        allEntitlementKeys,
+      // Get all purchased product identifiers
+      const allPurchasedProductIdentifiers = customerInfo.allPurchasedProductIdentifiers || [];
+      
+      // Get latest expiration date if available
+      const latestExpirationDate = customerInfo.latestExpirationDate || null;
+      
+      // Check for entitlement mapping mismatch
+      const hasActiveSubscriptions = Object.keys(activeSubscriptions).length > 0;
+      const hasActiveEntitlements = activeEntitlementKeys.length > 0;
+      const hasProEntitlement = proEntitlement !== undefined;
+      
+      // Prepare structured data for Sentry
+      const billingData = {
+        context: context,
+        appUserID: appUserID,
+        expectedEntitlementId: ENTITLEMENT_ID,
+        activeEntitlementKeys: activeEntitlementKeys,
+        allEntitlementKeys: allEntitlementKeys,
         activeSubscriptions: Object.keys(activeSubscriptions),
-        hasProEntitlement: customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined,
-        proEntitlement: customerInfo.entitlements?.active?.[ENTITLEMENT_ID] || null,
-      });
+        allPurchasedProductIdentifiers: allPurchasedProductIdentifiers,
+        latestExpirationDate: latestExpirationDate,
+        hasProEntitlement: hasProEntitlement,
+        proEntitlement: proEntitlement ? {
+          identifier: proEntitlement.identifier,
+          productIdentifier: proEntitlement.productIdentifier,
+          willRenew: proEntitlement.willRenew,
+          periodType: proEntitlement.periodType,
+          latestPurchaseDate: proEntitlement.latestPurchaseDate,
+          expirationDate: proEntitlement.expirationDate,
+        } : null,
+        hasActiveSubscriptions: hasActiveSubscriptions,
+        hasActiveEntitlements: hasActiveEntitlements,
+        potentialMisconfig: hasActiveSubscriptions && !hasProEntitlement,
+      };
+      
+      // Console logging (dev only)
+      if (__DEV__) {
+        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        console.log(`[Billing] Customer Info ${context}:`);
+        console.log(`  App User ID: ${appUserID}`);
+        console.log(`  Active Entitlement Keys: [${activeEntitlementKeys.join(', ')}]`);
+        console.log(`  All Entitlement Keys: [${allEntitlementKeys.join(', ')}]`);
+        console.log(`  Active Subscriptions: [${Object.keys(activeSubscriptions).join(', ')}]`);
+        console.log(`  All Purchased Product IDs: [${allPurchasedProductIdentifiers.join(', ')}]`);
+        console.log(`  Latest Expiration Date: ${latestExpirationDate || 'N/A'}`);
+        console.log(`  Expected Entitlement ID: "${ENTITLEMENT_ID}"`);
+        console.log(`  Has Pro Entitlement: ${hasProEntitlement}`);
+        
+        if (proEntitlement) {
+          console.log(`  Pro Entitlement Details:`, billingData.proEntitlement);
+        } else {
+          console.log(`  Pro Entitlement: null`);
+        }
+        
+        // Warn about potential misconfigurations
+        if (hasActiveSubscriptions && !hasActiveEntitlements) {
+          console.warn(`  ⚠️  WARNING: Active subscriptions found but no active entitlements!`);
+          console.warn(`     This suggests entitlement mapping may be misconfigured in RevenueCat dashboard.`);
+          console.warn(`     Active subscriptions: ${Object.keys(activeSubscriptions).join(', ')}`);
+        }
+        
+        if (hasActiveSubscriptions && !hasProEntitlement) {
+          console.warn(`  ⚠️  WARNING: Active subscriptions exist but "${ENTITLEMENT_ID}" entitlement not found!`);
+          console.warn(`     Active subscriptions: ${Object.keys(activeSubscriptions).join(', ')}`);
+          console.warn(`     Active entitlements: [${activeEntitlementKeys.join(', ')}]`);
+          console.warn(`     Check RevenueCat dashboard: Entitlement "${ENTITLEMENT_ID}" should be attached to product.`);
+        }
+        
+        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      }
+      
+      // Send to Sentry (production and dev)
+      if (Sentry) {
+        // Add breadcrumb for tracking
+        Sentry.addBreadcrumb({
+          category: 'billing',
+          message: `Customer Info: ${context}`,
+          level: 'info',
+          data: billingData,
+        });
+        
+        // If there's a potential misconfiguration, also send as a message
+        if (hasActiveSubscriptions && !hasProEntitlement) {
+          Sentry.captureMessage(`Billing: Entitlement mismatch detected`, {
+            level: 'warning',
+            tags: {
+              context: context,
+              expectedEntitlement: ENTITLEMENT_ID,
+            },
+            extra: billingData,
+          });
+        }
+      }
     } catch (err) {
       console.warn('[Billing] Error logging customer info:', err);
+      if (Sentry) {
+        Sentry.captureException(err, {
+          tags: { context: 'logCustomerInfo' },
+        });
+      }
     }
   };
 
@@ -206,6 +316,32 @@ export const PurchasesProvider = ({ children }) => {
 
       // Load offerings and store offerings.current
       const offeringsData = await Purchases.getOfferings();
+      
+      // Sanity check: Warn if offerings is null/empty
+      if (!offeringsData || !offeringsData.current) {
+        console.warn('[Billing] ⚠️  WARNING: No current offering available!');
+        console.warn('     This may indicate a RevenueCat configuration issue.');
+        if (Sentry) {
+          Sentry.captureMessage('Billing: No current offering available', {
+            level: 'warning',
+            tags: { context: 'refreshEntitlements' },
+            extra: { hasOfferings: !!offeringsData, hasCurrent: !!offeringsData?.current },
+          });
+        }
+        setOfferings(undefined);
+        setError(undefined);
+        return;
+      }
+      
+      if (offeringsData.current.availablePackages && offeringsData.current.availablePackages.length === 0) {
+        console.warn('[Billing] ⚠️  WARNING: Current offering has no available packages!');
+        if (Sentry) {
+          Sentry.captureMessage('Billing: Current offering has no packages', {
+            level: 'warning',
+            tags: { context: 'refreshEntitlements' },
+          });
+        }
+      }
       
       if (offeringsData.current) {
         // Store the full current offering
@@ -253,34 +389,41 @@ export const PurchasesProvider = ({ children }) => {
     }
   }, []);
 
-  // Helper function to check entitlement with retry logic
-  const checkEntitlementWithRetry = async (attempt = 1) => {
+  /**
+   * Check entitlement with exponential backoff retry logic
+   * Returns { success: boolean, customerInfo: CustomerInfo | null, activeEntitlementKeys: string[] }
+   */
+  const checkEntitlementWithRetry = async (attempt = 0) => {
     if (!PurchasesAvailable || !Purchases) {
-      return false;
+      return { success: false, customerInfo: null, activeEntitlementKeys: [] };
     }
 
     try {
       const customerInfo = await Purchases.getCustomerInfo();
-      logCustomerInfo(customerInfo, `checkEntitlementWithRetry (attempt ${attempt})`);
+      logCustomerInfo(customerInfo, `checkEntitlementWithRetry (attempt ${attempt + 1}/${ENTITLEMENT_RETRY_ATTEMPTS})`);
       
+      const activeEntitlementKeys = Object.keys(customerInfo.entitlements?.active || {});
       const isPremium = customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
       
       if (isPremium) {
         updateProStatus(customerInfo);
         setCustomerInfoTimestamp(new Date().toISOString());
-        return true;
+        return { success: true, customerInfo, activeEntitlementKeys };
       }
       
-      // If not active and we have retries left, wait and retry
-      if (attempt < ENTITLEMENT_RETRY_ATTEMPTS) {
-        await new Promise(resolve => setTimeout(resolve, ENTITLEMENT_RETRY_DELAY_MS));
+      // If not active and we have retries left, wait and retry with exponential backoff
+      if (attempt < ENTITLEMENT_RETRY_ATTEMPTS - 1) {
+        const delay = ENTITLEMENT_RETRY_DELAYS[attempt];
+        console.log(`[Billing] Entitlement not active yet, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
         return checkEntitlementWithRetry(attempt + 1);
       }
       
-      return false;
+      // Final attempt failed
+      return { success: false, customerInfo, activeEntitlementKeys };
     } catch (err) {
-      console.error(`[Billing] Error checking entitlement (attempt ${attempt}):`, err);
-      return false;
+      console.error(`[Billing] Error checking entitlement (attempt ${attempt + 1}):`, err);
+      return { success: false, customerInfo: null, activeEntitlementKeys: [] };
     }
   };
 
@@ -297,8 +440,15 @@ export const PurchasesProvider = ({ children }) => {
       // Get offerings to find the package
       const offeringsData = await Purchases.getOfferings();
       
-      if (!offeringsData.current) {
-        throw new Error('No offerings available');
+      // Sanity check: Warn if offerings is null/empty
+      if (!offeringsData || !offeringsData.current) {
+        console.error('[Billing] No offerings available!');
+        throw new Error('No offerings available. Please check your internet connection and try again.');
+      }
+      
+      if (!offeringsData.current.availablePackages || offeringsData.current.availablePackages.length === 0) {
+        console.error('[Billing] No packages available in current offering!');
+        throw new Error('No subscription packages available.');
       }
 
       // Find the package (use identifier or default to monthly)
@@ -309,106 +459,178 @@ export const PurchasesProvider = ({ children }) => {
       if (!packageToPurchase) {
         throw new Error('Package not found');
       }
+      
+      // Log package details before purchase
+      const productIdentifier = packageToPurchase.storeProduct?.identifier || 'unknown';
+      console.log('[Billing] Purchase Details:', {
+        packageIdentifier: packageToPurchase.identifier,
+        packageType: packageToPurchase.packageType,
+        productIdentifier: productIdentifier,
+        productPrice: packageToPurchase.storeProduct?.priceString || 'N/A',
+        expectedEntitlementId: ENTITLEMENT_ID,
+      });
 
       Analytics.trackEvent('purchase_started', {
         product: packageToPurchase.identifier,
+        productId: productIdentifier,
       });
 
       // Make purchase using purchasePackage
-      const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
+      const { customerInfo: purchaseCustomerInfo } = await Purchases.purchasePackage(packageToPurchase);
       
       // Log customer info immediately after purchase
-      logCustomerInfo(customerInfo, 'after purchase');
+      logCustomerInfo(purchaseCustomerInfo, 'after purchasePackage()');
       
-      // In sandbox, there can be a delay. Wait a moment before checking entitlement
-      // This gives RevenueCat time to sync with Apple's servers
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second initial wait
-      
-      // Get fresh customer info after brief wait (helps with sandbox delays)
-      let freshCustomerInfo = customerInfo;
+      // Immediately get fresh customer info (RevenueCat may have updated it)
+      let customerInfo = purchaseCustomerInfo;
       try {
-        freshCustomerInfo = await Purchases.getCustomerInfo();
-        logCustomerInfo(freshCustomerInfo, 'after purchase + wait');
+        customerInfo = await Purchases.getCustomerInfo();
+        logCustomerInfo(customerInfo, 'after purchasePackage() + getCustomerInfo()');
       } catch (err) {
         console.warn('[Billing] Error getting fresh customer info after purchase (non-fatal):', err);
-        // Use original customerInfo if fresh fetch fails
+        // Use purchaseCustomerInfo if fresh fetch fails
       }
       
-      // Update status from customerInfo
-      updateProStatus(freshCustomerInfo);
-      setCustomerInfoTimestamp(new Date().toISOString());
+      // Check if entitlement is active immediately
+      const isPremiumImmediate = customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
       
-      // Check if purchase was successful (with retry logic for race conditions)
-      const isPremium = freshCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
-      
-      if (isPremium) {
-        // Entitlement is active immediately
+      if (isPremiumImmediate) {
+        // Entitlement is active immediately - success!
+        updateProStatus(customerInfo);
+        setCustomerInfoTimestamp(new Date().toISOString());
+        await refreshEntitlements();
+        
         Analytics.trackEvent('purchase_success', {
           product: packageToPurchase.identifier,
+          immediate: true,
         });
-        
-        // Refresh offerings
+        return; // Success, exit early
+      }
+      
+      // Entitlement not active yet - show "Finishing setup..." and retry with exponential backoff
+      setIsFinishingSetup(true);
+      console.log('[Billing] Entitlement not active immediately, starting retry sequence...');
+      
+      const retryResult = await checkEntitlementWithRetry();
+      
+      if (retryResult.success && retryResult.customerInfo) {
+        // Retry succeeded!
+        setIsFinishingSetup(false);
+        updateProStatus(retryResult.customerInfo);
+        setCustomerInfoTimestamp(new Date().toISOString());
         await refreshEntitlements();
-      } else {
-        // Entitlement not active yet - show "Finishing setup..." and retry
-        setIsFinishingSetup(true);
         
-        const entitlementActivated = await checkEntitlementWithRetry();
+        Analytics.trackEvent('purchase_success', {
+          product: packageToPurchase.identifier,
+          delayed: true,
+          retries: true,
+        });
+        return; // Success after retries
+      }
+      
+      // Still not active after retries - try restoring purchases automatically
+      console.warn('[Billing] Purchase completed but entitlement not active after retries. Attempting restore...');
+      if (Sentry) {
+        Sentry.captureMessage('Billing: Entitlement not active after purchase retries', {
+          level: 'warning',
+          tags: {
+            context: 'purchase',
+            product: packageToPurchase.identifier,
+            expectedEntitlement: ENTITLEMENT_ID,
+          },
+          extra: {
+            retryResult: retryResult,
+            packageIdentifier: packageToPurchase.identifier,
+            productIdentifier: packageToPurchase.storeProduct?.identifier,
+          },
+        });
+      }
+      
+      try {
+        const restoredCustomerInfo = await Purchases.restorePurchases();
+        logCustomerInfo(restoredCustomerInfo, 'restore after purchase delay');
         
-        if (entitlementActivated) {
+        const isPremiumAfterRestore = restoredCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
+        
+        if (isPremiumAfterRestore) {
+          // Restore fixed it!
           setIsFinishingSetup(false);
+          updateProStatus(restoredCustomerInfo);
+          setCustomerInfoTimestamp(new Date().toISOString());
+          await refreshEntitlements();
+          
           Analytics.trackEvent('purchase_success', {
             product: packageToPurchase.identifier,
             delayed: true,
+            restored: true,
           });
-          
-          // Refresh offerings
-          await refreshEntitlements();
-        } else {
-          // Still not active after retries - try restoring purchases automatically
-          // This often fixes sandbox delays where purchase completed but entitlement not synced
-          console.warn('[Billing] Purchase completed but entitlement not active after retries. Attempting restore...');
-          
-          try {
-            // Try restoring purchases - this forces RevenueCat to sync with Apple
-            const restoredCustomerInfo = await Purchases.restorePurchases();
-            logCustomerInfo(restoredCustomerInfo, 'restore after purchase delay');
-            
-            const isPremiumAfterRestore = restoredCustomerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
-            
-            if (isPremiumAfterRestore) {
-              // Restore fixed it!
-              setIsFinishingSetup(false);
-              updateProStatus(restoredCustomerInfo);
-              setCustomerInfoTimestamp(new Date().toISOString());
-              await refreshEntitlements();
-              
-              Analytics.trackEvent('purchase_success', {
-                product: packageToPurchase.identifier,
-                delayed: true,
-                restored: true,
-              });
-            } else {
-              // Still not active even after restore
-              setIsFinishingSetup(false);
-              console.warn('[Billing] Purchase completed but entitlement not active even after restore');
-              setError('Purchase completed but entitlement not active. This may be a sandbox delay. Please wait a moment and try restoring purchases manually.');
-              Analytics.trackEvent('purchase_entitlement_delayed', {
-                product: packageToPurchase.identifier,
-                restored: true,
-              });
-            }
-          } catch (restoreErr) {
-            // Restore failed - show error
-            setIsFinishingSetup(false);
-            console.error('[Billing] Error restoring after purchase:', restoreErr);
-            setError('Purchase completed but entitlement not active. Please try restoring purchases manually or contact support.');
-            Analytics.trackEvent('purchase_entitlement_delayed', {
-              product: packageToPurchase.identifier,
-              restore_failed: true,
-            });
-          }
+          return; // Success after restore
         }
+        
+        // Still not active even after restore - build helpful error message
+        setIsFinishingSetup(false);
+        const activeEntitlementKeys = Object.keys(restoredCustomerInfo.entitlements?.active || {});
+        const activeSubscriptions = Object.keys(restoredCustomerInfo.activeSubscriptions || {});
+        
+        let errorMessage = 'Purchase completed, but subscription activation is delayed.';
+        if (activeEntitlementKeys.length > 0) {
+          errorMessage += ` Found entitlements: ${activeEntitlementKeys.join(', ')}.`;
+        }
+        if (activeSubscriptions.length > 0) {
+          errorMessage += ` Active subscriptions: ${activeSubscriptions.join(', ')}.`;
+        }
+        errorMessage += ` Please tap "Restore Purchases" to sync your subscription.`;
+        
+        console.warn('[Billing] Purchase completed but entitlement not active even after restore:', {
+          expectedEntitlementId: ENTITLEMENT_ID,
+          activeEntitlementKeys,
+          activeSubscriptions,
+        });
+        
+        if (Sentry) {
+          Sentry.captureMessage('Billing: Entitlement not active after purchase and restore', {
+            level: 'error',
+            tags: {
+              context: 'purchase',
+              product: packageToPurchase.identifier,
+              expectedEntitlement: ENTITLEMENT_ID,
+            },
+            extra: {
+              expectedEntitlementId: ENTITLEMENT_ID,
+              activeEntitlementKeys,
+              activeSubscriptions,
+              packageIdentifier: packageToPurchase.identifier,
+              productIdentifier: packageToPurchase.storeProduct?.identifier,
+              errorMessage,
+            },
+          });
+        }
+        
+        setError(errorMessage);
+        Analytics.trackEvent('purchase_entitlement_delayed', {
+          product: packageToPurchase.identifier,
+          restored: true,
+          activeEntitlements: activeEntitlementKeys,
+          activeSubscriptions,
+        });
+      } catch (restoreErr) {
+        // Restore failed - show error with context
+        setIsFinishingSetup(false);
+        console.error('[Billing] Error restoring after purchase:', restoreErr);
+        
+        const activeEntitlementKeys = retryResult.activeEntitlementKeys || [];
+        let errorMessage = 'Purchase completed, but subscription activation is delayed.';
+        if (activeEntitlementKeys.length > 0) {
+          errorMessage += ` Found entitlements: ${activeEntitlementKeys.join(', ')}.`;
+        }
+        errorMessage += ` Please try "Restore Purchases" or contact support if the issue persists.`;
+        
+        setError(errorMessage);
+        Analytics.trackEvent('purchase_entitlement_delayed', {
+          product: packageToPurchase.identifier,
+          restore_failed: true,
+          restore_error: restoreErr.message,
+        });
       }
     } catch (err) {
       // Extract error details for better detection
@@ -429,19 +651,21 @@ export const PurchasesProvider = ({ children }) => {
         errorCode === 530 ||
         (errorCode === 100 && errorString.includes('authentication'));
       
-      // Check for user cancellation - this is not an error
+      // Check for user cancellation - this is NOT an error, handle silently
       // Only treat as cancellation if it's NOT an auth error
       const isUserCancelled = 
         (err.userCancelled && !isAuthError) || 
-        (errorMessage.includes('cancelled') && !isAuthError) ||
-        (errorMessage.includes('canceled') && !isAuthError);
+        (errorMessage.includes('cancelled') && !isAuthError && !errorMessage.includes('entitlement')) ||
+        (errorMessage.includes('canceled') && !isAuthError && !errorMessage.includes('entitlement'));
       
       if (isUserCancelled) {
-        // User cancelled - log at info level, not error
+        // User cancelled - log at info level, don't show error, don't throw
         if (__DEV__) {
-          console.log('[Billing] Purchase cancelled by user');
+          console.log('[Billing] Purchase cancelled by user (silent)');
         }
-        return;
+        setIsLoading(false);
+        setIsFinishingSetup(false);
+        return; // Silent return, no error shown
       }
 
       // Handle authentication failures with helpful message
@@ -462,23 +686,48 @@ export const PurchasesProvider = ({ children }) => {
         throw new Error(authErrorMsg);
       }
       
-      // Log actual errors
-      console.error('[Billing] Error purchasing:', err);
-
-      const errorMsg = errorMessage || 'Purchase failed';
+      // This is an actual purchase error (purchasePackage threw)
+      // Log the error with full context
+      console.error('[Billing] Purchase error (purchasePackage failed):', {
+        message: errorMessage,
+        code: errorCode,
+        userCancelled: err.userCancelled,
+        error: err
+      });
+      
+      if (Sentry) {
+        Sentry.captureException(err, {
+          tags: {
+            context: 'purchase',
+            product: pkgId,
+            isAuthError: isAuthError,
+            isUserCancelled: isUserCancelled,
+          },
+          extra: {
+            errorMessage,
+            errorCode,
+            userCancelled: err.userCancelled,
+            errorString: errorString,
+          },
+        });
+      }
+      
+      setIsFinishingSetup(false);
+      const errorMsg = errorMessage || 'Purchase failed. Please try again.';
       setError(errorMsg);
       
       Analytics.trackEvent('purchase_failed', {
         error: errorMsg,
         product: pkgId,
+        errorCode: errorCode,
       });
       
-      throw err;
+      throw err; // Re-throw so UI can handle it
     } finally {
       setIsLoading(false);
-      setIsFinishingSetup(false);
+      // Note: setIsFinishingSetup is handled in each branch above
     }
-  }, [refreshEntitlements]);
+  }, [refreshEntitlements, checkEntitlementWithRetry]);
 
   const restore = useCallback(async () => {
     if (!PurchasesAvailable || !Purchases) {
@@ -495,7 +744,7 @@ export const PurchasesProvider = ({ children }) => {
       const customerInfo = await Purchases.restorePurchases();
       
       // Log customer info for debugging (dev only)
-      logCustomerInfo(customerInfo, 'restore');
+      logCustomerInfo(customerInfo, 'restorePurchases()');
       
       // Check entitlement status immediately from restored customerInfo
       const isPremium = customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
