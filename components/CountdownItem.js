@@ -1014,27 +1014,64 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
         visible={deleteModalVisible}
         onRequestClose={() => setDeleteModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('countdown.deleteTitle')}</Text>
-            <Text style={styles.modalMessage}>
+        <View style={[
+          styles.modalOverlay,
+          { backgroundColor: isDark ? 'rgba(0,0,0,0.75)' : 'rgba(0,0,0,0.5)' }
+        ]}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setDeleteModalVisible(false)}
+          />
+          <View style={[
+            styles.deleteModalContent,
+            {
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.2)',
+            }
+          ]}>
+            <Text style={[
+              styles.deleteModalTitle,
+              { color: isDark ? '#F5F5F5' : '#111111' }
+            ]}>{t('countdown.deleteTitle')}</Text>
+            <Text style={[
+              styles.deleteModalMessage,
+              { color: isDark ? '#A1A1A1' : '#6B7280' }
+            ]}>
               {t('countdown.deleteMessage', { name: event.name })}
             </Text>
-            <View style={styles.modalButtonContainer}>
+            <View style={styles.deleteModalButtonContainer}>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#444" }]}
+                style={[
+                  styles.deleteModalButton,
+                  styles.deleteModalButtonCancel,
+                  {
+                    backgroundColor: isDark ? '#2E2E2E' : '#F3F4F6',
+                  }
+                ]}
                 onPress={() => setDeleteModalVisible(false)}
               >
-                <Text style={styles.modalButtonText}>{t('common.cancel')}</Text>
+                <Text style={[
+                  styles.deleteModalButtonText,
+                  { color: isDark ? '#E5E7EB' : '#111111' }
+                ]}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#66FCF1" }]}
+                style={[
+                  styles.deleteModalButton,
+                  styles.deleteModalButtonDelete,
+                  {
+                    backgroundColor: isDark ? '#EF4444' : '#EF4444',
+                  }
+                ]}
                 onPress={() => {
                   onDelete(event.id);
                   setDeleteModalVisible(false);
                 }}
               >
-                <Text style={styles.modalButtonText}>{t('common.delete')}</Text>
+                <Text style={[
+                  styles.deleteModalButtonText,
+                  { color: '#FFFFFF' }
+                ]}>{t('common.delete')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1972,6 +2009,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: wp("5%"),
   },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
@@ -1992,6 +2036,57 @@ const styles = StyleSheet.create({
     elevation: 8,
     flexDirection: 'column',
     justifyContent: 'space-between',
+  },
+  deleteModalContent: {
+    width: '100%',
+    maxWidth: wp('85%'),
+    borderRadius: wp('4%'),
+    paddingHorizontal: wp('5%'),
+    paddingTop: wp('6%'),
+    paddingBottom: wp('4%'),
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 24,
+    elevation: 12,
+    zIndex: 1000,
+  },
+  deleteModalTitle: {
+    fontSize: wp('5%'),
+    fontWeight: '700',
+    fontFamily: 'System',
+    marginBottom: wp('3%'),
+    textAlign: 'center',
+  },
+  deleteModalMessage: {
+    fontSize: wp('4%'),
+    marginBottom: wp('6%'),
+    textAlign: "center",
+    fontFamily: "System",
+    lineHeight: wp('5.5%'),
+  },
+  deleteModalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    gap: wp('3%'),
+  },
+  deleteModalButton: {
+    flex: 1,
+    paddingVertical: wp('4%'),
+    borderRadius: wp('3%'),
+    alignItems: "center",
+    justifyContent: 'center',
+  },
+  deleteModalButtonCancel: {
+    // Styled via backgroundColor in component
+  },
+  deleteModalButtonDelete: {
+    // Styled via backgroundColor in component
+  },
+  deleteModalButtonText: {
+    fontSize: wp('4.2%'),
+    fontWeight: "600",
+    fontFamily: "System",
   },
   modalTitle: {
     fontSize: wp('4.25%'), // Even smaller

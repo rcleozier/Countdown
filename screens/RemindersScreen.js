@@ -117,7 +117,7 @@ const UpsellCard = ({ onPress, isDark, accentColor, t }) => (
 const RemindersScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
   const [allReminders, setAllReminders] = useState([]);
-  const [filter, setFilter] = useState('all'); // 'all', 'today', 'week', 'enabled'
+  const [filter, setFilter] = useState('all'); // 'all', 'today', 'week'
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationPermission, setNotificationPermission] = useState(null);
   const { theme, isDark } = useTheme();
@@ -263,9 +263,6 @@ const RemindersScreen = ({ navigation }) => {
     }
     if (filter === 'week') {
       return fireAt.isSameOrAfter(today) && fireAt.isBefore(weekEnd);
-    }
-    if (filter === 'enabled') {
-      return reminder.enabled;
     }
     return true; // 'all'
   }).filter(reminder => {
@@ -435,14 +432,7 @@ const RemindersScreen = ({ navigation }) => {
     })();
 
     return (
-      <TouchableOpacity
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          navigation.navigate('Home', {
-            screen: 'HomeScreen',
-            params: { focusEventId: reminder.event.id },
-          });
-        }}
+      <View
         style={[
           styles.reminderItem,
           {
@@ -485,7 +475,7 @@ const RemindersScreen = ({ navigation }) => {
           color={reminder.enabled ? accentColor : (isDark ? '#6B7280' : '#9CA3AF')}
           style={styles.toggleButton}
         />
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -640,7 +630,6 @@ const RemindersScreen = ({ navigation }) => {
             {[
               { key: 'today', label: t('reminders.today') },
               { key: 'week', label: t('reminders.thisWeek') },
-              { key: 'enabled', label: t('reminders.enabled') },
             ].map(({ key, label }) => {
               const locked = !isPro;
               const selected = filter === key;
