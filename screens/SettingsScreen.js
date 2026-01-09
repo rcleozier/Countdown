@@ -152,6 +152,10 @@ const SettingsScreen = () => {
         { name: "Beach Day", icon: "🏖️", days: 20 },
         { name: "Marathon", icon: "🏆", days: 30 },
         { name: "Party", icon: "🎉", days: 45 },
+        { name: "Wedding", icon: "💍", days: 60 },
+        { name: "Conference", icon: "📊", days: 75 },
+        { name: "Anniversary", icon: "💕", days: 90 },
+        { name: "Holiday", icon: "🎄", days: 120 },
       ].map((e, i) => {
         const eventDate = addDays(now, e.days);
         // Set time to 9:00 AM for the event
@@ -181,7 +185,6 @@ const SettingsScreen = () => {
         { name: "School Start", icon: "🏫", days: -15 },
         { name: "Interview", icon: "💼", days: -20 },
         { name: "Housewarming", icon: "🏠", days: -30 },
-        { name: "Concert", icon: "🎤", days: -45 },
       ].map((e, i) => {
         const eventDate = addDays(now, e.days);
         const event = {
@@ -318,135 +321,140 @@ const SettingsScreen = () => {
             </Animated.View>
           </Pressable>
 
-          {/* Subscription */}
-          <View style={[
-            styles.card,
-            {
-              backgroundColor: isPro
-                ? (isDark ? 'rgba(60,196,162,0.05)' : 'rgba(78,158,255,0.03)')
-                : (isDark ? '#1E1E1E' : '#FFFFFF'),
-              shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-              borderTopWidth: isPro ? 1 : 0,
-              borderTopColor: isPro
-                ? (isDark ? 'rgba(60,196,162,0.2)' : 'rgba(78,158,255,0.15)')
-                : 'transparent',
-            }
-          ]}>
-            <View style={styles.subscriptionHeader}>
-              <View style={[
-                styles.subscriptionIconContainer,
-                {
-                  backgroundColor: isPro
-                    ? (isDark ? 'rgba(60,196,162,0.1)' : 'rgba(78,158,255,0.08)')
-                    : (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)'),
-                }
-              ]}>
-                <Ionicons
-                  name={isPro ? "checkmark-circle" : "star"}
-                  size={isPro ? wp('4%') : wp('5%')}
-                  color={isPro 
-                    ? (isDark ? '#3CC4A2' : '#4E9EFF')
-                    : (isDark ? '#4E9EFF' : '#4A9EFF')
-                  }
-                />
-              </View>
-              <View style={styles.subscriptionTextContainer}>
-                <Text style={[
-                  styles.cardTitle,
-                  { color: accentColor }
-                ]}>
-                  {isPro ? t('settings.proActive') : t('settings.upgradeToPro')}
-                </Text>
-                {isPro ? (
-                  <>
-                    <Text style={[
-                      styles.cardSubtext,
-                      { color: isDark ? '#A1A1A1' : '#6B7280', marginTop: wp('1%') }
-                    ]}>
-                      {t('settings.proActiveDescription')}
-                    </Text>
-                    <Text style={[
-                      styles.proThankYou,
-                      { color: isDark ? '#6B7280' : '#9CA3AF', marginTop: wp('2%') }
-                    ]}>
-                      {t('settings.thanksForSupporting')}
-                    </Text>
-                  </>
-                ) : (
-                  <View style={styles.benefitsList}>
-                    <Text style={[
-                      styles.benefitItem,
-                      { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>{t('settings.benefitNoAds')}</Text>
-                    <Text style={[
-                      styles.benefitItem,
-                      { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>{t('settings.benefitAdvancedReminders')}</Text>
-                    <Text style={[
-                      styles.benefitItem,
-                      { color: isDark ? '#A1A1A1' : '#6B7280' }
-                    ]}>{t('settings.benefitRecurringCountdowns')}</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-            {isPro ? (
-              <View style={{ marginTop: wp('3%') }}>
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  openSubscriptionManagement();
-                }}
-                style={[
-                  styles.proCtaButton,
+          {/* Subscription - Hidden on Android */}
+          {Platform.OS === 'ios' && (
+            <View style={[
+              styles.card,
+              {
+                backgroundColor: isPro
+                  ? (isDark ? 'rgba(60,196,162,0.05)' : 'rgba(78,158,255,0.03)')
+                  : (isDark ? '#1E1E1E' : '#FFFFFF'),
+                shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+                borderTopWidth: isPro ? 1 : 0,
+                borderTopColor: isPro
+                  ? (isDark ? 'rgba(60,196,162,0.2)' : 'rgba(78,158,255,0.15)')
+                  : 'transparent',
+              }
+            ]}>
+              <View style={styles.subscriptionHeader}>
+                <View style={[
+                  styles.subscriptionIconContainer,
                   {
-                    backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
-                    borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
+                    backgroundColor: isPro
+                      ? (isDark ? 'rgba(60,196,162,0.1)' : 'rgba(78,158,255,0.08)')
+                      : (isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)'),
                   }
-                ]}
-              >
-                <Text style={[
-                  styles.proCtaText,
-                  { color: accentColor }
-                  ]}>{t('settings.manageSubscription')}</Text>
-              </Pressable>
-                <Text style={[
-                  styles.proManageSubtext,
-                  { color: isDark ? '#6B7280' : '#9CA3AF' }
                 ]}>
-                  {t('settings.cancelAnytime')}
-                </Text>
+                  <Ionicons
+                    name={isPro ? "checkmark-circle" : "star"}
+                    size={isPro ? wp('4%') : wp('5%')}
+                    color={isPro 
+                      ? (isDark ? '#3CC4A2' : '#4E9EFF')
+                      : (isDark ? '#4E9EFF' : '#4A9EFF')
+                    }
+                  />
+                </View>
+                <View style={styles.subscriptionTextContainer}>
+                  <Text style={[
+                    styles.cardTitle,
+                    { color: accentColor }
+                  ]}>
+                    {isPro ? t('settings.proActive') : t('settings.upgradeToPro')}
+                  </Text>
+                  {isPro ? (
+                    <>
+                      <Text style={[
+                        styles.cardSubtext,
+                        { color: isDark ? '#A1A1A1' : '#6B7280', marginTop: wp('1%') }
+                      ]}>
+                        {t('settings.proActiveDescription')}
+                      </Text>
+                      <Text style={[
+                        styles.proThankYou,
+                        { color: isDark ? '#6B7280' : '#9CA3AF', marginTop: wp('2%') }
+                      ]}>
+                        {t('settings.thanksForSupporting')}
+                      </Text>
+                    </>
+                  ) : (
+                    <View style={styles.benefitsList}>
+                      <Text style={[
+                        styles.benefitItem,
+                        { color: isDark ? '#A1A1A1' : '#6B7280' }
+                      ]}>{t('settings.benefitNoAds')}</Text>
+                      <Text style={[
+                        styles.benefitItem,
+                        { color: isDark ? '#A1A1A1' : '#6B7280' }
+                      ]}>{t('settings.benefitAdvancedReminders')}</Text>
+                      <Text style={[
+                        styles.benefitItem,
+                        { color: isDark ? '#A1A1A1' : '#6B7280' }
+                      ]}>{t('settings.benefitRecurringCountdowns')}</Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            ) : (
-              <>
+              {isPro ? (
+                <View style={{ marginTop: wp('3%') }}>
                 <Pressable
-                  onPressIn={() => handleCardPressIn('subscription')}
-                  onPressOut={() => handleCardPressOut('subscription')}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setSubscriptionModalVisible(true);
+                    openSubscriptionManagement();
                   }}
                   style={[
                     styles.proCtaButton,
                     {
-                      backgroundColor: accentColor,
-                      marginTop: wp('4%'),
+                      backgroundColor: isDark ? 'rgba(78,158,255,0.15)' : 'rgba(78,158,255,0.1)',
+                      borderColor: isDark ? 'rgba(78,158,255,0.3)' : 'rgba(78,158,255,0.2)',
                     }
                   ]}
                 >
-                  <Animated.View style={[
-                    { transform: [{ scale: getCardScale('subscription') }] }
-                  ]}>
-                    <Text style={styles.proCtaTextActive}>{t('settings.goPro')}</Text>
-                  </Animated.View>
+                  <Text style={[
+                    styles.proCtaText,
+                    { color: accentColor }
+                    ]}>{t('settings.manageSubscription')}</Text>
                 </Pressable>
-                <Text style={[
-                  styles.proCtaSubtext,
-                  { color: isDark ? '#6B7280' : '#9CA3AF' }
-                ]}>{t('settings.cancelAnytime')}</Text>
-              </>
-            )}
-          </View>
+                  <Text style={[
+                    styles.proManageSubtext,
+                    { color: isDark ? '#6B7280' : '#9CA3AF' }
+                  ]}>
+                    {t('settings.cancelAnytime')}
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <Pressable
+                    onPressIn={() => handleCardPressIn('subscription')}
+                    onPressOut={() => handleCardPressOut('subscription')}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      // Android users have Pro for free - don't show paywall
+                      if (Platform.OS === 'ios') {
+                        setSubscriptionModalVisible(true);
+                      }
+                    }}
+                    style={[
+                      styles.proCtaButton,
+                      {
+                        backgroundColor: accentColor,
+                        marginTop: wp('4%'),
+                      }
+                    ]}
+                  >
+                    <Animated.View style={[
+                      { transform: [{ scale: getCardScale('subscription') }] }
+                    ]}>
+                      <Text style={styles.proCtaTextActive}>{t('settings.goPro')}</Text>
+                    </Animated.View>
+                  </Pressable>
+                  <Text style={[
+                    styles.proCtaSubtext,
+                    { color: isDark ? '#6B7280' : '#9CA3AF' }
+                  ]}>{t('settings.cancelAnytime')}</Text>
+                </>
+              )}
+            </View>
+          )}
 
           {/* Language */}
           <View style={[
@@ -831,7 +839,7 @@ const SettingsScreen = () => {
 
           {/* Subscription Modal */}
           <PaywallSheet
-            visible={subscriptionModalVisible}
+            visible={Platform.OS === 'ios' && subscriptionModalVisible}
             onClose={() => setSubscriptionModalVisible(false)}
             feature="settings"
           />

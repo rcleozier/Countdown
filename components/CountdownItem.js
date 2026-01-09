@@ -158,6 +158,10 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
   const iconModalScale = useRef(new Animated.Value(0.95)).current;
   const calendarModalScale = useRef(new Animated.Value(0.95)).current;
   const openPaywall = (feature = 'advanced_reminders') => {
+    // Android users have Pro for free - don't show paywall
+    if (Platform.OS === 'android') {
+      return;
+    }
     setPaywallFeature(feature);
     setPaywallVisible(true);
   };
@@ -1912,7 +1916,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
 
       {/* Paywall Sheet */}
       <PaywallSheet
-        visible={paywallVisible}
+        visible={Platform.OS === 'ios' && paywallVisible}
         onClose={() => setPaywallVisible(false)}
         feature={paywallFeature}
       />

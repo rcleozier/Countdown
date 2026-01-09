@@ -168,6 +168,10 @@ const HomeScreen = () => {
   const { t } = useLocale();
   // Paywall opener (single definition)
   const openPaywall = (feature = 'advanced_reminders') => {
+    // Android users have Pro for free - don't show paywall
+    if (Platform.OS === 'android') {
+      return;
+    }
     // Close child overlays to avoid stacking
     setCalendarModalVisible(false);
     setTimePickerVisible(false);
@@ -312,7 +316,7 @@ const HomeScreen = () => {
         return d;
       };
       
-      // 7 upcoming countdowns with varied times
+      // 11 upcoming countdowns with varied times
       const upcoming = [
         { name: "Sarah's Birthday", icon: "🎂", days: 1, hour: 14, minute: 30 },
         { name: "Baseball Game", icon: "⚾️", days: 5, hour: 19, minute: 0 },
@@ -321,6 +325,10 @@ const HomeScreen = () => {
         { name: "Beach Day", icon: "🏖️", days: 20, hour: 11, minute: 30 },
         { name: "Marathon", icon: "🏆", days: 30, hour: 7, minute: 0 },
         { name: "Party", icon: "🎉", days: 45, hour: 20, minute: 0 },
+        { name: "Wedding", icon: "💍", days: 60, hour: 16, minute: 0 },
+        { name: "Conference", icon: "📊", days: 75, hour: 9, minute: 0 },
+        { name: "Anniversary", icon: "💕", days: 90, hour: 18, minute: 30 },
+        { name: "Holiday", icon: "🎄", days: 120, hour: 12, minute: 0 },
       ].map((e, i) => {
         const eventDate = addDays(now, e.days);
         eventDate.setHours(e.hour, e.minute, 0, 0);
@@ -344,7 +352,7 @@ const HomeScreen = () => {
         };
       });
       
-      // 7 past countdowns
+      // 6 past countdowns
       const past = [
         { name: "Dentist", icon: "🦷", days: -2, hour: 10, minute: 0 },
         { name: "Basketball Game", icon: "🏀", days: -5, hour: 18, minute: 30 },
@@ -352,7 +360,6 @@ const HomeScreen = () => {
         { name: "School Start", icon: "🏫", days: -15, hour: 8, minute: 0 },
         { name: "Interview", icon: "💼", days: -20, hour: 14, minute: 0 },
         { name: "Housewarming", icon: "🏠", days: -30, hour: 17, minute: 30 },
-        { name: "Concert", icon: "🎤", days: -45, hour: 19, minute: 30 },
       ].map((e, i) => {
         const eventDate = addDays(now, e.days);
         eventDate.setHours(e.hour, e.minute, 0, 0);
@@ -1826,7 +1833,7 @@ const HomeScreen = () => {
 
       {/* Paywall Sheet */}
       <PaywallSheet
-        visible={paywallVisible}
+        visible={Platform.OS === 'ios' && paywallVisible}
         onClose={() => setPaywallVisible(false)}
         feature={paywallFeature}
       />

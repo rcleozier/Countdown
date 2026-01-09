@@ -2,7 +2,7 @@
   "expo": {
     "name": "Chrono Countdown",
     "slug": "Chrono",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "privacy": "public",
     "jsEngine": "jsc",
     "platforms": [

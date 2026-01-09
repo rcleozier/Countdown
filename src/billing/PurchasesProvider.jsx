@@ -3,6 +3,9 @@ import { Platform, AppState } from 'react-native';
 import moment from 'moment';
 import { Analytics } from '../../util/analytics';
 
+// Android users get Pro features for free (but still see ads)
+const IS_ANDROID = Platform.OS === 'android';
+
 // Conditionally import Sentry (may not be available in all environments)
 let Sentry = null;
 try {
@@ -114,6 +117,15 @@ export const PurchasesProvider = ({ children }) => {
   const initializePurchases = async () => {
     // Only configure once
     if (isConfiguredRef.current) {
+      return;
+    }
+
+    // Android users get Pro for free - skip RevenueCat setup
+    if (IS_ANDROID) {
+      console.log('[Billing] Android detected - granting Pro features for free');
+      setIsPro(true);
+      setActiveProductId('android_free_pro');
+      setIsLoading(false);
       return;
     }
 
@@ -301,7 +313,14 @@ export const PurchasesProvider = ({ children }) => {
     // Log customer info for debugging (dev only)
     logCustomerInfo(customerInfo, 'updateProStatus');
     
-    // Derive isPro ONLY from entitlements.active['pro'] presence
+    // Android users always have Pro features (but still see ads)
+    if (IS_ANDROID) {
+      setIsPro(true);
+      setActiveProductId('android_free_pro');
+      return;
+    }
+    
+    // iOS: Derive isPro ONLY from entitlements.active['pro'] presence
     const isPremium = customerInfo.entitlements?.active?.[ENTITLEMENT_ID] !== undefined;
     
     setIsPro(isPremium);
@@ -316,7 +335,16 @@ export const PurchasesProvider = ({ children }) => {
   };
 
   const refreshEntitlements = useCallback(async () => {
+    // Android users get Pro for free - skip RevenueCat
+    if (IS_ANDROID) {
+      setIsPro(true);
+      setActiveProductId('android_free_pro');
+      setError(undefined);
+      return;
+    }
+
     if (!PurchasesAvailable || !Purchases) {
+      setError(undefined);
       return;
     }
 

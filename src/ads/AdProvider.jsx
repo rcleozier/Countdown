@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePurchases } from '../billing/PurchasesProvider';
 import { Analytics } from '../../util/analytics';
+
+// Android users get Pro features but still see ads
+const IS_ANDROID = Platform.OS === 'android';
 
 const AD_STATS_KEY = '@ad_stats';
 const SESSION_START_KEY = '@session_start_time';
@@ -11,14 +14,19 @@ const AdContext = createContext(undefined);
 
 export const AdProvider = ({ children }) => {
   const { isPro } = usePurchases();
-  const [adsEnabled, setAdsEnabled] = useState(!isPro);
+  // Android users always see ads (even though they have Pro features)
+  const [adsEnabled, setAdsEnabled] = useState(IS_ANDROID ? true : !isPro);
   const [adStats, setAdStats] = useState({
     sessionStartTime: Date.now(),
   });
 
-  // Update ads enabled when Pro status changes
+  // Update ads enabled when Pro status changes (iOS only)
   useEffect(() => {
-    setAdsEnabled(!isPro);
+    if (IS_ANDROID) {
+      setAdsEnabled(true); // Always show ads on Android
+    } else {
+      setAdsEnabled(!isPro);
+    }
   }, [isPro]);
 
   // Load ad stats on mount

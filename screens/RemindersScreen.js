@@ -10,6 +10,7 @@ import {
   Linking,
   Alert,
   TextInput,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -853,7 +854,7 @@ const RemindersScreen = ({ navigation }) => {
 
       {/* Paywall Sheet */}
       <PaywallSheet
-        visible={paywallVisible}
+        visible={Platform.OS === 'ios' && paywallVisible}
         onClose={() => setPaywallVisible(false)}
         feature={paywallFeature || "reminders"}
       />
