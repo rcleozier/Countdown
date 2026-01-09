@@ -7,7 +7,6 @@ import {
   Modal,
   TextInput,
   StyleSheet,
-  SafeAreaView,
   Alert,
   Dimensions,
   ScrollView,
@@ -18,6 +17,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import CountdownItem from "../components/CountdownItem";
@@ -994,7 +994,7 @@ const HomeScreen = () => {
   const tabletContentStyle = isTablet() ? getTabletContentStyle(85) : {};
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
 
       {isLoading ? (
         <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>

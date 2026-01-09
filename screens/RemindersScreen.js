@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   Linking,
@@ -12,6 +11,7 @@ import {
   TextInput,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -521,7 +521,7 @@ const RemindersScreen = ({ navigation }) => {
 
   return (
     <LinearGradient colors={backgroundGradient} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <View style={[styles.tabletWrapper, tabletContentStyle]}>
         <ScrollView
           style={styles.scrollView}

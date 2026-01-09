@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Modal, ScrollView, Animated, Pressable } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView, Animated, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Calendar } from "react-native-calendars";
 import moment from "moment";
@@ -230,7 +231,7 @@ const CalendarScreen = () => {
 
   return (
     <LinearGradient colors={backgroundGradient} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <View style={[styles.content, tabletContentStyle]}>
           <Animated.View 
             style={[

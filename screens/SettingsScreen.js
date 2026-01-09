@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Modal,
   StyleSheet,
-  SafeAreaView,
   Alert,
   Switch,
   ScrollView,
@@ -14,6 +13,7 @@ import {
   Linking,
   Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
@@ -293,7 +293,7 @@ const SettingsScreen = () => {
 
   return (
     <LinearGradient colors={backgroundGradient} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <View style={[styles.tabletWrapper, tabletContentStyle]}>
         <ScrollView 
           style={styles.scrollView}
