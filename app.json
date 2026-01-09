@@ -4,7 +4,7 @@
     "slug": "Chrono",
     "newArchEnabled": true,
     "privacy": "public",
-    "jsEngine": "jsc",
+    "jsEngine": "hermes",
     "platforms": [
       "ios",
       "android"
