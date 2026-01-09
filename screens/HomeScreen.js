@@ -51,6 +51,8 @@ import { isPresetPro, getPresetDescription } from '../util/reminderPresets';
 import { syncScheduledReminders } from '../util/reminderScheduler';
 import { rollForwardIfNeeded, RECURRENCE_TYPES, getRecurrenceLabel, isRecurrencePro } from '../util/recurrence';
 import OptimizedBannerAd from '../components/Ads';
+import { showInterstitialAd } from '../util/interstitialAd';
+import { useAds } from '../src/ads/AdProvider';
 
 const IconItem = ({ icon, isSelected, onPress, isDark }) => {
   const iconScale = useRef(new Animated.Value(1)).current;
@@ -146,6 +148,7 @@ const HomeScreen = () => {
   const [paywallVisible, setPaywallVisible] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState(null);
   const { hasFeature, isPro } = useEntitlements();
+  const { adsEnabled } = useAds();
   const [modalVisible, setModalVisible] = useState(false);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
@@ -763,6 +766,15 @@ const HomeScreen = () => {
       timestamp: new Date().toISOString(),
     });
 
+    // Show interstitial ad every 6 countdown creations (Android only)
+    setTimeout(async () => {
+      try {
+        await showInterstitialAd(adsEnabled);
+      } catch (error) {
+        console.error('Error showing interstitial ad:', error);
+      }
+    }, 1500); // Wait 1.5 seconds after successful creation
+
     // Request review if appropriate
     setTimeout(async () => {
       try {
@@ -964,8 +976,9 @@ const HomeScreen = () => {
   };
 
   const renderItem = ({ item, index }) => {
-    // Show banner ad every 6 countdowns (after index 5, 11, 17, etc.) for free users
-    const shouldShowAd = !isPro && (index + 1) % 6 === 0 && index > 0;
+    // Show banner ad every 6 countdowns (after index 5, 11, 17, etc.) for free iOS users only
+    // Android users don't see banner ads (only interstitials)
+    const shouldShowAd = Platform.OS === 'ios' && !isPro && (index + 1) % 6 === 0 && index > 0;
     
     return (
       <>

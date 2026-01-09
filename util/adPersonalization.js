@@ -25,8 +25,8 @@ export const getTrackingPermissionStatus = async () => {
       return isGranted;
     }
 
-    // For Android, we'll assume tracking is allowed by default
-    // as it doesn't have the same strict tracking permission system
+    // For Android, tracking is allowed by default (no ATT requirement)
+    // Android users can see personalized ads which earn 2-3x more revenue
     return true;
   } catch (error) {
     console.error("Error getting tracking permission status:", error);
@@ -61,10 +61,17 @@ export const getAdRequestOptions = async () => {
 
   // For maximum revenue:
   // - Enable personalized ads when tracking is allowed (earns 2-3x more)
+  // - Android: Always personalized (no ATT requirement, earns maximum revenue)
+  // - iOS: Personalized if user grants tracking permission, otherwise non-personalized
   // - Don't use keywords (deprecated, reduces match rates)
   // - Let AdMob's automatic optimization handle targeting
+  
+  // Android always gets personalized ads for maximum revenue
+  // iOS gets personalized only if tracking permission is granted
+  const usePersonalizedAds = Platform.OS === 'android' ? true : hasTrackingPermission;
+  
   return {
-    requestNonPersonalizedAdsOnly: !hasTrackingPermission,
+    requestNonPersonalizedAdsOnly: !usePersonalizedAds, // false = personalized, true = non-personalized
     maxAdContentRating: "G",
     tagForChildDirectedTreatment: false,
     tagForUnderAgeOfConsent: false,
