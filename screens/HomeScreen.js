@@ -53,6 +53,7 @@ import { rollForwardIfNeeded, RECURRENCE_TYPES, getRecurrenceLabel, isRecurrence
 import OptimizedBannerAd from '../components/Ads';
 import { showInterstitialAd } from '../util/interstitialAd';
 import { useAds } from '../src/ads/AdProvider';
+import { isTablet, getTabletContentStyle } from '../util/deviceUtils';
 
 const IconItem = ({ icon, isSelected, onPress, isDark }) => {
   const iconScale = useRef(new Animated.Value(1)).current;
@@ -990,6 +991,8 @@ const HomeScreen = () => {
     );
   };
 
+  const tabletContentStyle = isTablet() ? getTabletContentStyle(85) : {};
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
 
@@ -1111,7 +1114,11 @@ const HomeScreen = () => {
             data={filteredAndSortedCountdowns}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background }]}
+            contentContainerStyle={[
+              styles.listContainer, 
+              { backgroundColor: theme.colors.background },
+              tabletContentStyle
+            ]}
             showsVerticalScrollIndicator={true}
             nestedScrollEnabled={true}
             style={{ flex: 1 }}
@@ -1575,6 +1582,7 @@ const HomeScreen = () => {
                     onPress={(e) => e.stopPropagation()}
                     style={[
                       styles.modalContent,
+                      isTablet() && { maxWidth: 600, alignSelf: 'center' },
                       {
                         backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
                         maxHeight: hp('50%'),
@@ -1777,6 +1785,7 @@ const HomeScreen = () => {
             />
             <Animated.View style={[
               styles.inlineOverlayCard,
+              isTablet() && { maxWidth: 600 },
               {
                 backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
                 shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',

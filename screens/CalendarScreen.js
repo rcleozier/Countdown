@@ -12,6 +12,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { rollForwardIfNeeded } from '../util/recurrence';
 import { syncScheduledReminders } from '../util/reminderScheduler';
 import { useEntitlements } from '../src/billing/useEntitlements';
+import { isTablet, getTabletContentStyle } from '../util/deviceUtils';
 
 const EventCard = ({ event, isDark }) => {
   const eventCardScale = useRef(new Animated.Value(1)).current;
@@ -225,10 +226,12 @@ const CalendarScreen = () => {
   // Muted accent color for lines and highlights
   const accentColor = isDark ? '#3CC4A2' : theme.colors.primary;
 
+  const tabletContentStyle = isTablet() ? getTabletContentStyle(85) : {};
+
   return (
     <LinearGradient colors={backgroundGradient} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
+        <View style={[styles.content, tabletContentStyle]}>
           <Animated.View 
             style={[
               styles.calendarWrapper,

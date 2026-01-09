@@ -29,6 +29,7 @@ import { buildRemindersForEvent } from '../util/reminderBuilder';
 import { syncScheduledReminders } from '../util/reminderScheduler';
 import { runNotificationRecovery } from '../util/notificationRecovery';
 import { rollForwardIfNeeded } from '../util/recurrence';
+import { isTablet, getTabletContentStyle } from '../util/deviceUtils';
 import * as Haptics from 'expo-haptics';
 import BottomSheet from '../components/BottomSheet';
 import Pill from '../components/Pill';
@@ -516,9 +517,12 @@ const RemindersScreen = ({ navigation }) => {
   );
   };
 
+  const tabletContentStyle = isTablet() ? getTabletContentStyle(85) : {};
+
   return (
     <LinearGradient colors={backgroundGradient} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.tabletWrapper, tabletContentStyle]}>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -850,6 +854,7 @@ const RemindersScreen = ({ navigation }) => {
             </>
           )}
         </ScrollView>
+        </View>
       </SafeAreaView>
 
       {/* Paywall Sheet */}
@@ -897,6 +902,10 @@ const RemindersScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  tabletWrapper: {
+    flex: 1,
+    width: '100%',
   },
   safeArea: {
     flex: 1,

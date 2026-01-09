@@ -16,6 +16,7 @@ import { Analytics } from '../util/analytics';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../context/LocaleContext';
+import { isTablet, getTabletContentStyle } from '../util/deviceUtils';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import Svg, { G, Text as SvgText, Path, Rect, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
@@ -347,9 +348,12 @@ const AnalyticsScreen = () => {
     ? ['#121212', '#1C1C1C']
     : ['#F9FAFB', '#FFFFFF'];
 
+  const tabletContentStyle = isTablet() ? getTabletContentStyle(85) : {};
+
   return (
     <LinearGradient colors={backgroundGradient} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.tabletWrapper, tabletContentStyle]}>
         <ScrollView 
           style={styles.scrollContent}
           contentContainerStyle={styles.scrollContentContainer}
@@ -562,6 +566,7 @@ const AnalyticsScreen = () => {
             </View>
           </View>
         </ScrollView>
+        </View>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -570,6 +575,10 @@ const AnalyticsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  tabletWrapper: {
+    flex: 1,
+    width: '100%',
   },
   safeArea: {
     flex: 1,

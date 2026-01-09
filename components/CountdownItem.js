@@ -28,6 +28,7 @@ import LockRow from './LockRow';
 import ReminderPresetExplainer from './ReminderPresetExplainer';
 import { getPresetDescription, REMINDER_PRESETS, isPresetPro } from '../util/reminderPresets';
 import ProBadge from './ProBadge';
+import { isTablet } from '../util/deviceUtils';
 import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -1633,6 +1634,7 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
             />
             <Animated.View style={[
               styles.inlineOverlayCard,
+              isTablet() && { maxWidth: 600 },
               {
                 backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
                 shadowColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)',
@@ -1858,8 +1860,9 @@ const CountdownItem = ({ event, index, onDelete, onEdit }) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={(e) => e.stopPropagation()}
-                  style={[
+                    style={[
                     styles.modalContent,
+                    isTablet() && { maxWidth: 600, width: 'auto' },
                     {
                       backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
                       maxHeight: hp('50%'),

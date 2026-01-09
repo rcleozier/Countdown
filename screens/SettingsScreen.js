@@ -33,6 +33,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { buildRemindersForEvent, createDefaultReminderPlan } from '../util/reminderBuilder';
 import { syncScheduledReminders } from '../util/reminderScheduler';
+import { isTablet, getTabletContentStyle } from '../util/deviceUtils';
 
 const SettingsScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -288,9 +289,12 @@ const SettingsScreen = () => {
     ? ['#121212', '#1C1C1C']
     : ['#F9FAFB', '#FFFFFF'];
 
+  const tabletContentStyle = isTablet() ? getTabletContentStyle(85) : {};
+
   return (
     <LinearGradient colors={backgroundGradient} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.tabletWrapper, tabletContentStyle]}>
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -844,6 +848,7 @@ const SettingsScreen = () => {
             feature="settings"
           />
         </ScrollView>
+        </View>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -852,6 +857,10 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  tabletWrapper: {
+    flex: 1,
+    width: '100%',
   },
   safeArea: {
     flex: 1,

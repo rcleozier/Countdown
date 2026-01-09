@@ -137,7 +137,7 @@ export const PurchasesProvider = ({ children }) => {
 
     try {
       setIsLoading(true);
-      
+
       // Configure RevenueCat (only once)
       await Purchases.configure({ apiKey: REVENUECAT_API_KEY });
       isConfiguredRef.current = true;
@@ -482,8 +482,8 @@ export const PurchasesProvider = ({ children }) => {
         setError(undefined); // Don't show config errors to users
       } else {
         // Show other errors (network issues, etc.)
-        setError(err.message || 'Failed to refresh entitlements');
-      }
+      setError(err.message || 'Failed to refresh entitlements');
+    }
     }
   }, []);
 
@@ -785,7 +785,7 @@ export const PurchasesProvider = ({ children }) => {
         // User cancelled - log at info level, don't show error, don't throw
         if (__DEV__) {
           console.log('[Billing] Purchase cancelled by user (silent)');
-        }
+      }
         setIsLoading(false);
         setIsFinishingSetup(false);
         return; // Silent return, no error shown

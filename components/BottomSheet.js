@@ -12,8 +12,9 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Ionicons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const BottomSheet = ({
   visible,
@@ -61,6 +62,9 @@ const BottomSheet = ({
   const sheetHeight = typeof height === 'string' 
     ? (parseFloat(height) / 100) * SCREEN_HEIGHT 
     : height;
+
+  // Bottom sheets should always be full width on all platforms
+  // Tablet width constraints only apply to modals, not bottom sheets
 
   return (
     <Modal
