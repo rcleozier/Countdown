@@ -199,12 +199,13 @@ const HomeScreen = () => {
 
   // ----- Load / Save Data -----
   const loadCountdowns = async () => {
+    let timeout = null;
     try {
       setIsLoading(true);
       setLoadingTimeout(false);
       
       // Set timeout for loading fallback
-      const timeout = setTimeout(() => {
+      timeout = setTimeout(() => {
         setLoadingTimeout(true);
       }, 2000);
       
@@ -296,7 +297,9 @@ const HomeScreen = () => {
       console.error("Error loading countdowns", error);
     } finally {
       setIsLoading(false);
-      clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     }
   };
 
@@ -2126,7 +2129,7 @@ const styles = StyleSheet.create({
   iconItem: {
     width: wp('13%'), // ~49px for 6 columns with proper spacing
     height: wp('13%'),
-    borderRadius: wp('3%'), // 12px
+    borderRadius: Platform.OS === 'android' ? wp('6.5%') : wp('3%'), // Fully round on Android, rounded on iOS
     alignItems: "center",
     justifyContent: "center",
   },

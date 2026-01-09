@@ -2,7 +2,8 @@ import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { StatusBar, View } from "react-native";
+import { StatusBar, View, Platform } from "react-native";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Sentry from "@sentry/react-native";
 import { requestTrackingPermission } from './util/adPersonalization';
@@ -87,6 +88,7 @@ function AnalyticsScreenStack() {
 
 function ThemedApp() {
   const { theme, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
   
   return (
     <>
@@ -131,8 +133,8 @@ function ThemedApp() {
             backgroundColor: isDark ? '#121212' : '#FFFFFF',
             borderTopColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
             borderTopWidth: 1,
-            height: 60,
-            paddingBottom: 8,
+            height: Platform.OS === 'android' ? 60 + insets.bottom : 60,
+            paddingBottom: Platform.OS === 'android' ? Math.max(insets.bottom, 8) : 8,
             paddingTop: 8,
             elevation: 0,
             shadowOpacity: 0,
@@ -158,15 +160,17 @@ function App() {
   }, []);
 
   return (
-    <LocaleProvider>
-      <PurchasesProvider>
-        <AdProvider>
-          <ThemeProvider>
-            <ThemedApp />
-          </ThemeProvider>
-        </AdProvider>
-      </PurchasesProvider>
-    </LocaleProvider>
+    <SafeAreaProvider>
+      <LocaleProvider>
+        <PurchasesProvider>
+          <AdProvider>
+            <ThemeProvider>
+              <ThemedApp />
+            </ThemeProvider>
+          </AdProvider>
+        </PurchasesProvider>
+      </LocaleProvider>
+    </SafeAreaProvider>
   );
 }
 

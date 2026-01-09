@@ -231,8 +231,13 @@ const PaywallSheet = ({ visible, onClose, feature }) => {
           </Text>
         )}
 
-        {/* Error Message */}
-        {error && !isFinishingSetup && (
+        {/* Error Message - Hide configuration errors that users can't fix */}
+        {error && !isFinishingSetup && 
+         !error.includes('configuration') && 
+         !error.includes('could not be fetched') && 
+         !error.includes('StoreKit Configuration') && 
+         !error.includes('App Store Connect') && 
+         !error.includes('None of the products registered') && (
           <Text style={[styles.errorText, { color: theme.colors.error || '#E74C3C' }]}>
             {error}
           </Text>

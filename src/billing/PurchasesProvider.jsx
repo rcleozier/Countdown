@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Platform, AppState } from 'react-native';
+import moment from 'moment';
 import { Analytics } from '../../util/analytics';
 
 // Conditionally import Sentry (may not be available in all environments)
@@ -57,6 +58,7 @@ export const PurchasesProvider = ({ children }) => {
 
   const lastRefreshRef = useRef(0);
   const isConfiguredRef = useRef(false);
+  const entitlementMismatchWarnedRef = useRef(false); // Track if we've already warned about mismatch
 
   // Initialize RevenueCat once on app boot
   useEffect(() => {
@@ -231,19 +233,43 @@ export const PurchasesProvider = ({ children }) => {
           console.log(`  Pro Entitlement: null`);
         }
         
-        // Warn about potential misconfigurations
-        if (hasActiveSubscriptions && !hasActiveEntitlements) {
-          console.warn(`  ⚠️  WARNING: Active subscriptions found but no active entitlements!`);
-          console.warn(`     This suggests entitlement mapping may be misconfigured in RevenueCat dashboard.`);
-          console.warn(`     Active subscriptions: ${Object.keys(activeSubscriptions).join(', ')}`);
-        }
+      // Warn about potential misconfigurations
+      // Skip warnings during purchase/restore flows as delays are expected in sandbox
+      const isDuringPurchaseFlow = context.includes('purchase') || context.includes('restore') || context.includes('retry') || context.includes('checkEntitlement');
+      
+      if (hasActiveSubscriptions && !hasActiveEntitlements && !isDuringPurchaseFlow) {
+        console.warn(`  ⚠️  WARNING: Active subscriptions found but no active entitlements!`);
+        console.warn(`     This suggests entitlement mapping may be misconfigured in RevenueCat dashboard.`);
+        console.warn(`     Active subscriptions: ${Object.keys(activeSubscriptions).join(', ')}`);
+      }
+      
+      // Only warn about entitlement mismatch if:
+      // 1. Not during purchase flow (delays are expected in sandbox)
+      // 2. Haven't warned already this session (to avoid spam)
+      if (hasActiveSubscriptions && !hasProEntitlement && !isDuringPurchaseFlow && !entitlementMismatchWarnedRef.current) {
+        entitlementMismatchWarnedRef.current = true; // Only warn once per session
+        console.warn(`  ⚠️  WARNING: Active subscriptions exist but "${ENTITLEMENT_ID}" entitlement not found!`);
+        console.warn(`     Active subscriptions: ${Object.keys(activeSubscriptions).join(', ')}`);
+        console.warn(`     Active entitlements: [${activeEntitlementKeys.join(', ')}]`);
+        console.warn(`     Check RevenueCat dashboard: Entitlement "${ENTITLEMENT_ID}" should be attached to product.`);
         
-        if (hasActiveSubscriptions && !hasProEntitlement) {
-          console.warn(`  ⚠️  WARNING: Active subscriptions exist but "${ENTITLEMENT_ID}" entitlement not found!`);
-          console.warn(`     Active subscriptions: ${Object.keys(activeSubscriptions).join(', ')}`);
-          console.warn(`     Active entitlements: [${activeEntitlementKeys.join(', ')}]`);
-          console.warn(`     Check RevenueCat dashboard: Entitlement "${ENTITLEMENT_ID}" should be attached to product.`);
+        // Send to Sentry only for persistent mismatches (not during purchase flows)
+        if (Sentry) {
+          Sentry.captureMessage(`Billing: Persistent entitlement mismatch detected`, {
+            level: 'warning',
+            tags: {
+              context: context,
+              expectedEntitlement: ENTITLEMENT_ID,
+            },
+            extra: billingData,
+          });
         }
+      }
+      
+      // Reset warning flag if entitlement is found (so we can warn again if it disappears)
+      if (hasProEntitlement && entitlementMismatchWarnedRef.current) {
+        entitlementMismatchWarnedRef.current = false;
+      }
         
         console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       }
@@ -258,17 +284,8 @@ export const PurchasesProvider = ({ children }) => {
           data: billingData,
         });
         
-        // If there's a potential misconfiguration, also send as a message
-        if (hasActiveSubscriptions && !hasProEntitlement) {
-          Sentry.captureMessage(`Billing: Entitlement mismatch detected`, {
-            level: 'warning',
-            tags: {
-              context: context,
-              expectedEntitlement: ENTITLEMENT_ID,
-            },
-            extra: billingData,
-          });
-        }
+        // Note: Entitlement mismatch warnings are now handled above with session-based deduplication
+        // to avoid spam during purchase flows where delays are expected
       }
     } catch (err) {
       console.warn('[Billing] Error logging customer info:', err);
@@ -315,7 +332,36 @@ export const PurchasesProvider = ({ children }) => {
       setCustomerInfoTimestamp(new Date().toISOString());
 
       // Load offerings and store offerings.current
-      const offeringsData = await Purchases.getOfferings();
+      let offeringsData;
+      try {
+        offeringsData = await Purchases.getOfferings();
+      } catch (offeringsErr) {
+        // Catch RevenueCat configuration errors and handle gracefully
+        const errorMsg = offeringsErr?.message || '';
+        const isConfigError = 
+          errorMsg.includes('configuration') ||
+          errorMsg.includes('could not be fetched') ||
+          errorMsg.includes('StoreKit Configuration') ||
+          errorMsg.includes('App Store Connect');
+        
+        if (isConfigError) {
+          // Configuration errors are developer issues, not user issues
+          // Log to Sentry but don't show to users
+          console.warn('[Billing] ⚠️  Configuration error (hidden from user):', errorMsg);
+          if (Sentry) {
+            Sentry.captureMessage('Billing: RevenueCat configuration error', {
+              level: 'warning',
+              tags: { context: 'refreshEntitlements', type: 'configuration' },
+              extra: { error: errorMsg, hasOfferings: false },
+            });
+          }
+          setOfferings(undefined);
+          setError(undefined); // Don't show config errors to users
+          return;
+        }
+        // Re-throw non-config errors
+        throw offeringsErr;
+      }
       
       // Sanity check: Warn if offerings is null/empty
       if (!offeringsData || !offeringsData.current) {
@@ -329,7 +375,7 @@ export const PurchasesProvider = ({ children }) => {
           });
         }
         setOfferings(undefined);
-        setError(undefined);
+        setError(undefined); // Don't show config issues to users
         return;
       }
       
@@ -385,7 +431,31 @@ export const PurchasesProvider = ({ children }) => {
       setError(undefined);
     } catch (err) {
       console.error('[Billing] Error refreshing entitlements:', err);
-      setError(err.message || 'Failed to refresh entitlements');
+      
+      // Filter out configuration errors that users can't fix
+      const errorMsg = err?.message || '';
+      const isConfigError = 
+        errorMsg.includes('configuration') ||
+        errorMsg.includes('could not be fetched') ||
+        errorMsg.includes('StoreKit Configuration') ||
+        errorMsg.includes('App Store Connect') ||
+        errorMsg.includes('None of the products registered');
+      
+      if (isConfigError) {
+        // Configuration errors are developer issues - log but don't show to users
+        console.warn('[Billing] Configuration error (hidden from user):', errorMsg);
+        if (Sentry) {
+          Sentry.captureMessage('Billing: RevenueCat configuration error in refreshEntitlements', {
+            level: 'warning',
+            tags: { context: 'refreshEntitlements', type: 'configuration' },
+            extra: { error: errorMsg },
+          });
+        }
+        setError(undefined); // Don't show config errors to users
+      } else {
+        // Show other errors (network issues, etc.)
+        setError(err.message || 'Failed to refresh entitlements');
+      }
     }
   }, []);
 
@@ -438,12 +508,37 @@ export const PurchasesProvider = ({ children }) => {
       setIsFinishingSetup(false);
 
       // Get offerings to find the package
-      const offeringsData = await Purchases.getOfferings();
+      let offeringsData;
+      try {
+        offeringsData = await Purchases.getOfferings();
+      } catch (offeringsErr) {
+        // Catch RevenueCat configuration errors
+        const errorMsg = offeringsErr?.message || '';
+        const isConfigError = 
+          errorMsg.includes('configuration') ||
+          errorMsg.includes('could not be fetched') ||
+          errorMsg.includes('StoreKit Configuration') ||
+          errorMsg.includes('App Store Connect');
+        
+        if (isConfigError) {
+          // Configuration errors - log but show user-friendly message
+          console.warn('[Billing] Configuration error during purchase:', errorMsg);
+          if (Sentry) {
+            Sentry.captureMessage('Billing: RevenueCat configuration error during purchase', {
+              level: 'warning',
+              tags: { context: 'purchase', type: 'configuration' },
+              extra: { error: errorMsg },
+            });
+          }
+          throw new Error('Subscription service is temporarily unavailable. Please try again later or contact support.');
+        }
+        throw offeringsErr;
+      }
       
       // Sanity check: Warn if offerings is null/empty
       if (!offeringsData || !offeringsData.current) {
         console.error('[Billing] No offerings available!');
-        throw new Error('No offerings available. Please check your internet connection and try again.');
+        throw new Error('No subscription options available. Please check your internet connection and try again.');
       }
       
       if (!offeringsData.current.availablePackages || offeringsData.current.availablePackages.length === 0) {

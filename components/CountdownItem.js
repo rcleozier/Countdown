@@ -2276,7 +2276,7 @@ const styles = StyleSheet.create({
   iconItem: {
     width: wp('13%'), // match add sheet cell size (~6 cols)
     height: wp('13%'),
-    borderRadius: wp('3%'),
+    borderRadius: Platform.OS === 'android' ? wp('6.5%') : wp('3%'), // Fully round on Android, rounded on iOS
     alignItems: "center",
     justifyContent: "center",
   },
