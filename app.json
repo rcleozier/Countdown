@@ -57,18 +57,6 @@
         "googleMobileAdsAppId": "ca-app-pub-0083160636450496~3067587784"
       }
     },
-    "locales": {
-      "en": "./locales/en.json",
-      "hi": "./locales/hi.json",
-      "es": "./locales/es.json",
-      "fr": "./locales/fr.json",
-      "de": "./locales/de.json",
-      "pt": "./locales/pt.json",
-      "ja": "./locales/ja.json",
-      "it": "./locales/it.json",
-      "ru": "./locales/ru.json",
-      "zh": "./locales/zh.json"
-    },
     "description": "Chrono | Remember your important events",
     "extra": {
       "eas": {
