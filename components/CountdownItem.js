@@ -2160,8 +2160,9 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderRadius: wp('2.5%'), // 10px
-    height: wp('8.5%'), // Even smaller
-    paddingHorizontal: wp('2.5%'), // Slightly less padding
+    minHeight: wp('8.5%'), // Even smaller
+    paddingHorizontal: wp('3%'), // Increased padding for Android
+    paddingVertical: Platform.OS === 'android' ? wp('2%') : wp('1%'), // Add vertical padding, more on Android
     marginBottom: wp('1.5%'), // Even more reduced
     fontSize: wp('3.5%'), // Slightly smaller
     fontWeight: '600', // Semibold

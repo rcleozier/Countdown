@@ -977,9 +977,10 @@ const HomeScreen = () => {
   };
 
   const renderItem = ({ item, index }) => {
-    // Show banner ad every 6 countdowns (after index 5, 11, 17, etc.) for free iOS users only
-    // Android users don't see banner ads (only interstitials)
-    const shouldShowAd = Platform.OS === 'ios' && !isPro && (index + 1) % 6 === 0 && index > 0;
+    // Show banner ad every 6 countdowns (after index 5, 11, 17, etc.)
+    // iOS: only for free users
+    // Android: all users (they have Pro features but still see ads)
+    const shouldShowAd = (index + 1) % 6 === 0 && index > 0 && (Platform.OS === 'android' || !isPro);
     
     return (
       <>
@@ -2041,8 +2042,9 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderRadius: wp('2.5%'), // 10px
-    height: wp('8.5%'), // Even smaller
-    paddingHorizontal: wp('2.5%'), // Slightly less padding
+    minHeight: wp('8.5%'), // Even smaller
+    paddingHorizontal: wp('3%'), // Increased padding for Android
+    paddingVertical: Platform.OS === 'android' ? wp('2%') : wp('1%'), // Add vertical padding, more on Android
     marginBottom: wp('1.5%'), // Even more reduced
     fontSize: wp('3.5%'), // Slightly smaller
     fontWeight: '600', // Semibold
