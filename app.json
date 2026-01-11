@@ -14,7 +14,7 @@
     "icon": "./assets/icons/icon.png",
     "splash": {
       "image": "./assets/splash/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "native",
       "backgroundColor": "#9EC9FF"
     },
     "updates": {
@@ -55,6 +55,14 @@
       ],
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-0083160636450496~3067587784"
+      },
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/icon.png",
+        "backgroundColor": "#9EC9FF"
+      },
+      "notification": {
+        "icon": "./assets/icons/icon.png",
+        "color": "#9EC9FF"
       }
     },
     "description": "Chrono | Remember your important events",
@@ -68,8 +76,9 @@
         "expo-notifications",
         {
           "icon": "./assets/icons/icon.png",
-          "color": "#ffffff",
-          "defaultChannel": "default"
+          "color": "#9EC9FF",
+          "defaultChannel": "default",
+          "sounds": []
         }
       ],
       [
