@@ -9,12 +9,12 @@
       "ios",
       "android"
     ],
-    "version": "2.1.0",
+    "version": "2.2.0",
     "orientation": "portrait",
     "icon": "./assets/icons/icon.png",
     "splash": {
       "image": "./assets/splash/splash.png",
-      "resizeMode": "native",
+      "resizeMode": "contain",
       "backgroundColor": "#9EC9FF"
     },
     "updates": {
@@ -113,7 +113,8 @@
         {
           "uploadSourceMaps": false
         }
-      ]
+      ],
+      "./plugins/withAndroidRoundedIcon"
     ]
   },
   "react-native-google-mobile-ads": {
